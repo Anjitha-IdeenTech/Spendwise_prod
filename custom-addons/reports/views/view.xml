@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="purchase_vendor_user_field_inherited" model="ir.ui.view">
+            <field name="name">purchase.order.inherited_new</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='purchase_delivery_invoice']" position="after">
+                    <page string="Additional Info" name="po_additionalss">
+                        <group>
+                            <group>
+                                 <field name="pr_id" options="{'no_edit': True, 'no_create': True ,'no_quick_create':True}" readonly="1"/>
+<!--                                 <field name="buyer_domain"/>-->
+                                <field name="buyers" options='{"always_reload": True, "no_quick_create": True, "no_create_edit": True ,"no_open": True}' />
+                                <field name="contact"/>
+                                <field name="date"/>
+                                <field name="is_terms"/>
+                                <field name="terms_conditions" attrs="{'invisible': [('is_terms', '=', False)]}"/>
+                                <field name="price_basis"/>
+                                <field name="warranty_terms"/>
+                                <field name="company_prefix" invisible="1"/>
+                                <field name="installation"/>
+<!--                                <field name="text_amount_ar"/>-->
+                            </group>
+                            <group>
+                                <field name="dispatch"/>
+                                <field name="freight"/>
+                                <field name="damage"/>
+                                <field name="amc"/>
+                                <field name="note"/>
+
+                            </group>
+
+
+                        </group>
+                    </page>
+
+                </xpath>
+
+            </field>
+        </record>
+
+
+        <record id="purchase_order_tree_pr" model="ir.ui.view">
+            <field name="name">purchase.order.inherited_pr</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
+            <field name="arch" type="xml">
+               <xpath expr="//tree" position="attributes">
+                    <attribute name="create">false</attribute>
+                </xpath>
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="pr_id"/>
+                    <field name="email_sent" readonly="1" optional="hide"/>
+                     <field name="bill_to" readonly="1" optional="hide"/>
+                </xpath>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

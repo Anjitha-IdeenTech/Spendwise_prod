@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="update_log_message_invoice" model="ir.ui.view">
+            <field name="name">RFI</field>
+            <field name="model">log.invoice.message</field>
+            <field name="arch" type="xml">
+
+
+                <form string="RFI">
+
+                    <group>
+
+                        <group col="2">
+
+                            <field name="message"/>
+                            <field name="user_cc" widget="many2many_tags" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                            <field name="cc_email"/>
+                        </group>
+                        <group col="2">
+                            <field name="user"/>
+                            <field name="to_users" widget="many2many_tags" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                            <field name="branch_id" readonly="1" widget="many2many_tags"/>
+                            <field name="email" readonly="1"/>
+                            <!--                            <field name="user_ids" widget="many2many_tags"/>-->
+                            <field name="request_id" invisible="1"/>
+
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="confirm"
+                                string="Confirm" class="btn-primary"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+        <record id="update_log_invoice_message_action1" model="ir.actions.act_window">
+            <field name="name">RFI</field>
+            <field name="res_model">log.invoice.message</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="update_log_message_invoice"/>
+            <field name="target">new</field>
+        </record>
+
+
+        <record id="update_log_replay_invoice" model="ir.ui.view">
+            <field name="name">Replay RFI</field>
+            <field name="model">message.invoice.replay</field>
+            <field name="arch" type="xml">
+
+
+                <form string="RFI Replay">
+
+                    <group>
+
+                        <group col="2">
+                            <field name="message" invisible="0"/>
+                            <field name="replay"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="confirm"
+                                string="Confirm" class="btn-primary"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+        <record id="update_log_invoice_replay_action1" model="ir.actions.act_window">
+            <field name="name">Replay Message</field>
+            <field name="res_model">message.invoice.replay</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="update_log_replay_invoice"/>
+            <field name="target">new</field>
+        </record>
+
+
+        <record id="add_approver_invoice_view" model="ir.ui.view">
+
+            <field name="name">Add Approver</field>
+
+            <field name="model">add.approver.invoice.wizard</field>
+
+            <field name="arch" type="xml">
+
+
+                <form string="Adding User Details">
+
+
+                    <group>
+
+
+                        <group col="2">
+
+                            <field name="invoice_id" readonly="1" invisible="1"/>
+
+                            <field name="user"/>
+
+                            <field name="branch_id" readonly="1"/>
+
+                            <field name="email" readonly="1"/>
+
+                            <field name="order"/>
+
+
+                        </group>
+
+                    </group>
+
+                    <footer>
+
+                        <button type="object" name="add_user"
+
+                                string="Confirm" class="btn-primary"/>
+
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+
+                    </footer>
+
+                </form>
+
+
+            </field>
+
+        </record>
+
+
+        <record id="add_approver_invoice_action" model="ir.actions.act_window">
+
+            <field name="name">Invoice Add Approver Details</field>
+
+            <field name="res_model">add.approver.invoice.wizard</field>
+
+            <field name="view_mode">form</field>
+
+            <field name="view_id" ref="add_approver_invoice_view"/>
+
+            <field name="target">new</field>
+
+        </record>
+
+
+        <record id="remark_approve_invoice_form" model="ir.ui.view">
+            <field name="name">Remarks</field>
+            <field name="model">invoice.remark</field>
+            <field name="arch" type="xml">
+
+
+                <form string="Remarks">
+
+                    <group>
+
+                        <group col="2">
+                            <field name="invoice_id" invisible="1"/>
+                            <field name="replay"/>
+                            <field name="approve_type" invisible="1"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="confirm_remark"
+                                string="Approve" class="btn-primary"
+                                attrs="{'invisible': [('approve_type', '!=', 'approve')]}"
+                                confirm="Confirm Approval"/>
+                        <button type="object" name="confirm_remark"
+                                string="Reject" class="btn-primary"
+                                attrs="{'invisible': [('approve_type', '!=', 'reject')]}"
+                                confirm="Confirm Reject"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+        <record id="remark_invoice_approve_action" model="ir.actions.act_window">
+            <field name="name">Remark</field>
+            <field name="res_model">invoice.remark</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="remark_approve_invoice_form"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

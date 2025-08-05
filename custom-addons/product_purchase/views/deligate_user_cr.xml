@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+
+        <record id="update_cr_deligate_user_view" model="ir.ui.view">
+            <field name="name">CR Deligate User</field>
+            <field name="model">cr.deligate.user.wizard</field>
+            <field name="arch" type="xml">
+
+
+                <form string="Deligate User Details">
+
+                    <group>
+
+                        <group col="2">
+                            <field name="deligate_user" />
+                            <field name="branch_id" readonly="1" />
+                            <field name="email" readonly="1"/>
+                            <field name="cr_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="confirm"
+                                string="Confirm" class="btn-primary"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+        <record id="update_cr_deligate_user_action" model="ir.actions.act_window">
+            <field name="name">CR Deligate User Details</field>
+            <field name="res_model">cr.deligate.user.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="update_cr_deligate_user_view"/>
+            <field name="target">new</field>
+        </record>
+
+
+    </data>
+</odoo>

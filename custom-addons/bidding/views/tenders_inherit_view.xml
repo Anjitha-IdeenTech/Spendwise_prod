@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <record id="tenders_inherit" model="ir.ui.view">
+            <field name="name">tenders.inherit</field>
+            <field name="model">tenders</field>
+            <field name="inherit_id" ref="product_purchase.view_tenders_status_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header/button[@name='action_remark_reject']" position="after">
+                    <button name="action_add_to_bidding" id="btn_bidding"
+                            string="Create Bidding" type="object" class="btn-primary"
+                            attrs="{'invisible': ['|',('contracting_method','!=','bidding'),('state', 'not in', ('draft'))]}"
+
+                    />
+<!--                    attrs="{'invisible': ['|',('vendor_request_status', '!=', 'accept'), ('bid_request_check', '=', True)]}"-->
+                    <field name="bid_request_check" invisible="1"/>
+                </xpath>
+                <xpath expr="//div[@name='button_box']" position="inside">
+                 <button name="get_bidding" type="object"
+                                    class="oe_stat_button" icon="fa-calendar"
+                                    attrs="{'invisible': [('contracting_method','!=','bidding')]}">
+                                <span class="o_stat_text">Bidding</span>
+                            </button>
+
+                </xpath>
+                <xpath expr="//field[@name='payment_terms']" position="after">
+                    <field name="bidding_id" readonly="1" attrs="{'invisible': [('bid_request_check', '=', False)]}"/>
+                </xpath>
+            </field>
+        </record>
+        <record id="tenders_inherit_tree" model="ir.ui.view">
+    <field name="name">tenders.inherit.tree</field>
+    <field name="model">tenders</field>
+    <field name="inherit_id" ref="product_purchase.view_tender_status_tree"/>
+    <field name="arch" type="xml">
+        <xpath expr="//tree/header" position="inside">
+            <button name="multi_to_bidding"
+                    string="Multi-rfq to Bidding"
+                    type="object"
+                    class="btn-primary"/>
+        </xpath>
+    </field>
+</record>
+
+</odoo>

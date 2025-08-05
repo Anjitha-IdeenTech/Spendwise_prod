@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!--########################## Purchase Request ################################## -->
+        <menuitem id="menu_pr" name="Purchase Request" web_icon="product_purchase,static/icons/shopping.png"/>
+        <menuitem id="sub_menu_pr_man" name="Purchase Requests" parent="menu_pr" action="action_product_requests"
+                  sequence="10" groups="group_buyers,group_approvers,group_pr_initiator,group_purchase_head"/>
+
+        <!--     ##############   -->
+
+
+        <!--   ####################### Contracts/Agreements ####################     -->
+
+        <menuitem id="root_contracts_agreements" name="Contracts"
+                  web_icon="product_purchase,static/icons/agreement.png"
+                  groups="vendor_portal.group_vendor_portal_user,group_buyers,group_approvers,group_fleet_manager"/>
+
+        <!-- <menuitem id="sub_root_contract_requests" name="Contract Requests" parent="root_contracts_agreements"
+                  sequence="10" /> -->
+
+        <menuitem id="sub_menu__contract_requests" name="Contract Request" parent="root_contracts_agreements"
+                  action="action_tender_status"
+                  sequence="10" groups="group_buyers,group_approvers,group_fleet_manager"/>
+
+        <menuitem id="sub_menu_vendor_ct_rqst" name="My Contract Requests" parent="root_contracts_agreements"
+                  action="action_contract_requests"
+                  sequence="11" groups="vendor_portal.group_vendor_portal_user"/>
+
+
+        <menuitem id="menu_sub_rate_of_contracts" name="Rate Contracts"
+                  action="action_view_product_tenders" parent="root_contracts_agreements"
+                  groups="group_buyers,group_purchase_head,group_fleet_manager"
+                  sequence="2"/>
+        <menuitem id="submenu_vendor_contract_request"
+                          name="Vendor Contract Requests"
+                          parent="root_contracts_agreements"
+                          action="action_contract_requests_admin"
+                          sequence="20"
+                          groups="group_buyers"/>
+
+
+    </data>
+</odoo>

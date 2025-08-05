@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+
+        <record id="view_price_history" model="ir.ui.view">
+            <field name="name">Product History</field>
+            <field name="model">vendor.history.wizard</field>
+            <field name="arch" type="xml">
+
+
+                <form string="Price History">
+
+                    <group>
+
+                        <group col="2">
+
+                            <field name="product" readonly="1"/>
+                        </group>
+                        <group col="2">
+                            <field name="name" invisible="1"/>
+                            <field name="least_price_other" readonly="1"/>
+                            <field name="least_price_br" readonly="1"/>
+                            <field name="avg_price" readonly="1"/>
+                            <field name="related_branch" readonly="1"/>
+                        </group>
+                    </group>
+
+
+                    <notebook>
+                        <page string="Rate Contracts" name="product_contracts_line">
+                            <field name="contract_line_ids" readonly="1">
+                                <tree editable="bottom" delete="0" create="0" edit="0">
+                                    <field name="contract_name"/>
+<!--                                    <field name="contract"/>-->
+                                    <field name="vendor"/>
+                                    <field name="unit_price"/>
+                                    <field name="payment_terms"/>
+                                    <field name="status"/>
+
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Contract Requests" name="product_contracts_req_line">
+                            <field name="contract_request_line_ids" readonly="1">
+                                <tree editable="bottom" delete="0" create="0" edit="0">
+                                    <field name="contract_name"/>
+                                    <field name="vendor"/>
+                                    <field name="unit_price"/>
+                                    <field name="payment_terms"/>
+                                    <field name="status"/>
+
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Purchase Orders" name="product_purchase_line">
+                            <field name="purchase_line_ids" readonly="1">
+                                <tree editable="bottom" delete="0" create="0" edit="0">
+                                    <field name="purchase_order"/>
+                                    <field name="vendor"/>
+                                    <field name="unit_price"/>
+                                    <field name="payment_terms"/>
+                                    <field name="status"/>
+
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+
+
+                    <footer>
+                        <!--                        <button type="object" name="confirm"-->
+                        <!--                                string="Confirm" class="btn-primary"/>-->
+                        <button special="cancel" string="Close" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+        <record id="action_price_history" model="ir.actions.act_window">
+            <field name="name">Product History</field>
+            <field name="res_model">vendor.history.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_price_history"/>
+            <field name="target">new</field>
+        </record>
+
+    </data>
+</odoo>

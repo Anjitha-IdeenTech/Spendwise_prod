@@ -1,0 +1,42 @@
+<odoo noupdate="1">
+    <record id="ir_cron_auto_po_generation" model="ir.cron">
+        <field name="name">Generate PO</field>
+        <field name="model_id" ref="model_product_tender_line"/>
+        <field name="state">code</field>
+        <field name="code">model.generate_po()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">months</field>
+        <field name="numbercall">-1</field>
+    </record>
+
+    <record id="ir_cron_contract_expire" model="ir.cron">
+        <field name="name">Product Contracts Expiration</field>
+        <field name="model_id" ref="model_product_tender_line"/>
+        <field name="state">code</field>
+        <field name="code">model.contract_expire()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+    </record>
+
+    <record id="ir_cron_vendor_ctr_expire" model="ir.cron">
+        <field name="name">Vendor Contracts Request Deadline</field>
+        <field name="model_id" ref="model_contract"/>
+        <field name="state">code</field>
+        <field name="code">model.vendor_deadline()</field>
+        <field name="interval_number">10</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+    </record>
+
+    <record id="ir_cron_auto_po_contract_generation" model="ir.cron">
+        <field name="name">Generate Contract PO</field>
+        <field name="model_id" ref="model_tenders"/>
+        <field name="state">code</field>
+        <field name="code">model.generate_contract_po()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">months</field>
+        <field name="numbercall">-1</field>
+    </record>
+
+</odoo>

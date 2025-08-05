@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="view_add_branch_wizard_form" model="ir.ui.view">
+        <field name="name">add.branch.wizard.form</field>
+        <field name="model">add.branch.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Add Branches">
+                <sheet>
+                      <label for="branch_ids" string="Additional Branches:"/>
+                    <field name="branch_ids" widget="many2many_tags" nolabel="0" />
+<!--                    <field name="company_ids" widget="many2many_tags" invisible="1"/>-->
+                </sheet>
+                <footer>
+                    <button string="Add" type="object" name="action_add_branches" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

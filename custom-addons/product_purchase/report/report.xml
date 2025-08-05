@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <report
+        id = "report_vendor_contract"
+        string = "Contract Report"
+        model = "tender.request.response"
+        report_type = "qweb-pdf"
+        name = "product_purchase.contract_report"
+        file = "product_purchase.contract_report"
+    />
+
+<!--    <record id="report_vendor_contract" model="ir.actions.report">-->
+<!--        <field name="name">Contract Report</field>-->
+<!--        <field name="model">tender.request.response</field>-->
+<!--        <field name="report_type">qweb-pdf</field>-->
+<!--        <field name="report_name">product_purchase.contract_report</field>-->
+<!--        <field name="report_file">product_purchase.contract_report</field>-->
+<!--        <field name="paperformat_id" ref="product_purchase.paperformat_student"/>-->
+<!--        <field name="binding_model_id" ref="model_tender_request_response"/>-->
+<!--        <field name="binding_type">report</field>-->
+<!--    </record>-->
+    <report
+        id="report_contract_detail_xlx"
+        string="Contract Excel"
+        model="export.contract.wizard"
+        report_type="xlsx"
+        name="product_purchase.report_contract_xls"
+        file="product_purchase.report_contract_xls"/>
+</odoo>

@@ -1,0 +1,28 @@
+<odoo>
+    <template id="report_custom_invoice_inherit" inherit_id="account.report_invoice_document">
+        <!-- Inherit and modify the address section -->
+        <xpath expr="//t[@t-set='address']" position="replace">
+            <!-- Custom Address block -->
+            <t t-set="address">
+                <t t-if="o.vendor_addresss">
+                    <t t-if="o.vendor_change_name">
+                        <div style="font-size: 16px; font-weight: bold;">
+                            <span t-esc="o.vendor_change_name"/>
+                        </div>
+                    </t>
+                    <t t-if="o.vendor_addresss">
+                        <div style="font-size: 16px; line-height: 1.5;">
+                            <span t-esc="o.vendor_addresss"/>
+                        </div>
+                    </t>
+
+                </t>
+
+                <t t-else="">
+                    <address t-field="o.partner_id"
+                             t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+</odoo>

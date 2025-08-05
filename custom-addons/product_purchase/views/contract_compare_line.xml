@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="contract_compare_view_search" model="ir.ui.view">
+            <field name="model">contract.request.lines</field>
+            <field name="arch" type="xml">
+                <search string="Muti-RFQ Comparison">
+
+                    <field name="product_id"/>
+                    <field name="vendor"/>
+
+<!--                    <filter string="Selected Items" name="item_selected" domain="[('selected_line', '=', True)]"/>-->
+
+                    <group expand="1" string="Group by">
+                        <filter string="Product" name="group_by_product" context="{'group_by': 'product_id'}"/>
+                        <filter string="Vendor" name="group_by_vendor" context="{'group_by': 'vendor'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+
+        <!-- Define the tree view for contract.request.lines -->
+        <record id="view_contract_request_lines_tree" model="ir.ui.view">
+            <field name="name">contract.request.lines.tree</field>
+            <field name="model">contract.request.lines</field>
+            <field name="arch" type="xml">
+                <tree default_order="vendor_price" expand="1" create="0" edit="0" delete="0" duplicate="0" >
+                        <!-- <tree expand="1" create="0" edit="0" delete="0" duplicate="0"
+                      decoration-success="vendor_price == smallest"
+                       decoration-info="vendor_price == second_smallest" > -->
+<!--                     decoration-success="selected_line == True"-->
+
+                    <header>
+                        <button name="action_create_contract_req"
+                                string="Update Request" class="btn-primary" type="object"
+                                confirm="Are you sure, You want to make the updated changes in requests"/>
+                    </header>
+
+                    <!-- Define fields to display in the tree view -->
+                    <field name="contracts_lines"/>
+                    <field name="product_id"/>
+                    <field name="vendor"/>
+                    <field name="payment_terms"/>
+                    <field name="lead_time"/>
+                    <field name="terms"/>
+                    <field name="quantity"/>
+                    <field name="unit_price"/>
+                    <field name="vendor_price"/>
+                    <field name="total_vendor_price"/>
+                    <!-- <field name="smallest" invisible="1"/>
+                    <field name="second_smallest" invisible="1"/> -->
+                    <field name="selected_line" invisible="1"/>
+                    <field name="related_branch" invisible="1"/>
+                    <button name="open_history" type="object" icon="fa-clock-o"/>
+<!--                    <button name="action_select_products" type="object" string="Add" icon="fa-plus-square"/>-->
+<!--                    <button name="action_remove_products" type="object" string="Remove" icon="fa-minus-square"/>-->
+
+
+                    <!-- Add more fields as needed -->
+                </tree>
+            </field>
+        </record>
+
+        <!-- Define the form view for contract.request.lines -->
+        <record id="view_contract_request_lines_form" model="ir.ui.view">
+            <field name="name">contract.request.lines.form</field>
+            <field name="model">contract.request.lines</field>
+            <field name="arch" type="xml">
+                <form>
+                    <!-- Define fields to display in the form view -->
+                    <field name="contracts_lines"/>
+                    <field name="product_id"/>
+                    <field name="vendor"/>
+                    <field name="quantity"/>
+                    <field name="unit_price"/>
+                    <field name="total_vendor_price"/>
+
+
+                    <!-- Add more fields as needed -->
+                </form>
+            </field>
+        </record>
+
+        <!-- Define the action to access the contract.request.lines views -->
+        <record model="ir.actions.act_window" id="action_contract_request_lines">
+            <field name="name">Contract Request Lines</field>
+            <field name="res_model">contract.request.lines</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_contract_request_lines_tree"/>
+            <field name="context">{'search_default_group_by_product': 1}</field>
+
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">No records found!</p>
+            </field>
+        </record>
+
+        <!-- Define a menu item to access the contract.request.lines action -->
+        <!--        <menuitem id="menu_contract_request_lines" name="Contract Request Lines"-->
+        <!--                  sequence="10"-->
+        <!--                  action="action_contract_request_lines"/>-->
+
+    </data>
+</odoo>

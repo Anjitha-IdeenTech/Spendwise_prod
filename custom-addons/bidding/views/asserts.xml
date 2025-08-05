@@ -1,0 +1,12 @@
+<odoo>
+    <template id="assets_backend_custom_title" inherit_id="web.assets_backend_legacy_lazy"
+              name="Add custom title patch">
+        <xpath expr="." position="inside">
+            <script type="module" src="/bidding/static/src/js/title.js"></script>
+        </xpath>
+<!--        <xpath expr="//head/link[@rel='shortcut icon']" position="replace">-->
+<!--            <link type="image/x-icon" rel="shortcut icon" t-att-href="x_icon or '/web/static/src/img/img.ico?v=1'"/>-->
+<!--        </xpath>-->
+
+    </template>
+</odoo>

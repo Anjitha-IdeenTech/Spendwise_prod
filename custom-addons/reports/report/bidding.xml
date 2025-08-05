@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<odoo>
+    <template id="bidding_request_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-foreach="docs" t-as="bidding">
+                    <div>
+                        <h2 style="text-align: center">
+                            BIDDING DOCUMENT
+                        </h2>
+                    </div>
+
+                    <br/>
+                    <br/>
+                    <br/>
+
+                    <div id="deliver_bill_address" class="row mt32 mb32">
+                        <div class="col-auto col-3 mw-100 mb-2">
+                            <strong>Request From:</strong>
+                            <t t-if="bidding.request_from">
+                                <span t-field="bidding.request_from.name"/>
+                                <br/>
+                            </t>
+                        </div>
+                    </div>
+
+                    <br/>
+                    <br/>
+
+                    <div class="pages">
+                        <h3>
+                            Bidding No:
+                            <span t-field="bidding.name"/>
+                        </h3>
+                        <br/>
+                        <br/>
+
+                        <div class="row mt32 mb32">
+                            <div t-if="bidding.start_date" class="col-auto" name="div_bdate">
+                                <strong>Start Date:</strong>
+                                <p t-field="bidding.start_date"/>
+                            </div>
+
+                            <div t-if="bidding.deadline" class="col-auto" name="div_deadline">
+                                <strong>Deadline:</strong>
+                                <p t-field="bidding.deadline"/>
+                            </div>
+
+                            <div t-if="bidding.status" class="col-auto" name="div_status">
+                                <strong>Status:</strong>
+                                <p t-field="bidding.status"/>
+                            </div>
+
+                            <div t-if="bidding.contract" class="col-auto" name="div_contract">
+                                <strong>Contract Request:</strong>
+                                <p t-field="bidding.contract.name"/>
+                            </div>
+                            <div t-if="bidding.contract" class="col-auto" name="div_contract">
+                                <strong>Purchase Request:</strong>
+                                <p t-field="bidding.product_request_id.name"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <br/>
+                    <br/>
+                      <h3>Top Vendor</h3>
+
+                     <div t-if="bidding.top_vendor" class="col-auto" name="div_bdate">
+<!--                                <strong>Top Vendor:</strong>-->
+                                <p t-field="bidding.top_vendor.name"/>
+                            </div>
+
+<!--                    <h3>Bid Details</h3>-->
+
+                    <h3>Product Details</h3>
+
+                    <table align="center" style="width:100%; border: 1px solid black;" cellpadding="10">
+                        <thead>
+                            <tr style="border: 1px solid black;">
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>product</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Quantity</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Unit Price</strong>
+                                </td>
+
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <t t-set="lines" t-value="bidding.bidding_products"/>
+                            <tr t-foreach="lines" t-as="line">
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="line.product_id.name"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="line.quantity"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="line.unit_price"/>
+                                </td>
+
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Participants</h3>
+
+                    <table align="center" style="width:100%; border: 1px solid black;" cellpadding="10">
+                        <thead>
+                            <tr style="border: 1px solid black;">
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>User</strong>
+                                </td>
+<!--                                <td colspan="10" style="padding: 5px; border: 1px solid black;">-->
+<!--                                    <strong>Status</strong>-->
+<!--                                </td>-->
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <t t-set="approval_lines" t-value="bidding.vendors"/>
+                            <tr t-foreach="approval_lines" t-as="approval">
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="approval.name"/>
+                                </td>
+<!--                                <td colspan="10" style="padding: 5px; border: 1px solid black;">-->
+<!--                                    <span t-field="approval.status"/>-->
+<!--                                </td>-->
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Bidding Price History</h3>
+                    <table align="center" style="width:100%; border: 1px solid black;" cellpadding="10">
+                        <thead>
+                            <tr style="border: 1px solid black;">
+                                <td style="padding: 5px; border: 1px solid black;"><strong>Vendor</strong></td>
+                                <td style="padding: 5px; border: 1px solid black;"><strong>Bid Price</strong></td>
+                                <td style="padding: 5px; border: 1px solid black;"><strong>Date</strong></td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="bidding.price_history_ids" t-as="price_history">
+                                <tr>
+                                    <td style="padding: 5px; border: 1px solid black;">
+                                        <span t-field="price_history.vendor_id.name"/>
+                                    </td>
+                                    <td style="padding: 5px; border: 1px solid black;">
+                                        <span t-field="price_history.total_price"/>
+                                    </td>
+                                    <td style="padding: 5px; border: 1px solid black;">
+                                        <span t-field="price_history.update_time"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+
+<!--                    <h3>Need For Bidding - Approvals</h3>-->
+
+<!--                    <table align="center" style="width:100%; border: 1px solid black;" cellpadding="10">-->
+<!--                        <thead>-->
+<!--                            <tr style="border: 1px solid black;">-->
+<!--                                <td colspan="10" style="padding: 5px; border: 1px solid black;">-->
+<!--                                    <strong>User</strong>-->
+<!--                                </td>-->
+<!--                                <td colspan="10" style="padding: 5px; border: 1px solid black;">-->
+<!--                                    <strong>Status</strong>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                        </thead>-->
+
+<!--                        <tbody>-->
+<!--                            <t t-set="need_approval_lines" t-value="bidding.need_approval_line_ids"/>-->
+<!--                            <tr t-foreach="need_approval_lines" t-as="need_approval">-->
+<!--                                <td colspan="10" style="padding: 5px; border: 1px solid black;">-->
+<!--                                    <span t-field="need_approval.user_id.name"/>-->
+<!--                                </td>-->
+<!--                                <td colspan="10" style="padding: 5px; border: 1px solid black;">-->
+<!--                                    <span t-field="need_approval.status"/>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                        </tbody>-->
+<!--                    </table>-->
+
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
+
+
+

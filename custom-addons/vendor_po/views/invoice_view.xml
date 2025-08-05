@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.actions.act_window" id="action_view_invoice">
+        <field name="name">Invoice</field>
+        <field name="res_model">account.move</field>
+        <!--            <field name="view_type">form</field>-->
+        <field name="view_mode">tree,form</field>
+        <field name="context">{
+                'create': False,
+
+                }
+            </field>
+        <field name="domain">['&amp;', ('company_user_id','=',uid), ('state','=', 'posted')]</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">Create new Invoice</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_invoices" name="Invoice" parent="root_vendor_po"
+          action="action_view_invoice"
+          sequence="10"/>
+
+    </data>
+</odoo>

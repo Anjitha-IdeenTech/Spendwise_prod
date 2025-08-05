@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_region_masters_tree" model="ir.ui.view">
+        <field name="name">masters.tds.tree</field>
+        <field name="model">tds.master</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="TDS"/>
+
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_region_masters_form" model="ir.ui.view">
+        <field name="name">masters.tds.form</field>
+        <field name="model">tds.master</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+<!--                        <group>-->
+<!--                            <div class="oe_title" style="margin-bottom: 10px;">-->
+<!--                                <h1>-->
+<!--                                    <field name="TDS"/>-->
+<!--                                </h1>-->
+<!--                            </div>-->
+<!--                        </group>-->
+                        <field name="TDS"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_tds_form" model="ir.actions.act_window">
+        <field name="name">TDS</field>
+        <field name="res_model">tds.master</field>
+        <field name="view_mode">tree,form</field>
+        <!--        <field name="view_id" ref="view_expense_category_tree"/>-->
+
+    </record>
+
+</odoo>

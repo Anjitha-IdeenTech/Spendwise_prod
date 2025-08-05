@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+    <record id="inherit_pan_field" model="ir.ui.view">
+        <field name="name">res.partner.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='vat']" position="after">
+                <field name="pan"/>
+                <field name="bank_cheque_file"/>
+                <field name="partnership_deed_file"/>
+                <!-- <field name="vendor_category"/>     -->
+            </xpath>
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="gst_file"/>
+                <field name="pan_card_file"/>
+                <field name="bank_statement_file"/>
+                <field name="msme_registered"/>
+                <field name="msme_number"  attrs="{'invisible': [('msme_registered', '=', False)]}"/>
+                <field name="msme_file" attrs="{'invisible': [('msme_registered', '=', False)]}"/> 
+                <!-- <field name="vendor_category"/>     -->
+            </xpath>
+             <!-- <xpath expr="//form//sheet" position="before">
+                    <header>
+                        <button name="auto_correct" string="Msme User" type="object"/>
+                    </header>
+                </xpath> -->
+
+        </field>
+    </record>
+
+
+    <record id="view_company_form_inherit" model="ir.ui.view">
+        <field name="name">res.company.form.inherit</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="before">
+                <field name="branch_code"/>
+
+            </xpath>
+
+            <xpath expr="//field[@name='company_registry']" position="after">
+                <field name="pan"/>
+                <field name="division"/>
+                <field name="sub_division"/>
+                <field name="region"/>
+                <field name="main"/>
+
+
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_company_tree_inherit" model="ir.ui.view">
+        <field name="name">res.company.tree.inherit</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="before">
+                <field name="branch_code"/>
+                <field name="parent_id"/>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="bank_ifsc_inherit" model="ir.ui.view">
+        <field name="name">res.partner.bank.tree.inherit</field>
+        <field name="model">res.partner.bank</field>
+        <field name="inherit_id" ref="base.view_partner_bank_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='bank_id']" position="before">
+                <field name="ifsc"/>
+
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="view_partner_vendor_account_form" model="ir.ui.view">
+        <field name="name">res.partner.account.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="account.view_partner_property_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='bank_ids']/tree/field[@name='acc_number']" position="after">
+                <field name="ifsc"/>
+            </xpath>
+
+        </field>
+    </record>
+
+
+</odoo>

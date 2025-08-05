@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="product_template_line_inherit" model="ir.ui.view">
+            <field name="name">product.template.lines.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="arch" type="xml">
+<!--                <xpath expr="//page[@name='general_information']" position="after">-->
+<!--                    <page string="Product Contracts">-->
+<!--                        <field name="product_tender_line_id">-->
+<!--                            <tree>-->
+<!--                                <field name="name"/>-->
+<!--                                <field name="purchase_tender_type"/>-->
+<!--                                <field name="vendor"/>-->
+<!--                                <field name="unit_price"/>-->
+<!--                                <field name="quantity"/>-->
+<!--                                <field name="total"/>-->
+<!--                                <field name="purchase_representative"/>-->
+<!--                            </tree>-->
+<!--                        </field>-->
+<!--                    </page>-->
+<!--                </xpath>-->
+
+                <div name="button_box" position="inside">
+                    <button class="oe_stat_button" type="object" name="view_contracts"
+                            icon="fa-bars">
+                        <div class="o_stat_info">
+                            <span class="o_stat_value">
+                                <field name="contracts_count"/>
+                            </span>
+                            <span class="o_stat_text">
+                                Contracts
+                            </span>
+                        </div>
+                    </button>
+                </div>
+            </field>
+        </record>
+
+
+        <record id="product_template_fields_inherit" model="ir.ui.view">
+            <field name="name">product.template.field.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='detailed_type']" position="before">
+                    <field name="brand"/>
+                    <field name="oem"/>
+                </xpath>
+
+                <xpath expr="//field[@name='uom_po_id']" position="after">
+                    <field name="pack_size"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
+
+        <!--web_icon="meeting_minute,static/icons/meeting.png"-->

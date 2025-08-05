@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="view_tender_request_details_tree">
+            <field name="name">Tender Request Details</field>
+            <field name="model">tender.request</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree string="Example Tree" create="0">
+                    <field name="name"/>
+                    <field name="product"/>
+                    <field name="requested_date"/>
+                    <field name="requested_by"/>
+                    <field name="requested_to"/>
+                    <field name="quantity"/>
+                    <field name="unit_price"/>
+                    <field name="total_price"/>
+                    <field name="tender_deadline"/>
+                    <field name="tender_status"
+                           decoration-success="tender_status == 'accept'"
+                           decoration-info="tender_status == 'draft'"
+                           decoration-danger="tender_status == 'cancel'"
+                           widget="badge"/>
+                    <field name="request_check" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+        <record id="view_tender_request_form" model="ir.ui.view">
+            <field name="name">tender.request.from</field>
+            <field name="model">tender.request</field>
+            <field name="arch" type="xml">
+                <form create="0" delete="0">
+                    <header>
+                        <!--                        <button name="action_tender_request_draft" id="btn_initiated"-->
+                        <!--                                string="Draft" class="btn-primary" type="object"-->
+                        <!--                                confirm="Accept Tender Request?"/>-->
+                        <button name="action_tender_request_accept" id="btn_initiated"
+                                string="Accept" class="btn-primary" type="object"
+                                attrs="{'invisible': ['|','|',('process_complete_check', '=', True), ('request_check', '=', False), ('vendor_request_check', '=', True)]}"
+                                confirm="Accept Contract Request?"/>
+                        <button name="action_tender_request_cancel" id="btn_initiated"
+                                string="Cancel" class="btn-danger" type="object"
+                                attrs="{'invisible': ['|','|',('process_complete_check', '=', True), ('request_check', '=', False), ('vendor_request_check', '=', True)]}"
+                                confirm="Accept Contract Request?"/>
+                        <button name="action_tender_request_send" id="btn_initiated"
+                                string="Send" class="btn-primary" type="object"
+                                attrs="{'invisible': ['|', ('vendor_request_check', '=', False), ('vendor_request_status','!=','draft')]}"
+                                confirm="Send Contract Request?"/>
+                        <field name="tender_status" widget="statusbar" nolabel="1" readonly="False"
+                               attrs="{'invisible': [('request_check', '=', False)]}"/>
+                        <field name="vendor_request_status" widget="statusbar" nolabel="1" readonly="False"
+                               attrs="{'invisible': [('vendor_request_check', '=', False)]}"/>
+                    </header>
+                    <sheet>
+                        <h1>
+                            <field name="name">Name</field>
+                        </h1>
+                        <group>
+                            <group>
+                                <field name="product"
+                                       readonly="1"
+                                >Product
+                                </field>
+                                <field name="quantity"
+                                       attrs="{'readonly': [('tender_status', '!=', 'draft')]}"
+                                >Quantity
+                                </field>
+                                <field name="unit_price"
+                                       attrs="{'readonly': [('tender_status', '!=', 'draft')]}"
+                                >Unit Price
+                                </field>
+                                <field name="total_price"
+                                       attrs="{'readonly': [('tender_status', '!=', 'draft')]}"
+                                >Total Price
+                                </field>
+                                <field name="request_check" invisible="1"/>
+                                <field name="vendor_request_check" invisible="1"/>
+                                <field name="process_complete_check" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="tender_deadline"
+                                       attrs="{'readonly': [('tender_status', '!=', 'draft')]}"
+                                >Contract Deadline
+                                </field>
+                                <field name="requested_date"
+                                       readonly="1"
+                                       attrs="{'invisible': [('request_check', '=', False)], 'readonly': [('tender_status', '!=', 'draft')]}"
+                                >Requested
+                                    Date
+                                </field>
+                                <field name="expected_date"
+                                       readonly="1"
+                                       attrs="{'invisible': [('request_check', '=', False)], 'readonly': [('tender_status', '!=', 'draft')]}"
+                                >Expected Date
+                                </field>
+                                <field name="requested_by"
+                                       readonly="1"
+                                >Vendor
+                                </field>
+
+                                <!--                                <field name="requested_to"-->
+                                <!--                                       style="width:25%%">Requested To-->
+                                <!--                                </field>-->
+                            </group>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        <record id="action_tender_request" model="ir.actions.act_window">
+            <field name="name">Contract Request</field>
+            <field name="res_model">tender.request</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('user_id','=',uid)]</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first Tender!
+                </p>
+            </field>
+        </record>
+        <menuitem id="menu_tender_request"
+                  name="Contract Request"
+                  web_icon="product_purchase,static/icons/contract.png"
+                  action="action_tender_request"
+        />
+
+
+
+
+
+    </data>
+</odoo>

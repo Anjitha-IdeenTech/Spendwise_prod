@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="bidding.BiddingRealtimeTemplate">
+        <div class="o_bidding_realtime">
+<!--            <p>Top Vendor: <t t-esc="top_vendor"/></p>-->
+<!--            <p>Top Vendor Price: <t t-esc="top_vendor_price"/></p>-->
+        </div>
+    </t>
+</templates>

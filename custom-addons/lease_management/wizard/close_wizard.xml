@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+
+<record id="view_close_po_wizard" model="ir.ui.view">
+    <field name="name">close.po.wizard.form</field>
+    <field name="model">close.po.wizard</field>
+    <field name="arch" type="xml">
+        <form string="Close Purchase Orders">
+            <group>
+                <field name="purchase_order_ids" widget="many2many_tags"/>
+                <field name="attachment_file" filename="attachment_filename"/>
+                <field name="attachment_filename" invisible="1"/>
+                <field name="close_reason"/>
+
+                <button name="load_purchase_orders_from_file" string="Load POs from Excel"
+        type="object" class="btn-secondary"/>
+
+            </group>
+            <footer>
+                <button name="action_close_all" string="Close All" type="object" class="btn-primary"/>
+                <button string="Cancel" class="btn-secondary" special="cancel"/>
+            </footer>
+        </form>
+    </field>
+</record>
+
+<record id="action_close_po_wizard" model="ir.actions.act_window">
+    <field name="name">Close Purchase Orders</field>
+    <field name="res_model">close.po.wizard</field>
+    <field name="view_mode">form</field>
+    <field name="target">new</field>
+</record>
+    </data>
+</odoo>

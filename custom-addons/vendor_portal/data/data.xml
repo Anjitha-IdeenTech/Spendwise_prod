@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="seq_vendor_intake" model="ir.sequence">
+            <field name="name">Vendor Registration Sequence</field>
+            <field name="code">vendor.intake</field>
+            <field name="prefix">VPR</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+access_delivery_commitment_date,access.delivery.commitment.date,model_delivery_commitment_date,,1,1,1,1
+access_advance_shipment_date,access.advance.shipment.date,model_advance_shipment_date,,1,1,1,1
+
+access_advanced_shipment_notice,access.advanced.shipment.notice,model_advanced_shipment_notice,,1,1,1,1
+access_asn_lines,access.asn.lines,model_asn_lines,,1,1,1,1

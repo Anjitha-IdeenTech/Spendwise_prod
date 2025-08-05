@@ -1,0 +1,36 @@
+<odoo>
+    <data>
+        <record id="view_send_mail_vendor_wizard" model="ir.ui.view">
+            <field name="name">send.mail.vendor.wizard.form</field>
+            <field name="model">send.mail.vendor.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Send Mail to Vendor">
+                    <group>
+                        <field name="email_template_id" invisible="1" />
+                        <field name="vendor_id" options='{ "no_quick_create": true,"no_create": True, "no_create_edit": true,"no_open": True,}' />
+                        <field name="email_to" options='{ "no_quick_create": true,"no_create": True, "no_create_edit": true,"no_open": True,}' />
+                        <field name="email_subject" />
+                        <field name="purchase_order_id" invisible="1"/>
+                    </group>
+<!--                    <div class="oe_title">-->
+<!--                        <h4>Email Details</h4>-->
+<!--                    </div>-->
+                    <div class="o_view_edit o_form_editable">
+                        <div class="row">
+                            <div class="col-12" style="border: 1px solid #ddd; padding: 10px; margin-top: 10px; background-color: #f9f9f9;">
+                                <strong>Email Body:</strong>
+                                <div style="margin-top: 10px;">
+                                    <field name="email_body" widget="html"/>  <!-- Use widget="html" -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <footer>
+                        <button string="Send" type="object" name="action_send" class="btn-primary" />
+                        <button string="Cancel" type="object" name="action_cancel" class="btn-secondary" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

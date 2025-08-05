@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+
+        <record id="pending_actions_view_search" model="ir.ui.view">
+            <field name="model">pending.actions</field>
+            <field name="arch" type="xml">
+                <search string="Pending Actions">
+                    <field name="name"/>
+                    <field name="model"/>
+                    <filter string="Open" name="status_open" domain="[('status', '=', 'open')]"/>
+                    <filter string="Close" name="status_close" domain="[('status', '=', 'closed')]"/>
+                </search>
+            </field>
+        </record>
+
+
+
+
+
+        <record id="view_dynamic_view" model="ir.ui.view">
+            <field name="name">Pending Actions</field>
+            <field name="model">pending.actions</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree editable="bottom" create="0" edit="0" delete="0">
+<!--                    <header>-->
+<!--                         <button name="action_force_close"-->
+
+<!--                                string="Approve" class="btn-primary" type="object"-->
+<!--                                attrs="{'invisible': ['|', ('status', '!=', 'open')]}"-->
+<!--                                confirm="Are you sure,you want to force close this Action?"/>-->
+<!--                    </header>-->
+
+
+                    <field name="date" />
+                    <field name="name" readonly="1"/>
+                     <field name="branch" readonly="1"/>
+                    <field name="model" readonly="1"/>
+                    <field name="record" readonly="1" invisible="1"/>
+                    <field name="record_line" readonly="1" invisible="1"/>
+                    <field name="approve_users" widget="many2many_tags" readonly="1" invisible="0"/>
+                    <field name="status" readonly="1"/>
+                    <button name="open_record"  string="Open Document" type="object"
+                                class="oe_link"
+                                />
+                    <field name="department_id" readonly="1" optional="hide"/>
+                    <field name="exp_category" readonly="1" optional="hide"/>
+                    <field name="email" readonly="1" optional="hide"/>
+                    <field name="Created_doc_date" readonly="1" optional="hide"/>
+                    <field name="user" readonly="1" optional="hide"/>
+
+                    <!-- <button name="action_cancel_po" type="object" string="Cancel PO" class="btn-danger"/> -->
+
+
+                </tree>
+            </field>
+        </record>
+        <record id="view_dynamic_view_all" model="ir.ui.view">
+            <field name="name">Pending Actions</field>
+            <field name="model">pending.actions</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree editable="bottom" create="0" edit="0">
+<!--                    <header>-->
+<!--                         <button name="action_force_close"-->
+
+<!--                                string="Approve" class="btn-primary" type="object"-->
+<!--                                attrs="{'invisible': ['|', ('status', '!=', 'open')]}"-->
+<!--                                confirm="Are you sure,you want to force close this Action?"/>-->
+<!--                    </header>-->
+
+
+                    <field name="date" />
+                    <field name="name" readonly="1"/>
+                     <field name="branch" readonly="1"/>
+                    <field name="model" readonly="1"/>
+                    <field name="record" readonly="1" invisible="1"/>
+                    <field name="record_line" readonly="1" invisible="1"/>
+                    <field name="approve_users" widget="many2many_tags" readonly="1"/>
+                    <field name="status" readonly="1"/>
+                    <button name="open_record"  string="Open Document" type="object"
+                                class="oe_link"
+                                />
+                    <field name="department_id" readonly="1" optional="hide"/>
+                    <field name="exp_category" readonly="1" optional="hide"/>
+                    <field name="email" readonly="1" optional="hide"/>
+                    <field name="Created_doc_date" readonly="1" optional="hide"/>
+                    <field name="user" readonly="1" optional="hide"/>
+
+
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="view_pending_form" model="ir.ui.view">
+            <field name="name">Pending Actions</field>
+            <field name="model">pending.actions</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <form string="Pending Actions">
+                    <header>
+                        <field name="status" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="date"/>
+
+
+<!--                            </group>-->
+<!--                            <group>-->
+                                <field name="model"/>
+                                <field name="record"/>
+                                 <button name="open_record"  string="Open Document" type="object"
+                                class="oe_link"
+                                />
+                            </group>
+                        </group>
+                    </sheet>
+
+
+                </form>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="action_pending_actions">
+            <field name="name">Pending Actions</field>
+            <field name="res_model">pending.actions</field>
+            <field name="view_mode">tree</field>
+            <field name="domain">[('approve_users.id','=',uid)]</field>
+            <field name="context">{
+
+                'search_default_status_open': 1
+                }
+            </field>
+            <field name="view_id" ref="view_dynamic_view"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"></p>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_all_pending_actions">
+            <field name="name">All Pending Actions</field>
+            <field name="res_model">pending.actions</field>
+            <field name="view_mode">tree</field>
+              <field name="domain">[('name', 'not ilike', 'Recieve Products of PO'),('name', 'not ilike', 'Complete Products Received'),
+        ('name', 'not ilike', 'Partial Products Received'),('name', 'not ilike', 'Assign The User To The Purchase Order'),('name', 'not ilike', 'Purchase Order Assigned to you')]</field>
+            <field name="context">{
+
+                'search_default_status_open': 1
+                }
+            </field>
+            <field name="view_id" ref="view_dynamic_view_all"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"></p>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_pending_actions_asn">
+            <field name="name">Pending Actions ASN</field>
+            <field name="res_model">pending.actions</field>
+            <field name="view_mode">tree</field>
+            <field name="domain">['|', '|',('name', 'ilike', 'Recieve Products of PO'),('name', 'ilike', 'Complete Products Received'),
+        ('name', 'ilike', 'Partial Products Received')]</field>
+            <field name="context">{
+
+                'search_default_status_open': 1
+                }
+            </field>
+            <field name="view_id" ref="view_dynamic_view"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"></p>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="action_pending_actions_po">
+            <field name="name">Pending Actions Assign PO</field>
+            <field name="res_model">pending.actions</field>
+            <field name="view_mode">tree</field>
+            <field name="domain">[('name', 'ilike', 'Assign The User To The Purchase Order')]</field>
+            <field name="context">{
+
+                'search_default_status_open': 1
+                }
+            </field>
+            <field name="view_id" ref="view_dynamic_view"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"></p>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_pending_actions_po_assign">
+            <field name="name">Pending Actions Assigned PO</field>
+            <field name="res_model">pending.actions</field>
+            <field name="view_mode">tree</field>
+            <field name="domain">[('name', 'ilike', 'Purchase Order Assigned to you')]</field>
+            <field name="context">{
+
+                'search_default_status_open': 1
+                }
+            </field>
+            <field name="view_id" ref="view_dynamic_view"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"></p>
+            </field>
+        </record>
+
+
+
+
+
+        <menuitem id="root_pending_actions" name="Pending Actions"  web_icon="pending_actions,static/icons/icon.png"/>
+
+
+        <menuitem id="menu_product_lease" name="Pending Actions" parent="root_pending_actions"
+                  action="action_pending_actions" groups="product_purchase.group_buyers,product_purchase.group_approvers,product_purchase.group_pr_initiator,product_purchase.group_purchase_head,vendor_portal.group_vendor_portal_user"
+                  sequence="10"/>
+        <menuitem id="menu_product_lease_all" name="Pending Actions" parent="lease_management.sub_root_requests"
+                  action="action_all_pending_actions"
+                  sequence="16"/>
+        <menuitem id="menu_product_lease_asn" name="Pending Actions ASN" parent="lease_management.sub_root_requests"
+                  action="action_pending_actions_asn"
+                  sequence="17"/>
+
+        <menuitem id="menu_product_lease_PO" name="Pending Actions Assign PO" parent="lease_management.sub_root_requests"
+                  action="action_pending_actions_po"
+                  sequence="18"/>
+
+        <menuitem id="menu_product_lease_PO_assign" name="Pending Actions Assigned PO" parent="lease_management.sub_root_requests"
+                  action="action_pending_actions_po_assign"
+                  sequence="19"/>
+
+
+
+
+        <template id="custom_auth_signup_fields" inherit_id="auth_signup.fields" name="Custom Auth Signup/ResetPassword form fields">
+            <!-- <xpath expr="//div[@class='form-group field-login']" position="replace"/> -->
+            <xpath expr="//div[@class='form-group field-name']" position="replace"/>
+        </template>
+
+
+    </data>
+</odoo>

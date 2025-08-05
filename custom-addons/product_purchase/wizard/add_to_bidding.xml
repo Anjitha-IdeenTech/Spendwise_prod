@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_adding_to_bidding_form" model="ir.ui.view">
+            <field name="name">add.to.bidding.from</field>
+            <field name="model">add.to.bidding.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="bidding"
+                                       style="width:60%%">Product
+                                </field>
+                            </group>
+                        </group>
+                        <footer>
+                            <button name="add_to_bidding" id="btn_add_bidding"
+                                    string="Add" class="btn-primary" type="object"
+                            />
+<!--                            <button name="action_create_bidding" id="btn_create_bidding"-->
+<!--                                    string="Create Bidding" class="btn-primary" type="object"-->
+<!--                            />-->
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_add_to_bidding">
+            <field name="name">Add to Bidding</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">add.to.bidding.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_adding_to_bidding_form"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

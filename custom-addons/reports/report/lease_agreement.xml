@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<odoo>
+    <template id="lease_agreement_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-foreach="docs" t-as="o">
+                    <style>
+                        .boxed {
+                        border: 1px solid #000;
+                        padding: 20px;
+                        }
+                        .underlined-heading {
+                        text-align: center;
+                        text-decoration: underline;
+                        }
+                        .bold-text {
+                        font-weight: bold;
+                        }
+                        .justify {
+                        text-align: justify;
+                        text-justify: inter-word;
+                        padding: 20px;
+                        .full-width-table {
+                        width: 100%;
+                        }
+                        }
+
+                    </style>
+                    <div class="boxed">
+                        <h3 class="underlined-heading">
+                            LEASE/RENT AGREEMENT
+                        </h3>
+
+                    </div>
+                    <br/>
+                    <div>
+
+
+                        <p>This Agreement made and entered on <span t-field="o.create_date"></span>,by and between
+                            <span t-field="o.vendor_id.name"></span>("Landlord"), and
+                            <span t-field="o.company_id.name"></span>
+                            ("Tenant").
+                        </p>
+
+                        <br/>
+
+
+                        <p class="bold-text">
+                            1. PREMISES
+                        </p>
+                        <p class="justify">
+                            1.1 The Landlord rents to Tenant and Tenant rents from Landlord, the premises located at
+                            <span t-field="o.location"></span>. The premises will be used for residential
+                            and/or
+                            commercial purposes as specifically outlined in an annex attached to this agreement.
+                        </p>
+
+                        <p class="bold-text">
+                            2. TERMS
+                        </p>
+                        <p class="justify">
+                            2.1 The initial term of this Lease begins on <span t-field="o.start_date"></span> and ends on <span t-field="o.end_date"></span>.
+                            <br/>
+                            2.2 Thereafter, the Lease will continue on a month-to-month basis until either Landlord or
+                            Tenant
+                            terminate this Lease with written notice.
+                        </p>
+
+                        <p class="bold-text">
+                            3. RENT
+                        </p>
+                        <p class="justify">
+                            3.1 Tenant agrees to pay Landlord amount of <span t-field="o.total"/> per month, due on the 1st day of each calendar
+                            month.
+                            <br/>
+                            3.2 The rent payment shall be delivered by Tenant to Landlord or Landlord’s authorized agent
+                            by mail
+                            or in person.
+                        </p>
+
+                        <p class="bold-text">
+                            4. SECURITY DEPOSIT
+                        </p>
+                        <p class="justify">
+
+                            4.1 Upon execution of this Lease, Tenant will deposit with Landlord the sum of  <span t-field="o.security"/> as
+                            security for
+                            any damage caused to the Premises during the term hereof.
+                            <br/>
+                            4.2 The Security Deposit will be returned to the Tenant, without interest, and less any set
+                            off
+                            for claims
+                            of Landlord under this Lease after the termination of this Agreement.
+                        </p>
+
+                        <p class="bold-text">
+                            5. REPAIR AND MAINTENANCE
+                        </p>
+                        <p class="justify">
+
+                            5.1 Tenant will keep the Premises in clean, sanitary, and good condition.<br/>
+                            5.2 If Tenant causes damage to the Premises, it will be the responsibility of the Tenant to
+                            cover any
+                            expenses related to the repair.
+                        </p>
+                        <p class="bold-text">
+                            6. ALTERATIONS AND IMPROVEMENTS
+                        </p>
+                        <p class="justify">
+
+
+                            6.1 Tenant shall not make or allow any alterations, improvements, or additions to the
+                            Premises
+                            without
+                            the prior written consent of Landlord.
+                        </p>
+                        <p class="bold-text">
+                            7. INSURANCE
+                        </p>
+                        <p class="justify">
+
+
+                            7.1 Tenant will maintain adequate insurance to cover loss or damage to all personal property
+                            located
+                            on the Premises. The Landlord is not responsible for any loss or damage to Tenant's
+                            property.
+
+                        </p>
+                        <p class="bold-text">
+                            8. USE OF PREMISES
+                        </p>
+                        <p class="justify">
+
+                            8.1 The Premises will be used for residential and/or commercial purposes as agreed upon.
+                            <br/>
+                            8.2 Tenant will comply with all laws and rules affecting the Premises.
+                        </p>
+                        <p class="bold-text">
+                            9. DEFAULT
+                        </p>
+                        <p class="justify">
+
+                            9.1 If Tenant fails to comply with any of the material provisions of this Lease, or of any
+                            present rules
+                            and regulations governing the Premises, Landlord may terminate this Lease upon providing
+                            proper
+                            notice to Tenant.
+                        </p>
+                        <p class="bold-text">
+                            10. TERMINATION
+                        </p>
+                        <p class="justify">
+
+
+                            10.1 Upon termination of this Lease, Tenant will return the Premises and all property of
+                            Landlord in a
+                            clean and good condition.
+
+                        </p>
+                        <p class="bold-text">
+                            11. INDEMNIFICATION
+                        </p>
+                        <p class="justify">
+
+
+                            11.1 Landlord will not be liable for any damage or injury to Tenant, or any other person, or
+                            to
+                            any
+                            property, occurring on the Premises, or any part thereof, or in common areas thereof.
+                        </p>
+                        <p class="bold-text">
+                            12. DISPUTE RESOLUTION
+                        </p>
+                        <p class="justify">
+
+
+                            12.1 In the event of a dispute, Landlord and Tenant agree first to try to resolve it through
+                            informal
+                            negotiation. If the dispute remains unresolved after 30 days of negotiation, it will be
+                            resolved
+                            by
+                            neutral arbitration and not by court action.
+
+                        </p>
+                        <p class="bold-text">
+                            13. GOVERNING LAW
+                        </p>
+                        <p class="justify">
+
+                            13.1 This Lease will be governed by and construed in accordance with the laws of the state
+                            where
+                            the
+                            Premises are located.
+
+                        </p>
+                        <p class="bold-text">
+                            14. ENTIRE AGREEMENT
+                        </p>
+                        <p class="justify">
+
+                            14.1 This Lease contains the complete agreement between Landlord and Tenant and cannot be
+                            changed except by written agreement signed by both parties.
+                        </p>
+
+
+                    </div>
+
+                    <br/>
+                    <br/>
+
+                    <div style="width: 100%; display: flex; justify-content: space-between;">
+                        <span style="margin: 0; order: 1;">Tenant Signature</span>
+                        <span class="pull-right" style="margin: 0; order: 2;">Landlord Signature</span>
+                    </div>
+
+
+
+
+
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

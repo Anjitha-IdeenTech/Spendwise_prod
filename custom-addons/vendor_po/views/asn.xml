@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="view_advanced_shipment_notice_tree" model="ir.ui.view">
+            <field name="name">advanced.shipment.tree</field>
+            <field name="model">advanced.shipment.notice</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree>
+
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="responsible_id"/>
+                    <field name="po_no"/>
+                    <field name="transfer"/>
+                    <field name="purchase_representative"/>
+                    <field name="user_id" invisible="1"/>
+                    <field name="state"/>
+
+
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_asn_form" model="ir.ui.view">
+            <field name="name">advanced.shipment.form</field>
+            <field name="model">advanced.shipment.notice</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <form string="ASN">
+                    <header>
+
+                        <button id="button_submit" name="action_submit" class="btn-primary" string="Submit"
+                                type="object" attrs='{"invisible": [("state", "=", "submit")]}'/>
+                                
+                        <button name="action_revert" id="btn_approved"
+                                string="Revert back" class="btn-primary" type="object"
+                                attrs='{"invisible": [("state", "!=", "submit")]}'/>
+
+                        <field name="state" widget="statusbar" clickable="0"/>
+
+
+                    </header>
+                    <sheet>
+
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+
+                        <group>
+                            <group col="2">
+                                <field name="partner_id" force_save="1" store="True" readonly="1"/>
+                                <field name="responsible_id" store="True" readonly="1"/>
+                                <field name="po_no" force_save="1" store="True" options="{'no_edit': True, 'no_create': True ,'no_quick_create':True}"/>
+                                <field name="date_approve" force_save="1" store="True" readonly="1"/>
+
+                                <field name="purchase_representative" force_save="1" store="True" readonly="1"/>
+                                 <field name="branch" force_save="1" store="True" readonly="1"/>
+                                <field name="asn_date" force_save="1" store="True" readonly="0"/>
+                                <field name="invoice_no" force_save="1" store="True" readonly="0"/>
+                                <field name="lr_date" force_save="1" store="True" readonly="0"/>
+                                <field name="lr" force_save="1" store="True" readonly="0"/>
+                                <field name="carrier" force_save="1" store="True" readonly="0"
+                                       placeholder='Vehicle/Courier No'/>
+                                <field name="eway" force_save="1" store="True" readonly="0"/>
+                                <field name="utr" force_save="1" store="True" readonly="0"/>
+
+                                <field name="invoice_upload" widget="binary" filename="file_name" />
+                                <field name="attachment_upload" widget="many2many_binary" string="Additional Invoice Uploads" type="object"/>
+                                <field name="total_invoice_amount" force_save="1" store="True" readonly="0"/>
+
+                                <field name="workorder_upload" widget="binary" filename="file_name"/>
+                                <field name="user_id" invisible="1"/>
+
+                            </group>
+                            <group col="2">
+
+
+                            </group>
+                        </group>
+
+
+                        <notebook colspan="4">
+                            <page name="products" string="Products">
+                                <field name="asn_line_ids" force_save="1" store="True">
+                                    <tree editable="bottom">
+                                        <field name="product_id" force_save="1" store="True"/>
+                                        <field name="quantity" force_save="1" store="True"/>
+                                        <field name="delivered" force_save="1" store="True"/>
+                                        <field name="provide_qty" force_save="1" store="True"/>
+                                        <field name="unit_price" force_save="1" store="True"/>
+                                        <field name="tax" force_save="1" store="True"/>
+                                        <field name="sub_total" force_save="1" store="True"/>
+                                        <field name="remark" force_save="1" store="True"/>
+
+                                        <field name="asn_lines" invisible='1'/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field name="product_id"/>
+                                            <field name="quantity"/>
+                                            <field name="provide_qty"/>
+                                            <field name="unit_price"/>
+                                            <field name="tax"/>
+                                            <field name="sub_total"/>
+                                            <field name="remark"/>
+
+                                            <field name="asn_lines" invisible='1'/>
+
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                        </notebook>
+                        <div class="oe_left oe_bottom">
+                            <strong style="font-size: 18px;">Untaxed Total :</strong>
+                            <strong style="font-size: 18px;">
+                                <field name="un_taxed_amount" force_save="1" store="True"/>
+                            </strong>
+                            <br/>
+                            <strong style="font-size: 18px;">Total :</strong>
+                            <strong style="font-size: 18px;">
+                                <field name="total_amount" force_save="1" store="True"/>
+                            </strong>
+                        </div>
+
+
+                        <div class="oe_right oe_bottom">
+                            <strong style="font-size: 18px;">Amount Total :</strong>
+                            <strong style="font-size: 18px;">
+                                <field name="total_amount_supplied" force_save="1" store="True"/>
+                            </strong>
+                            <br/>
+                            <strong style="font-size: 18px;">Taxed Amount Total :</strong>
+                            <strong style="font-size: 18px;">
+                                <field name="total_amount_tax_supplied" force_save="1" store="True"/>
+                            </strong>
+                        </div>
+
+
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="action_view_asn">
+            <field name="name">ASN</field>
+            <field name="res_model">advanced.shipment.notice</field>
+            <!--            <field name="view_type">form</field>-->
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('user_id','=',uid)]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"></p>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_view_all_asn">
+            <field name="name">ASN</field>
+            <field name="res_model">advanced.shipment.notice</field>
+            <!--            <field name="view_type">form</field>-->
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"></p>
+            </field>
+        </record>
+
+
+        <!--        <menuitem id="root_asn" name="ASN" web_icon="vendor_po,static/icons/icons_new.png"-->
+        <!--                  groups="vendor_portal.group_vendor_portal_user,product_purchase.group_purchase_admin"-->
+        <!--                  sequence="40"/>-->
+        <!--        <menuitem id="menu_sub_asn" name="ASN"-->
+        <!--                    parent="root_asn"-->
+        <!--                  action="action_view_asn" sequence="40"/>-->
+        <!--        -->
+
+        <menuitem id="menu_asn" name="ASN" parent="root_vendor_po"
+                  action="action_view_asn"
+                  sequence="40"/>
+
+        <menuitem id="menu_asn_contracts" name="ASN" parent="product_purchase.root_contracts_agreements"
+                  action="action_view_all_asn" groups="product_purchase.group_buyers,lease_management.group_master_admin"
+                  sequence="40"/>
+
+
+        <!--        <record id="view_company_form_inherit" model="ir.ui.view">-->
+        <!--            <field name="name">res.company.form.inherit</field>-->
+        <!--            <field name="model">res.company</field>-->
+        <!--            <field name="inherit_id" ref="base.view_company_form"/>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <xpath expr="//field[@name='partner_id']" position="before">-->
+        <!--                    <field name="branch_code"/>-->
+        <!--                </xpath>-->
+        <!--            </field>-->
+        <!--        </record>-->
+
+        <!--        <record id="view_company_tree_inherit" model="ir.ui.view">-->
+        <!--            <field name="name">res.company.tree.inherit</field>-->
+        <!--            <field name="model">res.company</field>-->
+        <!--            <field name="inherit_id" ref="base.view_company_tree"/>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <xpath expr="//field[@name='partner_id']" position="before">-->
+        <!--                    <field name="branch_code"/>-->
+        <!--                    <field name="parent_id"/>-->
+        <!--                </xpath>-->
+        <!--            </field>-->
+        <!--        </record>-->
+
+
+    </data>
+</odoo>

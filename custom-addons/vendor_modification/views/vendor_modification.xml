@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="inherit_vendor_category" model="ir.ui.view">
+            <field name="name">res.partner.categ.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='vat']" position="after">
+                    <field name="product_category" widget="many2many_tags"/>
+                    <field name="category"/>
+                    <field name="login"/>
+                </xpath>
+
+                <xpath expr="//form//sheet" position="before">
+                    <header>
+                        <button name="action_generate_user" string="Create User" type="object"/>
+                    </header>
+                </xpath>
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="vendor_code" placeholder="Vendor Code" class="o_vendor_code"
+                           attrs="{'invisible': [('is_company', '=', False)]}"/>
+                </xpath>
+
+
+            </field>
+        </record>
+    </data>
+</odoo>

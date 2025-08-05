@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="view_bidding_details_tree">
+            <field name="name">Bidding Details</field>
+            <field name="model">bidding</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree string="Example Tree">
+                    <field name="name"/>
+                    <!--                    <field name="product"/>-->
+                    <!--                    <field name="quantity"/>-->
+                    <!--                    <field name="unit_price"/>-->
+                    <field name="deadline"/>
+                    <field name="start_date"/>
+                    <field name="time"/>
+                    <field name="status"/>
+                    <field name="vendors" widget="many2many_tags"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_bidding_form" model="ir.ui.view">
+            <field name="name">bidding.from</field>
+            <field name="model">bidding</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+<!--                        <button name="start_bidding" id="btn_start_bidding"-->
+<!--                                string="Start Bidding" class="btn-primary" type="object"-->
+<!--                                attrs="{'invisible': [('status', '!=', 'draft')]}"-->
+<!--                                confirm="Start Bidding?"/>-->
+<!--                        <button name="end_bidding" id="btn_end_bidding"-->
+<!--                                string="End Bidding" class="btn-primary" type="object"-->
+<!--                                attrs="{'invisible': [('status', '!=', 'live')]}"-->
+<!--                                confirm="End Bidding?"/>-->
+                        <button name="cancel_bidding" id="btn_cancel_bidding"
+                                string="Cancel Bidding" class="btn-primary" type="object"
+                                attrs="{'invisible': ['|',('status', '!=', 'live'),('bid_cancel_check', '=', True)]}"
+                                confirm="Cancel Bidding?"/>
+                        <button name="bid_again" id="btn_cancel_bidding"
+                                string="Bid Again" class="btn-primary" type="object"
+                                attrs="{'invisible': [('status', '!=', 'complete')]}"
+                                confirm="Are you sure you want to re-bid?"/>
+                        <field name="status" widget="statusbar" nolabel="1" readonly="False"/>
+                        <field name="bid_cancel_check" invisible="1"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+
+                            <button name="action_open_ctr" type="object"
+                                    class="oe_stat_button" icon="fa-calendar"
+                                    >
+                                <span class="o_stat_text">Contract Request</span>
+                            </button>
+
+                        </div>
+                        <h1>
+                            <field name="name">Name</field>
+                        </h1>
+                        <group>
+                            <group>
+                                <field name="product_request_id"
+                                       attrs="{'readonly': [('status', '!=', 'draft')]}"
+                                >Product
+                                </field>
+                                <field name="start_date"
+                                       attrs="{'readonly': [('status', '!=', 'draft')]}"
+                                >Date
+                                </field>
+                                <!--                                <field name="time"-->
+                                <!--                                       attrs="{'readonly': [('status', '!=', 'draft')]}"-->
+                                <!--                                       widget='float_time'>Time-->
+                                <!--                                </field>-->
+                                <field name="deadline"
+                                       attrs="{'readonly': [('status', '!=', 'draft')]}"
+                                >DeadLine
+                                </field>
+
+
+                                <!--                                <field name="product"-->
+                                <!--                                       attrs="{'readonly': [('status', '!=', 'draft')]}"-->
+                                <!--                                >Product-->
+                                <!--                                </field>-->
+                                <!--                                <field name="quantity"-->
+                                <!--                                       attrs="{'readonly': [('status', '!=', 'draft')]}"-->
+                                <!--                                >Quantity-->
+                                <!--                                </field>-->
+                                <!--                                <field name="unit_price"-->
+                                <!--                                >Quantity-->
+                                <!--                                </field>-->
+<!--                                <field name="top_vendor" readonly="1"-->
+<!--                                       attrs="{'readonly': [('status', '!=', 'draft')]}"-->
+<!--                                >Quantity-->
+<!--                                </field>-->
+
+                                <!--                                <field name="top_vendor_price" readonly="1"-->
+                                <!--                                       style="width:25%%">Quantity-->
+                                <!--                                </field>-->
+                            </group>
+                            <group>
+
+                                <field name="vendors"
+                                       readonly="1"
+                                       widget="many2many_tags">Vendor
+                                </field>
+                                <field name="extension"/>
+                                <field name="extension_period"/>
+                                <field name="realtime_update" widget="bidding_realtime"
+                                       options="{'no_open': True, 'no_create': True}" force_save="1"/>
+                                <h3>
+                                  <field name="remaining_time" widget="bidding_timer"/>
+                                </h3>
+                            </group>
+                        </group>
+                        <h3 attrs="{'invisible': [('status', '==', 'draft')]}">
+                            Top Vendor
+                        </h3>
+                        <h3>
+                            <field name="top_vendor" style="width:25%%"
+                                   attrs="{'invisible': [('status', '==', 'draft')]}"/>
+                        </h3>
+                        <notebook>
+                            <page string="Bidding Line" name="bidding_line">
+                                <field name="bidding_line_ids" readonly="1">
+                                    <tree editable="bottom" create="0" delete="0">
+                                        <field name="vendor" width="110px" />
+                                        <field name="price" width="110px" invisible="1"/>
+                                         <field name="rank" width="110px" />
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field name="vendor"/>
+                                            <field name="rank"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+
+                            <page string="Price History" name="price_history">
+                                    <field name="price_history_ids" readonly="1">
+                                        <tree string="Price History">
+
+                                            <field name="update_time" string="Update Time"/>
+                                            <field name="vendor_id" string="Vendor"/>
+                                            <field name="total_price" string="Total Price"/>
+                                        </tree>
+                                    </field>
+                            </page>
+                        </notebook>
+                        <notebook>
+                            <page string="Bidding Products" name="bid_products">
+                                <field name="bidding_products" readonly="1">
+                                    <tree editable="bottom" create="0" delete="0">
+                                        <field name="product_id" width="110px"/>
+                                        <field name="quantity" width="110px"/>
+                                        <field name="unit_price" width="110px"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field name="product_id"/>
+                                            <field name="quantity"/>
+                                            <field name="denomination"/>
+                                            <field name="unit_price"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                                   <page string="Other Info">
+                                <field name="terms" placeholder="Terms And Conditions"
+                                       required="0" attrs="{'readonly': [('status', 'not in', ['draft', 'bid'])]}"/>
+
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="action_bidding" model="ir.actions.act_window">
+            <field name="name">BMS</field>
+            <field name="res_model">bidding</field>
+            <field name="view_mode">tree,form</field>
+
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first Bidding!
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_create_bidding"
+                  name="Bidding Management System"
+                  web_icon="bidding,static/icons/bidding_2.jpg"
+                  groups="product_purchase.group_buyers"
+
+        />
+
+        <!--          groups="bidding.group_bid_admin"-->
+
+        <menuitem id="menu_bidding"
+                  name="Bidding"
+                  parent="menu_create_bidding"
+                  action="action_bidding"
+        />
+
+    </data>
+</odoo>

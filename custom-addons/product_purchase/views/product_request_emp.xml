@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="view_product_request_details_tree">
+            <field name="name">Product Request Details</field>
+            <field name="model">product.request</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree string="Example Tree">
+                    <field name="name"/>
+                    <field name="requested_date"/>
+                    <field name="approved_users"/>
+                    <field name="status"
+                           decoration-success="status == 'accepted'"
+                           decoration-info="status == 'draft'"
+                           decoration-danger="status == 'cancel'"
+                           decoration-warning="status == 'requested'"
+                           widget="badge"/>
+                    <field name="approve_users" widget="many2many_tags" invisible="1"/>
+                    <field name="approved_users" widget="many2many_tags" invisible="1"/>
+                    <field name="next_approve_user_id" widget="many2many_tags" invisible="1"/>
+                    <!--                    <field name="current_user_id" />-->
+                    <field name="user_approve_check" invisible="1"/>
+                    <field name="expense_type"/>
+                    <field name="department_id"/>
+                    <!--                    <field name="total_price"/>-->
+                </tree>
+            </field>
+        </record>
+        <record id="view_product_purchase_form" model="ir.ui.view">
+            <field name="name">product.request.from</field>
+            <field name="model">product.request</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_request" id="btn_initiated"
+
+                                string="Initiate" class="btn-primary" type="object"
+                                attrs="{'invisible': [('status', '!=', 'draft')]}"
+                                confirm="Request record?"/>
+                        <button name="action_approval" id="btn_approved"
+
+                                string="Approve" class="btn-primary" type="object"
+                                attrs="{'invisible': ['|', '|', ('status', '!=', 'requested'), ('approve_check', '=', True), ('user_approve_check', '=', False)]}"
+                                confirm="Accept request?"/>
+                        <button name="action_decline" id="btn_decline"
+
+                                string="Reject" class="btn-danger" type="object"
+                                attrs="{'invisible': ['|', '|', ('status', '!=', 'requested'), ('approve_check', '=', True),  ('user_approve_check', '=', False)]}"
+                                confirm="Reject request?"/>
+
+                        <button name="action_deligate" id="btn_deligate"
+
+                                string="Deligate" class="btn-primary" type="object"
+                                attrs="{'invisible': ['|', ('status', '!=', 'requested'), ('approve_check', '=', True)]}"
+                        />
+                        <button name="action_log_message" id="btn_log_msg"
+                                string="RFI" class="btn-primary" type="object"
+                                attrs="{'invisible': [('status', 'in',( 'draft','accepted'))]}"
+
+                        />
+
+                        <button name="action_modify" id="btn_modify"
+                                string="Modify" type="object"
+                                attrs="{'invisible': ['|',('appr', '!=', True),('status', 'in',( 'draft','accepted'))]}"
+                        />
+
+                        <field name="status" widget="statusbar" nolabel="1" readonly="False"
+                               statusbar_visible="draft,lease,accepted"/>
+                    </header>
+                    <sheet>
+
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_open_lease" type="object"
+                                    class="oe_stat_button" icon="fa-calendar"
+                                    attrs="{'invisible': [('status','!=','lease')]}">
+                                <span class="o_stat_text">Lease Agreement</span>
+                            </button>
+
+                            <button name="action_view_contracts" type="object" class="oe_stat_button" icon="fa-book"
+                                    attrs="{'invisible': [('status', 'in', ('draft', 'lease', 'requested', 'decline'))]}">
+                                <span class="o_stat_text">Contract Requests</span>
+                            </button>
+
+
+                            <button name="action_view_po" type="object"
+                                    class="oe_stat_button" icon="fa-files-o"
+                                    attrs="{'invisible': [('status','!=','accepted')]}">
+                                <span class="o_stat_text">PO</span>
+                            </button>
+                        </div>
+
+                        <h1>
+                            <field name="name">Name</field>
+                        </h1>
+                        <group>
+                            <group>
+                                <field name="approve_check" readonly="1"
+                                       invisible="1"
+                                >Approve Check
+                                </field>
+                                <field name="requested_date" readonly="1"
+                                >Requested
+                                    Date
+                                </field>
+<!--                                <field name="group_id" attrs="{'readonly': [('appr', '=', True)]}"/>-->
+                                <field name="exp_category_domain" invisible="1"/>
+                                <field name="bill_to"
+                                       widget="res_partner_many2one"
+                                       context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}"
+                                       options='{"always_reload": True, "no_quick_create": True, "no_create_edit": True}'
+                                       required="1"
+                                       attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+
+                                <field name="ship_to" widget="res_partner_many2one"
+                                       context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}"
+                                       options='{"always_reload": True, "no_quick_create": True, "no_create_edit": True}'
+                                       required="1"
+                                       attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                <field name="department_id" attrs="{'readonly': [('status', '!=', 'draft')]}"
+                                       options='{"no_quick_create": True}'/>
+                                <field name="expense_type" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                <field name= "exp_category" attrs="{'readonly': [('status', '!=', 'draft')]}"
+                                options='{"always_reload": True, "no_quick_create": True, "no_create_edit": True}'
+                                domain="exp_category_domain"/>
+
+
+
+
+                                <field name="company_id" invisible="1"/>
+                                <field name="budget_details" />
+
+
+                            </group>
+                            <group>
+                                <field name="requested_by" readonly="1"
+                                >Requested
+                                    By
+                                </field>
+                                <field name="approve_users" widget="many2many_tags" invisible="0"/>
+                                <field name="approved_users" widget="many2many_tags" invisible="1"/>
+                                <field name="next_approve_user_id" widget="many2many_tags" invisible="1"/>
+                                <!--                                <field name="current_user_id" />-->
+                                <field name="user_approve_check" invisible="1"/>
+                                <field name="deligated_user" invisible="1"/>
+                                <field name="appr" invisible="1"/>
+                                <field name="contract_selection" class="o_light_label" widget="radio"
+                                       options="{'horizontal': true}"/>
+                                 <field name="total_price" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook attrs="{'readonly': [('status', '!=', 'draft')]}">
+                            <page string="Products" name="product_request_line_id">
+                                <field name="product_request_line_ids" attrs="{'readonly': [('appr', '=', True)]}">
+                                    <tree editable="bottom" delete="1">
+                                        <field name="product"
+                                               options='{ "no_quick_create": true, "no_create_edit": true}'
+                                               attrs="{'readonly': [('status', '!=', 'draft')]}"
+                                               force_save="1" store="true" width="140px"/>
+
+                                        <field name="description" attrs="{'readonly': [('status', '!=', 'draft')]}"
+                                               width="180px"/>
+                                        <field name="vendors"
+                                               options='{ "no_quick_create": True, "no_create_edit": True}'
+                                               widget="many2many_tags" domain="vendors_domain"
+                                               attrs="{'readonly': [('status', '!=', 'draft')]}" width="160px"
+                                        />
+                                        <field name="uom" width="60px"/>
+
+                                        <field name="quantity" attrs="{'readonly': [('status', '!=', 'draft')]}"
+                                               width="120px"/>
+                                        <field name="expected_date" attrs="{'readonly': [('status', '!=', 'draft')]}"
+                                               width="100px"/>
+
+
+                                        <field name="status" invisible="1"/>
+                                        <field name="unit_price" attrs="{'readonly': [('status', '!=', 'draft')]}"
+                                               width="130px"/>
+
+                                        <field name="payment_terms"
+                                               attrs="{'required': [('status', '=', 'requested')]}" width="180px"/>
+
+                                        <field name="from_date" attrs="{'required': [('status', '=', 'requested')]}"
+                                               width="200px"/>
+                                        <field name="to_date" attrs="{'required': [('status', '=', 'requested')]}"
+                                               width="200px"/>
+                                        <field name="contract_status"
+                                               decoration-success="contract_status == 'in_contract'"
+                                               decoration-info="contract_status == 'new'"
+                                               widget="badge"
+                                               readonly="1" width="120px" force_save="1" store="1"/>
+                                        <field name="is_lease" invisible="1"/>
+                                        <field name="vendors_domain" invisible="1"/>
+
+
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field name="product" attrs="{'readonly': [('status', '!=', 'draft')]}"
+                                                   options="{'no_quick_create': True}"/>
+                                            <field name="quantity" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                            <field name="expected_date"
+                                                   attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                            <!--                                            <field name="requirement_status"-->
+                                            <!--                                                   attrs="{'readonly': [('status', '!=', 'draft')]}"/>-->
+                                            <field name="description"
+                                                   attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                            <field name="vendors"
+                                                   widget="many2many_tags"
+                                                   attrs="{'readonly': [('status', '!=', 'draft')]}"
+                                                   options="{'no_quick_create': True}"/>
+
+
+                                            <field name="status" invisible="1"/>
+                                            <field name="unit_price"
+                                                   attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                                            <!--                                            <field name="from_date"-->
+                                            <!--                                                   attrs="{'readonly': [('status', '!=', 'requested')]}"/>-->
+                                            <!--                                            <field name="to_date"-->
+                                            <!--                                                   attrs="{'readonly': [('status', '!=', 'requested')]}"/>-->
+
+                                            <!--                                            <field name="tender_deadline"-->
+                                            <!--                                                   attrs="{'readonly': [('status', '!=', 'requested')]}"-->
+                                            <!--                                                   groups="product_purchase.group_initial_approval"-->
+                                            <!--                                            />-->
+                                            <field name="from_date"
+                                                   attrs="{'readonly': [('status', '!=', 'requested')]}"/>
+                                            <field name="to_date"
+                                                   attrs="{'readonly': [('status', '!=', 'requested')]}"/>
+                                            <field name="contract_status" readonly="1"
+
+                                                   decoration-success="contract_status == 'in_contract'"
+                                                   decoration-info="contract_status == 'new'"
+                                                   widget="badge" force_save="1" store="1"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                            <page string="Approve Users" name="pr_approve_line">
+                                <field name="pr_approve_line" readonly="1">
+                                    <tree editable="bottom">
+                                        <field name="user_id"/>
+                                        <field name="company_id"/>
+<!--                                        <field name="location"/>-->
+                                        <field name="department_id"/>
+                                        <field name="designation"/>
+                                        <field name="approve_order"/>
+                                        <field name="status"/>
+                                    </tree>
+                                    <form>
+                                        <field name="user_id"/>
+                                        <field name="company_id"/>
+<!--                                        <field name="location"/>-->
+                                        <field name="department_id"/>
+                                        <field name="designation"/>
+                                        <field name="approve_order"/>
+                                        <field name="status"/>
+                                    </form>
+                                </field>
+                            </page>
+
+
+                            <page string="RFI" name="page_rfi">
+                                <field name="pr_rfi_ids" attrs="{'readonly': [('appr', '=', True)]}">
+                                    <tree editable="bottom">
+                                        <field name="user_id"/>
+                                        <field name="to_user"/>
+                                        <field name="message"/>
+                                        <field name="replay"/>
+                                        <field name="status" invisible="1"/>
+                                        <field name="replayed" invisible="1"/>
+                                        <button name="send_replay" string="Replay" type="object"
+                                                class="oe_link"
+                                        />
+
+                                    </tree>
+                                    <!--                                    <form>-->
+                                    <!--                                        <field name="user_id"/>-->
+                                    <!--                                        <field name="to_user"/>-->
+                                    <!--                                        <field name="message"/>-->
+                                    <!--                                        <field name="replay"/>-->
+                                    <!--                                        <field name="status"/>-->
+                                    <!--                                    </form>-->
+                                </field>
+                            </page>
+
+
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        <record id="action_product_request" model="ir.actions.act_window">
+            <field name="name">Purchase Request</field>
+            <field name="res_model">product.request</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('requested_by','=',uid)]</field>
+            <field name="context">{'search_default_selected_companies': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first Request!
+                </p>
+            </field>
+        </record>
+
+
+
+
+        <!--        <record id="restrict_creation_edition_in_pr" model="ir.ui.view">-->
+        <!--            <field name="name">product.request.tree.user</field>-->
+        <!--            <field name="model">product.request</field>-->
+        <!--            <field name="inherit_id" ref="product_purchase.action_product_request"/>-->
+        <!--            <field name="groups_id" eval="[(4, ref('product_purchase.group_user'))]"/>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <xpath expr="/form/sheet/notebook/page/field[@name='product_request_line_ids']/tree/field[@name='product_id']" position="attributes">-->
+        <!--                    <attribute name="options">{'no_quick_create':True,'no_create_edit':True,'no_open': True,}</attribute>-->
+        <!--                </xpath>-->
+        <!--            </field>-->
+        <!--        </record>-->
+
+
+    </data>
+</odoo>

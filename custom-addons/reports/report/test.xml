@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<odoo>
+    <template id="purchase_order_template">
+        <t t-call="web.html_container">
+            <!--            <t t-call="web.external_layout">-->
+
+            <table align="center" style="width:100%;" cellpadding="10">
+
+                <div class="header">
+                    <t t-foreach="docs" t-as="doc">
+
+                        <tr>
+                            <td style="border-bottom:1px sold black;">
+                                <!--                        <div class="col-xs-6">-->
+
+                                <!--                </div>-->
+
+                            </td>
+                            <td style="border-bottom:1px sold black;">
+                                <div name="company_logo" class="float-right mb4">
+                                    <img t-if="res_company.logo"
+                                         t-att-src="'data:image/jpg;base64,%s' % to_text(res_company.logo)"
+                                         style="max-height: 80px; border-bottom:1px sold white;"/>
+                                </div>
+                            </td>
+
+
+                        </tr>
+                    </t>
+                </div>
+
+
+            </table>
+
+            <template id="purchase_order_template">
+
+
+            <t t-foreach="docs" t-as="o">
+
+
+                <table style="width:100%;border:none;">
+                    <tr style="border:none;">
+                        <td style="border:none;">
+                            <h5 style="text-align: left">
+                                Purchase Order
+                            </h5>
+                        </td>
+<!--                        <td style="border:none;">-->
+<!--                            <h5 style="text-align: Right">-->
+<!--                                <span t-field="o.name"/>-->
+<!--                            </h5>-->
+<!--                        </td>-->
+                    </tr>
+
+                </table>
+
+                <table style="width:100%; border: 1px solid black; border-collapse: collapse;">
+                    <tr>
+                        <td colspan="2" rowspan="5">
+
+                            <span>
+                                <strong>Partner Name and Address</strong>
+                            </span>
+                            <br/>
+                            <strong>
+                                <span t-field="o.partner_id.name"/>
+                            </strong>
+                            <br/>
+                            (Partner Code:<span t-field="o.partner_id.ref"/>)
+                            <br/>
+                            <!--                                Pan: <span t-field="o.partner_id.pan"/> <br/>-->
+                            GST No:
+                            <span t-field="o.partner_id.vat"/>
+                            <br/>
+                            <span t-field="o.partner_id.street"/>
+                            <br/>
+                            <span t-field="o.partner_id.street2"/>
+                            <br/>
+                            <span t-field="o.partner_id.city"/>,
+                            <span t-field="o.partner_id.state_id.name"/>,
+                            Pin:
+                            <span t-field="o.partner_id.zip"/>
+                            <br/>
+                            Phone:
+                            <span t-field="o.partner_id.phone"/>
+                            <br/>
+                            Email :
+                            <span t-field="o.partner_id.email"/>
+                        </td>
+
+
+                        <td colspan="2" rowspan="5" style="border-bottom:none;">
+                            <strong> <span t-field="res_company.name"/> </strong>
+                            <br/>
+                            <span t-field="res_company.street"/>
+                            <br/>
+                            <span t-field="res_company.street2"/>
+                            <br/>
+                            <span t-field="res_company.street2"/>
+                            <br/>
+                            <span t-field="res_company.city"/>,
+                            <span t-field="res_company.state_id.name"/> -  <span t-field="res_company.zip"/><br/>
+                            <span t-field="res_company.country_id.name"/><br/>
+                            <span t-field="res_company.phone"/><br/>
+
+                        </td>
+                    </tr>
+
+
+                </table>
+
+                <table style="width:100%; border: 1px solid black; border-collapse: collapse;">
+
+                    <tr>
+                        <td style="padding:0px; margin:0px;">
+                            <table>
+                                <tr>
+                                    <td style="padding-right:50px; padding:0px; margin:0px;">PO No :</td>
+                                    <td style="padding:0px; margin:0px;">
+                                        <span t-field="o.name"/>
+                                    </td>
+
+                                </tr>
+
+                            </table>
+                        </td>
+
+                        <td style="padding:0px; margin:0px;">
+                            <table>
+                                <tr>
+                                    <td style="padding-right:50px; padding:0px; margin:0px;">PO Date :</td>
+                                    <td style="padding:0px; margin:0px;">
+                                        <strong>
+                                            <t t-esc="o.date_order.strftime('%Y-%m-%d')" />
+                                        </strong>
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td style="padding-right:50px;padding:0px; margin:0px;">Currency :</td>
+                                    <td style="padding:0px; margin:0px;">
+                                        <strong>
+                                            <span t-esc="o.currency_id.name"/>
+                                        </strong>
+                                    </td>
+
+                                </tr>
+
+                            </table>
+
+                        </td>
+
+                    </tr>
+                </table>
+
+
+            </t>
+            </template>
+        </t>
+        <!--        </t>-->
+    </template>
+</odoo>

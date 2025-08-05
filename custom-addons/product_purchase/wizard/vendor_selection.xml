@@ -1,0 +1,37 @@
+<!-- product_category_wizard_view.xml -->
+
+<odoo>
+    <data>
+        <record id="view_product_category_wizard_form" model="ir.ui.view">
+            <field name="name">product.category.wizard.form</field>
+            <field name="model">product.category.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Select Product Category">
+                    <group>
+                        <field name="category_id" options="{'no_edit': True, 'no_create': True}"/>
+
+                        <field string="Vendors" name="vendor_ids" widget="many2many_tags" options="{'no_create_edit': True}"/>
+
+                    </group>
+                    <footer>
+
+                        <button name="action_confirm" string="Create RFQ" type="object" class="btn-primary " style="float: right;"
+                                confirm="Are you sure you want to create the Request for Quotation for selected vendors?"/>
+                        <div style="float: right;padding-right: 10px;">
+                         <button string="Cancel" class="btn-secondary" special="cancel"  />
+                        </div>
+                    </footer>
+                </form>
+            </field>
+
+        </record>
+
+<!--        <record id="action_product_category_wizard_form" model="ir.actions.act_window">-->
+<!--            <field name="name">Vendor Selection</field>-->
+<!--            <field name="res_model">product.category.wizard</field>-->
+<!--            <field name="view_mode">form</field>-->
+<!--            <field name="view_id" ref="view_product_category_wizard_form"/>-->
+<!--            <field name="target">new</field>-->
+<!--        </record>-->
+    </data>
+</odoo>

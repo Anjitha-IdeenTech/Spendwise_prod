@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<odoo>
+    <template id="product_contract_request_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-foreach="docs" t-as="o">
+
+
+                    <div>
+                        <h2 style="text-align: center">
+                            CONTRACT REQUEST
+                        </h2>
+
+                    </div>
+
+                    <br/>
+                    <div class="pages">
+                        <h3>
+                            CONTRACT NO:
+                            <span t-field="o.name"/>
+                        </h3>
+
+                        <div class="row mt32 mb32">
+                            <div t-if="o.vendor_id" class="col-auto" name="div_name">
+                                <strong>Vendor:</strong>
+                                <p t-field="o.vendor_id.name"/>
+                            </div>
+                            <div t-if="o.user_id" class="col-auto" name="div_user">
+                                <strong>Start Date:</strong>
+                                <p t-field="o.from_date"/>
+                            </div>
+                            <div t-if="o.user_id" class="col-auto" name="div_user">
+                                <strong>End Date:</strong>
+                                <p t-field="o.to_date"/>
+                            </div>
+                            <div t-if="o.state" class="col-auto" name="div_lead_time">
+                                <strong>Status:</strong>
+                                <p t-field="o.state"/>
+                            </div>
+                              <div t-if="o.state == 'terminate' and o.termination_date" class="col-auto"
+                             name="div_termination_date">
+                            <strong>Termination Date:</strong>
+                            <p t-field="o.termination_date"/>
+                        </div>
+
+
+                            <div t-if="o.user_id" class="col-auto" name="div_user">
+                                <strong>User Incharge:</strong>
+                                <p t-field="o.user_id.name"/>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <div class="row mt32 mb32">
+
+                        <div t-if="o.contracting_method" class="col-auto" name="div_purch_rep">
+                            <strong>Contract Type:</strong>
+                            <p t-field="o.contracting_method"/>
+                        </div>
+
+                        <div t-if="o.purchase_plan" class="col-auto" name="div_lead_time">
+                            <strong>Purchase Plan:</strong>
+                            <p t-field="o.purchase_plan"/>
+                        </div>
+                        <div t-if="o.payment_terms" class="col-auto" name="div_payment">
+                            <strong>Payment Terms:</strong>
+                            <p t-field="o.payment_terms.name"/>
+                        </div>
+                    </div>
+
+
+                    <div class="row mt32 mb32">
+
+                        <div t-if="o.company_id" class="col-auto" name="div_company">
+                            <strong>Company:</strong>
+                            <p t-field="o.company_id.name"/>
+                        </div>
+                        <div t-if="o.branch_ids" class="col-auto" name="div_branch">
+                            <strong>Branches:</strong>
+                            <ul>
+                                <t t-foreach="o.branch_ids" t-as="branch">
+                                    <li>
+                                        <t t-esc="branch.name"/>
+                                    </li>
+                                </t>
+                            </ul>
+                        </div>
+                        <div t-if="o.contracting_method == 'multi'" class="col-auto" name="div_total_vendor_price">
+                            <strong>Total Contract Value (excluding GST)</strong>
+                            <p t-field="o.total_vendor_price"/>
+                        </div>
+                        <div t-if="o.contracting_method != 'multi'" class="col-auto" name="div_total_price">
+                            <strong>Total Contract Value (excluding GST)</strong>
+                            <p t-field="o.total_price"/>
+                        </div>
+
+
+                    </div>
+
+
+                    <h3>Product Details</h3>
+
+                    <table align="center" style="width:100%; border: 1px solid black;" cellpadding="10">
+                        <thead>
+                            <tr style="border: 1px solid black;">
+
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Product</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Brand</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>OEM</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>UOM</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Quantity</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Unit Price</strong>
+                                </td>
+
+
+                                <!--                                <td colspan="10" style="padding: 5px; border: 1px solid black;">-->
+                                <!--                                    <strong>Total</strong>-->
+                                <!--                                </td>-->
+
+                            </tr>
+                        </thead>
+                        <t t-foreach="o.contracts_request_line" t-as="line">
+                            <tbody>
+
+
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="line.product_id.name"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="line.product_id.brand"/>
+                                </td>
+
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="line.product_id.oem"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="line.uom.name"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="line.quantity"/>
+                                </td>
+                               <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <t t-if="o.contracting_method == 'multi'">
+                                        <span t-field="line.vendor_price"/>
+                                    </t>
+                                    <t t-if="o.contracting_method != 'multi'">
+                                        <span t-field="line.unit_price"/>
+                                    </t>
+                                </td>
+
+                                <!--                            </tr>-->
+
+                            </tbody>
+                        </t>
+                    </table>
+                    <h3>Approvals</h3>
+
+                    <table align="center" style="width:100%; border: 1px solid black;" cellpadding="10">
+                        <thead>
+                            <tr style="border: 1px solid black;">
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>User</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Branch</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Department</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Status</strong>
+                                </td>
+                                <!-- <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>De</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Payment Terms</strong>
+                                </td> -->
+
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <t t-set="lines"
+                               t-value="o.tender_approve_line"/>
+                            <tr t-foreach="lines" t-as="move">
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.user_id.name"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.branch_id.name"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.department_id.name"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.status"/>
+                                </td>
+                                <!-- <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.unit_price"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.payment_terms.name"/>
+                                </td> -->
+                            </tr>
+                        </tbody>
+                    </table>
+                     <h3>Terms And Conditions </h3>
+                     <span t-field="o.terms"/>
+
+                    <h3>Additional Attachments</h3>
+                    <div t-raw="o.description"/>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

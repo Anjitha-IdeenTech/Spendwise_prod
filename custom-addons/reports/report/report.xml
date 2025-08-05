@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="purchase_report_custom_ppf" model="report.paperformat">
+        <field name="name">PO Customs Format Custom</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">297</field>
+        <field name="page_width">210</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">25</field>
+        <field name="dpi">110</field>
+    </record>
+
+
+    <report
+            id="report_purchase_request"
+            string="Purchase Request"
+            model="product.request"
+            report_type="qweb-pdf"
+            name="reports.purchase_request_template"
+            file="reports.purchase_request_template"
+            print_report_name="('PR - %s' % (object.name))"/>
+
+    <report
+            id="report_contract_request"
+            string="Contract Request"
+            model="tenders"
+            report_type="qweb-pdf"
+            name="reports.product_contract_request_template"
+            file="reports.product_contract_request_template"
+            print_report_name="('CTR - %s' % (object.name))"/>
+
+
+    <report
+            id="report_lease_agreement"
+            string="Lease Agreement"
+            model="product.lease"
+            report_type="qweb-pdf"
+            name="reports.lease_agreement_template"
+            file="reports.lease_agreement_template"
+            print_report_name="('Lease Agreement - %s' % (object.name))"/>
+
+
+    <report
+            id="report_product_contract"
+            string="Product Contract"
+            model="product.tender.line"
+            report_type="qweb-pdf"
+            name="reports.product_contract_template"
+            file="reports.product_contract_template"
+            print_report_name="('Contract - %s' % (object.name))"/>
+
+    <report
+            id="report_purchase_order"
+            string="Custom PO"
+            model="purchase.order"
+            report_type="qweb-pdf"
+            name="reports.purchase_order_template"
+            file="reports.purchase_order_template"
+            paperformat="reports.purchase_report_custom_ppf"
+            print_report_name="('Purchase Order - %s' % (object.name))"/>
+
+        <report
+                id="report_bidding_request"
+                string="Bidding"
+                model="bidding"
+                report_type="qweb-pdf"
+                name="reports.bidding_request_template"
+                file="reports.bidding_request_template"
+                print_report_name="('Bidding - %s' % (object.name))"/>
+
+
+        <record id="purchase.action_report_purchase_order" model="ir.actions.report">
+        <field name="binding_model_id" eval="False"/>
+    </record>
+     <record id="purchase.report_purchase_quotation" model="ir.actions.report">
+        <field name="binding_model_id" eval="False"/>
+    </record>
+
+</odoo>

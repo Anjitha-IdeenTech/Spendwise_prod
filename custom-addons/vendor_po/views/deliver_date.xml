@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+
+        <record id="update_delivery_commitment_date_action" model="ir.ui.view">
+            <field name="name">Delivery Commitment Date</field>
+            <field name="model">delivery.commitment.date</field>
+            <field name="arch" type="xml">
+
+
+                <form string="Delivery Commitment Date">
+
+                    <group>
+
+                        <group col="2">
+                            <field name="purchase_id" invisible="1"/>
+                            <field name="delivery_commit_date"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="confirm"
+                                string="Confirm" class="btn-primary"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+        <record id="update_commitment_date_action" model="ir.actions.act_window">
+            <field name="name">Delivery Commitment Date</field>
+            <field name="res_model">delivery.commitment.date</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="update_delivery_commitment_date_action"/>
+            <field name="target">new</field>
+        </record>
+
+
+        <record id="advance_shipment_date_action" model="ir.ui.view">
+            <field name="name">Advance Shipment Date</field>
+            <field name="model">advance.shipment.date</field>
+            <field name="arch" type="xml">
+
+
+                <form string="Advance Shipment Date">
+                    <group>
+                        <group col="2">
+                            <field name="purchase_id" invisible="1"/>
+                            <field name="advance_shipment_date"/>
+
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="advance_confirm"
+                                string="Confirm" class="btn-primary"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+        <record id="update_advanced_shipmnt_date_action" model="ir.actions.act_window">
+            <field name="name">Advanced Shipment Date</field>
+            <field name="res_model">advance.shipment.date</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="advance_shipment_date_action"/>
+            <field name="target">new</field>
+        </record>
+
+
+    </data>
+</odoo>

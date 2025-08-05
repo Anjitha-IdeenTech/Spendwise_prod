@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="seq_asn" model="ir.sequence">
+            <field name="name">ASN Form</field>
+            <field name="code">advanced.shipment.notice</field>
+            <field name="prefix">ASN</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,71 @@
+<odoo>
+    <data>
+<!--         Search View Definition-->
+<!--        <record id="lease_view_search" model="ir.ui.view">-->
+<!--            <field name="name">lease.order.select</field>-->
+<!--            <field name="model">lease.recurring.po</field>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <search string="Search Lease Order">-->
+<!--                    <group expand="0" string="Group By">-->
+<!--                        <filter string="Order Date" name="date" domain="[]" context="{'group_by': 'date'}"/>-->
+<!--                        <filter string="Vendor" name="vendor" domain="[]" context="{'group_by': 'vendor'}"/>-->
+<!--                    </group>-->
+<!--                </search>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <!-- Tree View Definition -->
+        <record id="view_product_lease_po_tree" model="ir.ui.view">
+            <field name="name">lease.recurring.po.tree</field>
+            <field name="model">lease.recurring.po</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree create="0" edit="1" duplicate="0">
+                    <field name="vendor"/>
+                    <field name="recurring_lease_id"/>
+                    <field name="date"/>
+                    <field name="to_date"/>
+                    <field name="amount"/>
+<!--                    <field name="parent_state" string="Lease State"/>-->
+                </tree>
+            </field>
+        </record>
+
+<!--         Action for Vendor Specific Lease POs-->
+        <record model="ir.actions.act_window" id="action_my_product_lease_po">
+            <field name="name">Lease PO</field>
+            <field name="res_model">lease.recurring.po</field>
+            <field name="view_mode">tree,form</field>
+<!--            <field name="domain">[('vendor_user.id','=',uid)]</field>-->
+<!--            <field name="context">{-->
+<!--                'group_by': 'recurring_lease_id'-->
+<!--            }</field>-->
+<!--            <field name="help" type="html">-->
+<!--                <p class="oe_view_nocontent_create"></p>-->
+<!--            </field>-->
+        </record>
+
+        <!-- Action for General Lease POs -->
+        <record model="ir.actions.act_window" id="action_product_lease_po">
+            <field name="name">Lease PO</field>
+            <field name="res_model">lease.recurring.po</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="search_view_id" ref="lease_view_search"/>
+<!--            <field name="context">{-->
+<!--                'group_by': 'vendor',-->
+<!--                'search_default_custom_date_range': 1-->
+<!--            }</field>-->
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"></p>
+            </field>
+        </record>
+
+        <!-- Menu Items -->
+        <menuitem id="menu_product_lease_po" name="Lease/Rent PO" parent="lease_management.root_lease_management"
+                  action="action_product_lease_po" groups="product_purchase.group_buyers" sequence="13"/>
+
+        <menuitem id="menu_vendors_product_lease_po" name="My Lease/Rent PO" parent="lease_management.root_lease_management"
+                  action="action_my_product_lease_po" groups="vendor_portal.group_vendor_portal_user" sequence="14"/>
+    </data>
+</odoo>

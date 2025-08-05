@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_product_contracts_tree" model="ir.ui.view">
+            <field name="name">product.tender.tree</field>
+            <field name="model">product.tender.line</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree create="1" edit="1" delete="0" duplicate="0">
+
+                    <field name="tender_number"/>
+                    <field name="purchase_tender_type"/>
+                    <field name="vendor"/>
+                    <field name="unit_price"/>
+                    <field name="quantity"/>
+                    <field name="total"/>
+
+
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_product_tender_form" model="ir.ui.view">
+            <field name="name">product.tender.form</field>
+            <field name="model">product.tender.line</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <form string="Projects" create="1" edit="1" delete="0" duplicate="0">
+                    <!--                    <header>-->
+                    <!--                    </header>-->
+                    <sheet>
+
+                        <h1>
+                            <field name="product_template_id"/>
+                        </h1>
+
+                        <group>
+                            <group col="2">
+                                <field name="tender_number"/>
+                                <field name="purchase_tender_type"/>
+                                <field name="vendor"/>
+                                <field name="unit_price"/>
+                                <field name="quantity"/>
+                                <field name="total"/>
+
+
+                            </group>
+                            <group col="2">
+                                <field name="purchase_representative"/>
+                                <field name="company_id"/>
+                                <field name="user_id"/>
+
+
+                            </group>
+                        </group>
+
+
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_product_contract_search_form" model="ir.ui.view">
+            <field name="name">product.tender.line.form</field>
+            <field name="model">product.tender.line</field>
+            <field name="arch" type="xml">
+                <search string="Contracts">
+                    <group expand="0" string="Group By">
+                        <filter string="Product" name="product" context="{'group_by':'product_template_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="action_view_product_tenders">
+            <field name="name">Product Tendors</field>
+            <field name="res_model">product.tender.line</field>
+            <!--            <field name="view_type">form</field>-->
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{
+                'group_by': 'product_template_id',
+                }
+            </field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"> </p>
+            </field>
+        </record>
+
+
+        <menuitem id="root_product_contracts" name="Product Contracts" groups="product_contracts.group_purchase_admin" web_icon="product_contracts,static/icons/logo.png" sequence="40"/>
+        <menuitem id="menu_sub_product_contracts" name="Product Contracts" parent="root_product_contracts"
+                  action="action_view_product_tenders" sequence="40"/>
+
+
+    </data>
+</odoo>

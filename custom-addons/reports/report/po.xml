@@ -1,0 +1,1618 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="purchase_order_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <!--                <div class="page">-->
+                <!-- Header Section -->
+                <div class="header">
+                    <table align="center" style="width:100%; margin:0px; padding:0px;">
+                        <tr>
+                            <td style="border-bottom: none; padding:0px; margin:0px;">
+                                <!-- Add your company logo here -->
+                                <div name="company_logo" class="float-right ">
+                                    <img t-if="res_company.logo"
+                                         t-att-src="'data:image/jpg;base64,%s' % to_text(res_company.logo)"
+                                         style="max-height: 70px; border-bottom: 1px solid white;"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Footer Section -->
+
+                <div class="footer">
+
+                    <table class="footer" width="100%" cellpadding="5" cellspacing="5">
+                        <tr style="border:none;">
+                            <td style="text-align:center">
+                                <span t-field="o.company_prefix"/>
+
+                                <span t-field="res_company.street"/>
+
+                                <span t-field="res_company.street2"/>
+
+                                <span t-field="res_company.city"/>,
+                                <span t-field="res_company.state_id.name"/>
+                                -
+                                <span t-field="res_company.zip"/>
+
+                                <span t-field="res_company.country_id.name"/>
+
+                                <span t-field="res_company.phone"/>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="sub_footer" style=" margin:0px; padding:0px; text-align: right;">
+                        <span class="page"/>
+                        of
+                        <span class="topage"/>
+                    </div>
+                </div>
+
+                 <style>
+
+                        /* CSS to style tables within the HTML field */
+                        .html-field-content table {
+                        border-collapse: collapse;
+                        width: 100%;
+                        }
+
+                        .html-field-content table th,
+                        .html-field-content table td {
+                        border: 2px solid #555; /* Adjust border color here */
+                        text-align: left;
+                        padding: 8px;
+                        }
+
+                        .html-field-content table th {
+                        background-color: #f2f2f2;
+                        }
+
+                        .html-field-content table tr:nth-child(even) {
+                        background-color: #f2f2f2;
+                        }
+
+                </style>
+
+
+                <!-- Purchase Order Heading -->
+                <div class="purchase_order_details">
+                    <table style="width:100%; margin:0px; padding:0px; border-collapse: collapse;">
+                        <tr>
+                            <td style="border:none; margin:0px; padding:0px;">
+                                <h1 style="text-align: left;">Purchase Order</h1>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Partner and Company Information -->
+                <table style="width:100%;  border:none; border-collapse: collapse;">
+                    <tr>
+                        <td style="border-top: 1px solid;border-left: 1px solid;border-right: 1px solid; padding:15px 160px 15px 15px; ">
+
+                            <p style="margin-bottom:5px;">
+                                <strong>Partner Name and Address</strong>
+                            </p>
+                            <t t-if="o.vendor_addresss">
+                                <t t-if="o.vendor_change_name">
+                                    <div style="font-size: 16px; font-weight: bold;">
+                                        <span t-esc="o.vendor_change_name"/>
+                                    </div>
+                                </t>
+                                <t t-if="o.vendor_addresss">
+                                    <div style="font-size: 16px; line-height: 1.5;">
+                                        <span t-esc="o.vendor_addresss"/>
+                                    </div>
+                                </t>
+
+                            </t>
+                            <t t-else="">
+                                <strong>
+                                    <span t-field="o.partner_id.name"/>
+                                </strong>
+                                <br/>
+                                (Partner Code:<span t-field="o.partner_id.ref"/>)
+                                <br/>
+                                <!--                                Pan: <span t-field="o.partner_id.pan"/> <br/>-->
+                                GST No:
+                                <span t-field="o.partner_id.vat"/>
+                                <br/>
+                                <span t-field="o.partner_id.street"/>
+                                <br/>
+                                <span t-field="o.partner_id.street2"/>
+                                <br/>
+                                <span t-field="o.partner_id.city"/>,
+                                <span t-field="o.partner_id.state_id.name"/>,
+                                Pin:
+                                <span t-field="o.partner_id.zip"/>
+                                <br/>
+                                Phone:
+                                <span t-field="o.partner_id.phone"/>
+                                <br/>
+                                Email :
+                                <span t-field="o.partner_id.email"/>
+                            </t>
+                        </td>
+
+                        <td style="border-top: 1px solid;border-right: 1px solid;  padding-left:20px">
+                            <div style="float: left;">
+                                <strong>
+                                    <span t-field="o.company_prefix"/>
+                                </strong>
+                                <br/>
+                                <span t-field="res_company.street"/>
+                                <br/>
+                                <span t-field="res_company.street2"/>
+                                <br/>
+                                <span t-field="res_company.city"/>,
+                                <span t-field="res_company.state_id.name"/>
+                                -
+                                <span t-field="res_company.zip"/>
+                                <br/>
+                                <span t-field="res_company.country_id.name"/>
+                                <br/>
+                                <span t-field="res_company.phone"/>
+                                <br/>
+                                <span t-field="res_company.email"/>
+                                <br/>
+                                GST No:
+                                <span t-field="res_company.vat"/>
+                                <br/>
+                            </div>
+                        </td>
+
+                    </tr>
+                </table>
+
+                <!-- Other Purchase Order Information -->
+
+                <table style="width:100%;  border: 0px; border-collapse: collapse; font-size:14px;">
+                    <tr>
+                        <td style=" padding:15px 50px 15px 15px;border:1px solid ">
+                            <table style="border-collapse: collapse;">
+                                <tr>
+                                    <td style="width:500px; ">
+                                        <table style="border-collapse: collapse; width:100%; ">
+                                            <tr>
+                                                <td style="width:200px; vertical-align:top;">
+                                                    PO No
+
+                                                </td>
+                                                <td style="width:250px; vertical-align:top;">
+                                                    <span style="padding-right:20px">:</span>
+                                                    <span t-field="o.name"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width:200px; vertical-align:top;">
+                                                    PO Date
+
+                                                </td>
+                                                <td style="width:250px; padding:0px; margin:0px;">
+                                                    <strong>
+                                                        <span style="padding-right:20px">:</span>
+                                                        <t t-esc="o.date_order.strftime('%Y-%m-%d')"/>
+                                                    </strong>
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td style="width:200px; vertical-align:top;">
+                                                    Currency
+
+                                                </td>
+                                                <td style="width:250px;  padding:0px; margin:0px;">
+                                                    <strong>
+                                                        <span style="padding-right:20px">:</span>
+                                                        <span t-esc="o.currency_id.name"/>
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                    </td>
+                                    <td style="width:500px;">
+                                        <table style="border-collapse: collapse; width:100%; ">
+                                            <tr>
+                                                <td style="width:250px;">
+                                                    Payment Terms
+
+                                                </td>
+                                                <td style="width:250px;">
+                                                    <span style="padding-right:20px">:</span>
+                                                    <span t-field="o.payment_term_id.name"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width:250px;">
+                                                    Purchase Representative
+
+                                                </td>
+                                                <td style="width:250px;">
+                                                    <span style="padding-right:20px">:</span>
+                                                    <span t-field="o.user_id.name"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width:250px;">
+                                                    Representative Contact
+
+                                                </td>
+                                                <td style="width:250px;">
+                                                    <span style="padding-right:20px">:</span>
+                                                    <span t-field="o.user_id.mobile_number"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                        <td style=" padding:15px 50px 15px 15px; border:1px solid; width:200px;">
+                            <p>GST:
+                                <span t-field="res_company.vat"/>
+                            </p>
+                            <p>ISD:
+                                <span t-field="res_company.vat"/>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+
+                <table style="width:100%;   border-collapse: collapse;">
+                    <tr>
+
+                        <td style=" padding:15px 50px 15px 15px; width: 400px;
+                                 border-bottom: 1px solid;border-left: 1px solid;border-right: 1px solid; ">
+                            <span>
+                                <strong>Ship TO</strong>
+                                <br/>
+                            </span>
+
+                            <span t-field="o.ship_to.name"/>
+
+                            <br/>
+
+                            <span t-field="o.ship_to.street"/>
+                            <br/>
+                            <span t-field="o.ship_to.street2"/>
+                            <br/>
+                            <span t-field="o.ship_to.city"/>,
+                            <span t-field="o.ship_to.state_id.name"/>,
+
+                            <span t-field="o.ship_to.zip"/>
+                            <br/>
+                            Phone:
+                            <span t-field="o.ship_to.phone"/>
+
+                        </td>
+
+                        <td style=" padding:15px 50px 15px 15px; border-left:1px solid; width: 400px;
+border-bottom: 1px solid;border-left: 1px solid;border-right: 1px solid; ">
+                            <span>
+                                <strong>Bill TO</strong>
+                                <br/>
+                            </span>
+                            <span t-field="o.bill_to.name"/>
+
+                            <br/>
+
+                            <span t-field="o.bill_to.street"/>
+                            <br/>
+                            <span t-field="o.bill_to.street2"/>
+                            <br/>
+                            <span t-field="o.bill_to.city"/>,
+                            <span t-field="o.bill_to.state_id.name"/>,
+
+                            <span t-field="o.bill_to.zip"/>
+                            <br/>
+                            Phone:
+                            <span t-field="o.bill_to.phone"/>
+
+                        </td>
+
+
+                    </tr>
+                </table>
+                <br/>
+
+
+                <table style="width:100%;   border:1px solid; ">
+                    <tr>
+
+                        <td style=" padding:15px 50px 15px 15px; width: 400px; ">
+                            <span>
+                                Total Purchase Order Value :
+                            </span>
+                            <strong>
+                                <!--                                <t t-set="formatted_amount_total" t-value="o.amount_total"/>-->
+                                <!--                                <t t-if="formatted_amount_total">-->
+                                <!--                                    <t t-esc="formatted_amount_total"/>-->
+                                <!--                                </t>-->
+                                <span t-esc="'{:,.2f}'.format(o.amount_total)"/>
+
+                            </strong>
+                        </td>
+
+                        <td>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style=" padding:0px 50px 10px 15px; width: 1000px; ">
+                            <span>
+                                Total Purchase Order Value In Words :
+                            </span>
+                            <strong>
+                                <span t-field="o.text_amount_ar"/>
+                                <!--                                <t t-set="amount_in_words" t-value="o.amount_total_in_words()"/>-->
+                                <!--                                <t t-if="amount_in_words">-->
+                                <!--                                    <t t-esc="amount_in_words"/>-->
+                                <!--                                </t>-->
+                            </strong>
+
+                        </td>
+                        <td>
+
+
+                        </td>
+                    </tr>
+                </table>
+                <h3>Products in Bundle</h3>
+                <div class="html-field-content">
+                    <t t-raw="o.product_bundle"/>
+                </div>
+
+                <br/>
+                We are pleased to release the order for the following Items (Goods/Services) subject to terms
+                and conditions mentioned herein and overleaf.
+                <br/>
+                <br/>
+
+
+                <table style="width:100%; border:1px solid; " cellspacing="0">
+                    <thead>
+                        <tr>
+                            <td style="border-right:1px solid;border-bottom:1px solid; padding: 5px; width: 5%; ">
+                                <b>S.No</b>
+                            </td>
+                            <td style="border-right:1px solid;border-bottom:1px solid;padding: 5px; width: 20%; ">
+                                <b>Item </b>
+                            </td>
+                            <td style="border-right:1px solid;border-bottom:1px solid;padding: 5px; width: 20%; ">
+                                <b>Description</b>
+                            </td>
+                            <td style="border-right:1px solid;border-bottom:1px solid;width: 15%; padding: 5px;">
+                                <b>Need By/ Activity End Date</b>
+                            </td>
+                            <td style="border-right:1px solid;border-bottom:1px solid;width: 5%;padding: 5px; ">
+                                <b>Quantity</b>
+                            </td>
+                            <td style="border-right:1px solid;border-bottom:1px solid;width: 10%; padding: 5px; ">
+                                <b>UOM</b>
+                            </td>
+                            <td style="border-right:1px solid;border-bottom:1px solid;width: 10%;padding: 5px; ">
+                                <b>Unit Price</b>
+                            </td>
+
+                            <td style="border-right:1px solid;border-bottom:1px solid;width: 10%;padding: 5px; ">
+                                <b>Tax</b>
+                            </td>
+
+                            <td style="border-bottom:1px solid;width: 15%;padding: 5px; ">
+                                <b>Line Total</b>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="slno" t-value="0"/>
+                        <t t-foreach="o.order_line" t-as="line">
+                            <tr style="border:1px solid">
+                                <t t-set="slno" t-value="slno + 1"/>
+                                <td style="padding: 5px;border-right:1px solid;border-bottom:1px solid;  width: 5%;">
+                                    <span class="text-nowrap" t-esc="slno"/>
+                                </td>
+                                <td style="width: 20%;border-right:1px solid;border-bottom:1px solid; padding: 5px; ">
+                                    <span class="text-nowrap" t-esc="line.product_id.display_name"/>
+                                </td>
+                                <td style="width: 20%;border-right:1px solid;border-bottom:1px solid; padding: 5px; ">
+                                    <span class="text-nowrap" t-esc="line.name"/>
+                                </td>
+                                <td style="width: 15%;border-right:1px solid;border-bottom:1px solid;padding: 5px; ">
+                                    <span class="text-nowrap" t-esc="line.date_planned and line.date_planned.date() or ''"/>
+
+
+                                </td>
+
+
+                                <td style="width: 5%;border-right:1px solid;border-bottom:1px solid; padding: 5px; ">
+                                    <span class="text-nowrap" t-esc="line.product_qty"/>
+                                </td>
+                                <td style="width: 10%; border-right:1px solid;border-bottom:1px solid;padding: 5px; ">
+                                    <span class="text-nowrap" t-esc="line.product_uom.name"/>
+                                </td>
+                                <td style="width: 10%;border-right:1px solid;border-bottom:1px solid; padding: 5px; ">
+                                    <span class="text-nowrap" t-esc="'{:,.2f}'.format(line.price_unit)"/>
+                                </td>
+
+                                <td style="width: 10%;border-right:1px solid;border-bottom:1px solid; padding: 5px; ">
+                                    <span class="text-nowrap" t-esc="line.taxes_id.name"/>
+                                </td>
+
+
+                                <td style="width: 15%;border-bottom:1px solid; padding: 5px; ">
+                                    <span class="text-nowrap" t-esc="'{:,.2f}'.format(line.price_subtotal)"/>
+                                </td>
+                            </tr>
+                        </t>
+
+
+                        <tr style="border:1px solid">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td colspan="4"
+                                style="border-right:1px solid;border-bottom:1px solid;border-left:1px solid; padding: 5px;">
+                                Total Tax Amount
+                            </td>
+                            <td style="padding: 5px;border-bottom:1px solid;">
+                                <span t-esc="'{:,.2f}'.format(o.amount_tax)"/>
+                            </td>
+                        </tr>
+                        <!--                        <tr style="border:1px solid;">-->
+                        <!--                            <td></td>-->
+                        <!--                            <td></td>-->
+                        <!--                            <td colspan="4" style="border:1px solid;padding: 5px;">-->
+                        <!--                                Tax Amount-->
+                        <!--                            </td>-->
+                        <!--                            <td style="border:1px solid;padding: 5px;">-->
+                        <!--                                1500-->
+                        <!--                            </td>-->
+                        <!--                        </tr>-->
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td colspan="4"
+                                style=" padding: 5px;border-right:1px solid;border-bottom:1px solid;border-left:1px solid; ">
+                                Total Taxed Amount
+                            </td>
+                            <td style=" padding: 5px; border-bottom:1px solid;">
+                                <span t-esc="'{:,.2f}'.format(o.amount_total)"/>
+
+
+                            </td>
+
+                        </tr>
+                        <!--                        <tr style="border:1px solid">-->
+                        <!--                            <td colspan="7" style="border:1px solid"></td>-->
+                        <!--                        </tr>-->
+                        <tr>
+
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td style="padding: 5px; text-align:right;border-right:1px solid; "></td>
+
+
+                            <!--                            <td colspan="2" style="padding: 5px; text-align:right;border-right:1px solid; ">-->
+                            <!--                            </td>-->
+                            <td colspan="4" style="padding: 5px; text-align:right; ">
+                                <span style="text-align:right;">Total Amount
+
+                                </span>
+                            </td>
+
+                            <td style="padding: 5px; border-left:1px solid;border-bottom:1px solid;">
+                                <span t-esc="'{:,.2f}'.format(o.amount_total)"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="7" style="padding: 5px; border-top:1px solid;">
+                                <span style="text-align:Left;">
+                                    <b>Total in words:</b>
+                                </span>
+                                <span t-field="o.text_amount_ar"/>
+                                <!--                                <t t-set="amount_in_words" t-value="o.amount_total_in_words()"/>-->
+                                <!--                                <t t-if="amount_in_words">-->
+                                <!--                                    <t t-esc="amount_in_words"/>-->
+                                <!--                                </t>-->
+                            </td>
+                        </tr>
+                        <!--                        <tr style="border:1px solid">-->
+                        <!--                            <td colspan="7" style="border:1px solid"></td>-->
+
+                        <!--                        </tr>-->
+
+                    </tbody>
+                </table>
+
+                <!--     Page 2           -->
+
+
+                <div style="page-break-after: always;"></div>
+
+                <table style="width: 100%; border-collapse: collapse; border: 1px solid black; padding: 5px;">
+                    <tr>
+                        <td style="padding: 5px;">
+                            <strong>Purchase Order Continuation Sheet</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">
+                            <strong>PO No:
+                                <span t-field="o.name"/>
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">
+                            <strong>Partner Name:
+                                <span t-field="o.partner_id.name"/>
+                            </strong>
+                        </td>
+                    </tr>
+                    <br/>
+                    <tr>
+                        <td colspan="1" style="border: 1px solid black; padding: 5px;">
+                            <b>Special Instructions:</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="1" style="border: 1px solid black; padding: 5px;">
+                            1. Partner will raise correct and commercially acceptable invoices along with relevant
+                            supporting documents.
+                            <br/>
+                            2. Partner shall ensure that the invoices are compliant with applicable tax and other laws.
+                            <br/>
+                            3. Any tax related losses such as denial of Input Tax Credit accruing to <span t-field="o.company_prefix"/> due to
+                            non-compliance or other reasons attributable to the partner, shall be charged to the
+                            partner.
+                            <br/>
+                            4. Shipped from and shipped to addresses with the state and GST registration number must be
+                            clearly mentioned on Invoice.
+                            <br/>
+                            5. Transporter copy of Invoice and original Invoice to be sent to ship to addresses
+                            mentioned and one copy to warehouse.
+                            <br/>
+                            6. The GST Invoice must be companied by e-way bill generated by GSTN.
+                            <br/>
+                            7. Material will not be accepted unless PO No. is mentioned on the bill.
+                            <br/>
+                            8. Kindly send your PAN No. / Form 60. (It is not valid for vendors outside India) and
+                            request letter along with the bill, in absence of which no payment would be made (Copy of
+                            Form 60 and request letter with Purchase Department).
+                            <br/>
+                            9. This order is subject to the General terms &amp; conditions, special terms &amp;
+                            condition (if any) or other instructions (if any) attached herewith unless otherwise
+                            modified.
+                            <br/>
+                            10. Please return a copy of this order duly signed and stamped by you as a token of
+                            acceptance of this order with all terms &amp; conditions. In case of non-receipt of
+                            acceptance within 7 days from the date of PO, it will be deemed as accepted.
+                            <br/>
+                            11. Any supplies against this PO would be deemed as acceptance of all terms and conditions
+                            of this PO.
+                            <br/>
+                            12. For any correspondence please mention the PO number as reference.
+                            <br/>
+                            13. Invoices will not be accepted without the PO No.
+                            <br/>
+                            14. Need by Date Significance = Partner is expected to complete the services/deliver the
+                            material by this date.
+                            <br/>
+                            15. Activity Start Date Significance = Partner is expected to start the services/start
+                            delivering the material on this date.
+                            <br/>
+                            16. Activity End Date Significance = Signifies the date before which the supply or the
+                            service should be completed by the supplier. This date reference is used for closure of the
+                            purchase order.
+                            <br/>
+                            17. Effective From Date (Header) Significance = The date on which the PO is being created.
+                            Effective To Date (Header) Significance = The PO is valid till this date.
+                        </td>
+                    </tr>
+                </table>
+
+
+                <!--       Page 3         -->
+
+
+                <div style="page-break-after: always;"></div>
+
+
+                <table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            <strong>Purchase Order Continuation Sheet</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            <strong>PO No:
+                                <span t-field="o.name"/>
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            <strong>Partner Name:
+                                <span t-field="o.partner_id.name"/>
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="border: 1px solid black; padding: 5px;">
+                            <b>Terms &amp; Conditions:</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            <b>Price Basis :</b>
+                            <span t-field="o.price_basis"/>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            <b>Warranty Terms:</b>
+                            <span t-field="o.warranty_terms"/>
+
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            <b>Payment terms:</b>
+                            <span t-field="o.payment_term_id.name"/>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            <b>Installation &amp; Com:</b>
+                            <span t-field="o.installation"/>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            <b>Dispatch Mode:</b>
+                            <span t-field="o.dispatch"/>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            <b>Freight Insurance &amp; P&amp;F:</b>
+                            <span t-field="o.freight"/>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            <b>Liquidated Damage:</b>
+                            <span t-field="o.damage"/>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            <b>AMC:</b>
+                            <span t-field="o.amc"/>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            <b>Note to Vendor:</b>
+                            <span t-field="o.note"/>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="border-top: 1px solid black; width: 50%;">
+                            <b>Buyer Name:
+                                <span t-field="o.buyers.name"/>
+                            </b>
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td colspan="2" style=" width: 50%;">
+                            <b>Contact :
+                                <span t-field="o.contact.name"/>
+                            </b>
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            <b>Annexure Enclosed:</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 5px;">
+                            * General Terms &amp; Conditions
+                        </td>
+                    </tr>
+                    <!--                    <tr>-->
+                    <!--                        <td colspan="2" style="padding: 5px;">-->
+                    <!--                            * Partner Portal Info-->
+                    <!--                        </td>-->
+                    <!--                    </tr>-->
+                    <tr>
+                        <td colspan="2" style="text-align: right; padding: 5px;">
+                            <span t-field="o.company_prefix"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">
+                            Date:
+                            <span t-field="o.date"/>
+                        </td>
+                        <td style="text-align: right; padding: 5px;">
+                            Status :
+                            <t t-if="o.state == 'purchase'">
+                                Approved Purchase Order
+                            </t>
+                            <t t-else="">
+                                Not Approved Purchase Order
+                            </t>
+                        </td>
+
+                    </tr>
+                </table>
+
+
+                <!--       Page 4        -->
+
+                <t t-if="o.is_terms">
+                    <div style="page-break-after: always;"></div>
+
+                    <table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
+                        <tr>
+                            <td colspan="2" style="padding: 5px;">
+                                <strong>Purchase Order Continuation Sheet</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="padding: 5px;">
+                                <strong>PO No:
+                                    <span t-field="o.name"/>
+                                </strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="padding: 5px;">
+                                <strong>Partner Name:
+                                    <span t-field="o.partner_id.name"/>
+                                </strong>
+                            </td>
+                        </tr>
+                    </table>
+                    <br/>
+                    <div class="line" style="text-align: justify;text-justify: inter-word;">
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
+
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>Annexure: General Terms &amp; Conditions</strong>
+                                    <br/>
+                                    <br/>
+
+                                    <span t-field="o.company_prefix"/>
+                                    ("Company") hereby appoints you ("Partner") on a non-exclusive,
+                                    principal to principal basis on the terms and conditions stated
+                                    hereinafter ("Purchase Order Terms and Conditions") for the order placed by Company
+                                    ("Purchase Order") upon Partner for supply of materials, items,
+                                    equipment's ("Product(s)") and/or perform the services ("Services") as per the
+                                    requirement of the Company in accordance to respective terms of the
+                                    Products or Services specified herein. Partner represents it is adequately
+                                    experienced,
+                                    qualified, equipped, structured and financed to provide the Product
+                                    and/or Services which shall be fit for the purpose(s) and the requirement of
+                                    Company.
+                                    Within these terms and conditions Company and Partner are hereinafter referred
+                                    individually as "Party" and collectively as "Parties" as the case may be.
+                                </td>
+                            </tr>
+                            <br/>
+
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>A. Prices and Delivery Schedule:</strong>
+
+                                    <br/>
+                                    <ol type="i">
+                                        <li>The confirmation of this Purchase Order shall be in writing within 7 (seven)
+                                            days from the date of placing the order or such Purchase Order will be
+                                            deemed
+                                            accepted. The Company shall be at liberty to cancel the Purchase Order
+                                            within
+                                            seven (7) days with or without any reason, without incurring any liability
+                                            whatsoever.
+                                        </li>
+
+                                        <li>The Company shall not be liable and/or responsible for any Purchase Order
+                                            placed by unauthorized persons of the Company.
+                                        </li>
+
+                                        <li>Prices, terms and conditions mentioned in the Purchase Order will be treated
+                                            as
+                                            firm and cannot be changed, altered or modified. After the
+                                            acceptance of the Purchase Order, no changes shall be made without an
+                                            amendment.
+                                            Any modifications to these terms and conditions shall be in
+                                            writing and at sole discretion of Company.
+                                        </li>
+
+                                        <li>It is clearly understood between the Parties that time is the essence of
+                                            this
+                                            Purchase Order. Therefore, all the Products and/or Services in this
+                                            Purchase Order should be delivered as per the directions specified in the
+                                            Purchase Order within the time specified therein, and/or as
+                                            communicated by the Company vide separate delivery schedule. The
+                                            non-delivery of
+                                            the Product and/or Services under specified time shall be
+                                            construed as a breach of material obligation by the Partner. For delays
+                                            exceeding fifteen (15) calendar days, Company shall have the option to
+                                            terminate the Purchase Order in part or full thereof.
+                                        </li>
+
+                                        <li>Partner will maintain product liability, professional liability, errors and
+                                            omission, general liability, workmen compensation, and other insurances
+                                            required under applicable law, or usually maintained as per best industry
+                                            practices. Such insurance will cover liability arising from any accidents or
+                                            injuries suffered by the Partner personnel or representative, if any while
+                                            at
+                                            Company premises.
+                                        </li>
+
+                                        <li>
+                                            The Partner shall inform the Company promptly in writing of likelihood of
+                                            any
+                                            event or circumstances which may render it difficult for the Partner to
+                                            fulfill its obligation under this Purchase Order. The Partner shall also
+                                            inform
+                                            the specific steps being taken by it to mitigate such issue and
+                                            timeframe for resolution. Such written intimation shall however not absolve
+                                            Partner towards its obligation stated in this Purchase Order.
+                                        </li>
+
+                                        <li>
+                                            If the obligation of the Partner under this Purchase Order is not fulfilled
+                                            within the specified time period, it may be treated as cancelled. In such an
+                                            event, the Company may procure the Product and/or Services from the open
+                                            market
+                                            at the Partner's risk and cost. The Partner shall make good
+                                            the loss or damages suffered by the Company.
+                                        </li>
+
+                                        <li>
+                                            The Company reserves the right to have their representative monitor
+                                            Partner's
+                                            production process, testing facilities, access to workshops where the
+                                            ordered components are being produced and to inspect the ordered components
+                                            in
+                                            its premises.
+                                        </li>
+
+                                        <li>
+                                            Partner may, after written consent from the Company sub-contract the
+                                            production
+                                            of any part of the order and give to the sub-contractor such
+                                            information as is necessary for the purpose. The subcontractor shall be
+                                            bound by
+                                            the confidentiality clause as set out in this Purchase Order. The
+                                            Partner shall remain directly liable and responsible to the Company for the
+                                            performance, acts and omissions of the subcontractors.
+                                        </li>
+
+                                        <li>
+                                            Partner shall maintain the records of production and quality control
+                                            activities.
+                                            They shall maintain a batch code and it shall be provided on each
+                                            product, wherever practicable.
+                                        </li>
+
+                                        <li>
+                                            Partner shall immediately take countermeasures whenever a quality problem is
+                                            reported and shall inform Company in the prescribed time.
+                                        </li>
+
+                                        <li>
+                                            In case of conflict between the terms of this Purchase Order or the General
+                                            Terms as the case it may be, the terms of the General Terms shall
+                                            prevail.
+                                        </li>
+                                    </ol>
+
+
+                                </td>
+                            </tr>
+
+
+                            <br/>
+
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>B. Payments:</strong>
+
+                                    <br/>
+                                    <ol type="i">
+                                        <li>
+                                            Payments as per the mutually agreed terms in the Purchase Order shall be
+                                            released within the specified time period as communicated separately
+                                            only for the Products &amp; Services accepted by the Company and will be
+                                            subjected to applicable withholding taxes.
+                                        </li>
+
+                                        <li>
+                                            Company declines all responsibility for payment where proof of delivery
+                                            cannot
+                                            be provided satisfactorily by the Partner.
+                                        </li>
+                                        <li>
+                                            Company will have a reasonable period after delivery or performance within
+                                            which
+                                            it can inspect and accept the Product and/or Services. The
+                                            receipt of Product and/or Services, the inspection or non-inspection of or
+                                            payment for the Product and/or Services, will not constitute acceptance of
+                                            the Product and/or Services and will not impair Company's right to: (i)
+                                            reject
+                                            nonconforming Product and/or Services, (ii) recover damages and/or
+                                            (iii) exercise any other remedies to which Company may be entitled. Further,
+                                            acceptance of Product and/or Services will not waive any rights or
+                                            remedies accruing to Company as a result of any breach of the Purchase
+                                            Order.
+                                        </li>
+                                        <li>
+                                            All Products shall be subject to inspection and testing by the Company at
+                                            the
+                                            premises or on field as determined by the Company and shall be
+                                            conclusive. Company reserves the right to reject any Product which contains
+                                            defective material, quality and workmanship and withhold payment for
+                                            such defective Product(s). The rejected Products shall be removed promptly
+                                            by
+                                            the Partner at their expense. However, the Company may elect to
+                                            retain rejected Products and remedy any defects. Partner hereby agrees that
+                                            the
+                                            cost of effecting such remedy shall be deducted from the payment
+                                            due to Partner under this Purchase Order.
+                                        </li>
+
+
+                                    </ol>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div style="page-break-after: always;"></div>
+
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
+                            <tr>
+                                <td colspan="2" style="padding: 5px;">
+                                    <strong>Purchase Order Continuation Sheet</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding: 5px;">
+                                    <strong>PO No:
+                                        <span t-field="o.name"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding: 5px;">
+                                    <strong>Partner Name:
+                                        <span t-field="o.partner_id.name"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                        </table>
+                        <br/>
+
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
+
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <ol type="i" start="5">
+                                        <li>
+                                            The Company reserves the right to reject the Product(s) if further defects
+                                            are
+                                            noticed and/or there is a deficiency in Service and even if in the first
+                                            instance the Product(s) and/or Service has been accepted by the Company and
+                                            is
+                                            paid for. The Company's decision about such rejections at
+                                            whatever time made shall be final and binding upon the Partner and Partner
+                                            shall
+                                            promptly make full refund for any fees paid for such rejected
+                                            Products and/or deficient Service.
+                                        </li>
+
+                                        <li>
+                                            If the Products and/or Services are not approved by the Company for any
+                                            reason
+                                            whatsoever the Company shall not be liable to pay any sum on
+                                            account of such Products and/or Services.
+                                        </li>
+
+
+                                        <li>
+                                            The Company reserves the right to cancel or amend the order or any part
+                                            thereof
+                                            for the following reasons (a) irregularities or delay in supply of
+                                            Products and/or performance of Service (b) defective Product (c) escalation
+                                            in
+                                            prices (d) if the Partner fails to fulfill his obligation as per the
+                                            Purchase Order without assigning any reason. The Company's decision shall be
+                                            final in disputes arising out of Purchase orders. Partner
+                                            acknowledges that any money due to the Company either as damages or under
+                                            any
+                                            other order may be adjusted when settling payments against
+                                            this Purchase Order.
+                                        </li>
+                                        <li>
+                                            The Company assumes no obligations to Products delivered in excess of those
+                                            specifically ordered or Services performed otherwise as specifically
+                                            ordered. Purchase Order number should be stated on the challan and invoice
+                                            as
+                                            otherwise Product will not deemed to be accepted.
+                                        </li>
+                                        <li>
+                                            The commercially acceptable invoice must be submitted in duplicate to the
+                                            Company's respective office. Purchase order number, date and
+                                            Partner's delivery note no. must appear on the invoice. The invoice not
+                                            fulfilling this requirement will be returned.
+                                        </li>
+                                        <li>
+                                            The GST copy of the invoice "Duplicate copy for Transporter" must be sent
+                                            along
+                                            with the consignment. Payment would not be released for the
+                                            excise duty paid amount by Partner if this copy is not received by the
+                                            Company.
+                                        </li>
+                                        <li>
+                                            E-way bill (wherever applicable) and Tax invoice is mandatory for supply of
+                                            Product to Company.
+                                        </li>
+                                        <li>
+                                            It shall be the sole responsibility of the Partner to obtain the road
+                                            permits
+                                            (as applicable) in advance from the supply chain department of the
+                                            respective circle. In case the dispatch is made by any Partner against a
+                                            Purchase Order without obtaining a valid road permit in advance, then the
+                                            entire penalties / fines etc. shall be debited to Partner by the Company
+                                            from
+                                            the outstanding amount of the Partner. For any legal proceedings in
+                                            this regard, the Partner shall be solely responsible to settle the same in
+                                            the
+                                            time frame as defined by Govt. / law of the land
+                                        </li>
+
+                                        <li>
+                                            The Company may set off or deduct any sums (including any liquidated
+                                            damages)
+                                            payable by Partner to Company under this Purchase Order
+                                            against any payment due to Partner under this Purchase Order or any other
+                                            order.
+                                        </li>
+
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>C. Warranty and Replacement parts:</strong>
+
+                                    <br/>
+                                    <ol type="i">
+
+
+                                        <li>
+                                            Purchase Order acceptance by the Partner also implies that the Products or
+                                            parts
+                                            are warranted against defects of design, manufacture, assembly, or operation
+                                            and
+                                            against all defects in material and workmanship. If Partner and/or Company
+                                            discovers a defect in Products or parts, Partner shall promptly replace such
+                                            defective Product at no additional cost to Company.
+                                        </li>
+                                        <li>
+                                            In addition, the Partner shall guarantee ten (10) years availability of the
+                                            essential spare parts/replacement parts needed to maintain &amp; repair the
+                                            Products
+                                            and the same shall be available for purchase by Company at a reasonable
+                                            price.
+                                            The Company acknowledges that such replacement parts may not be exactly the
+                                            same
+                                            throughout the above-mentioned period, but the Partner shall ensure that the
+                                            form, fit &amp; function shall be such that the replacement parts can
+                                            continue
+                                            to be
+                                            used by the Company as if the original parts had been available and further
+                                            that
+                                            the same are compatible with the Product supplied under this Purchase Order.
+                                        </li>
+
+                                        <li>
+                                            Partner expressly warrants that all Products and/or Services will conform at
+                                            all
+                                            times to specifications, drawings, samples or other description furnished by
+                                            the
+                                            Company. Partner expressly warrants that all Products and/or Services will
+                                            be
+                                            merchantable, of good quality, suitable in all respects for the purposes
+                                            required by this Purchase Order and workmanship and free from defect. The
+                                            Partner is lawfully entitled to supply, sale and deliver the Products or
+                                            Services as per the Purchase Order and use or sale of Product delivered
+                                            hereunder shall not infringe any patent, trademark or other intellectual
+                                            property of any third party.
+                                        </li>
+                                    </ol>
+
+
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>D. Audit:</strong>
+                                    <br/>
+                                    Company will have the right to audit and inspect the records and facilities of
+                                    Partner
+                                    and its subcontractors used in performance of the Purchase Order or relating to the
+                                    Products or Services to the extent reasonably necessary to determine Partner's
+                                    compliance with the Purchase Order. Partner will provide Company or its third-party
+                                    designee conducting the audit or inspection with reasonable assistance, including
+                                    without limitation access to buildings, appropriate personnel, documents, systems,
+                                    and
+                                    workspace.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>E. Indemnity:</strong>
+                                    <br/>
+                                    Partner shall fully indemnify and hold harmless the Company, its affiliates and
+                                    their
+                                    customers, officers, directors, and employees (all referred to in this clause as
+                                    "Company") from and against any losses, damages, liabilities, interests, actions,
+                                    fines,
+                                    penalties, and expenses (including reasonable attorneys' fees and court costs) that
+                                    arise out of or result from any and all claims (1) of infringement of any patent,
+                                    copyright, trademark or trade secret right, or other intellectual property right,
+                                    private right, or any other proprietary or personal interest; (2) failure of the
+                                    Products or Services supplied to meet specifications or warranties; (3) any breach
+                                    by
+                                    Partner of any term or condition contained in this Purchase Order; (5) violation of
+                                    applicable laws; (6) alleged defect in the products or due to the Products thereof
+                                    being
+                                    alleged to not adhere to any standard or quality set out herein or under any
+                                    applicable
+                                    laws; (7) gross negligence and intentional misconduct and (8) injuries or death to
+                                    persons or damage to property in any way arising out of or caused by Product(s)
+                                    delivered or Services performed by Partner or persons furnished by Partner. Such
+                                    indemnification shall survive the expiration or termination of this Purchase Order.
+                                </td>
+                            </tr>
+
+                        </table>
+
+                        <div style="page-break-after: always;"></div>
+
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
+                            <tr>
+                                <td colspan="2" style="padding: 5px;">
+                                    <strong>Purchase Order Continuation Sheet</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding: 5px;">
+                                    <strong>PO No:
+                                        <span t-field="o.name"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding: 5px;">
+                                    <strong>Partner Name:
+                                        <span t-field="o.partner_id.name"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                        </table>
+                        <br/>
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
+
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>F. Liability:</strong>
+                                    <br/>
+                                    Notwithstanding any provision to the contrary herein contained, in no event and
+                                    under no
+                                    circumstances shall Company be liable to Partner for damages for loss of profits,
+                                    loss
+                                    of business, loss of revenues, loss of (anticipated) savings, loss of time or for
+                                    consequential, indirect, special or punitive damages, arising out of or in
+                                    connection
+                                    with the appointment and/or the terms and conditions hereof, irrespective whether
+                                    such
+                                    claims for such damages be based on contract, tort or otherwise at law and whether
+                                    or
+                                    not Company has been previously advised of the possibility of such damages. The
+                                    maximum
+                                    aggregate liability of Company under this Purchase Order, whether arising under
+                                    contract
+                                    (including fundamental breach), tort (including negligence), under an indemnity,
+                                    under
+                                    statute or any other legal theory, will not exceed the value of any undisputed
+                                    unpaid
+                                    amounts under this Purchase Order.
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>G. Intellectual Property Rights:</strong>
+
+                                    <br/>
+                                    <ol type="i">
+                                        <li>
+                                            Partner owns all right, title, and interest, including all related
+                                            Intellectual Property Rights, licenses, authorizations and permissions in
+                                            and to the
+                                            Products and the Services and agrees to protect the Company against all
+                                            damages and expenses resulting from any claims arising out of
+                                            patent/trademark/copyright or any other intellectual property rights
+                                            infringement arising out of purchase of Products and/or provision of
+                                            Services
+                                            included in this Purchase Order.
+                                        </li>
+
+                                        <li>
+                                            Partner acknowledges that Company will exclusively and unconditionally own
+                                            all right, title and interest, including all IPRs, in the Bespoke IPR, if
+                                            any. Partner irrevocably and unconditionally assigns all rights, title and
+                                            interest in the Bespoke IPR to Company on a royalty-free basis, throughout
+                                            the world and in perpetuity, for the consideration set out in this Purchase
+                                            Order.
+                                        </li>
+                                    </ol>
+                                    <span>Bespoke IPR means all materials and works ordered or commissioned by Company,
+                                        and developed by the Partner or its sub-contractors specifically for
+                                        Company and will include customized codes and the solution.
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>H. Confidentiality and Publicity:</strong>
+
+                                    <br/>
+                                    <ol type="i">
+                                        <li>
+                                            All intellectual property &amp; information furnished or made available by
+                                            Company to Partner is the exclusive property of the Company. All such
+                                            intellectual property and information shall be used by Partner only in
+                                            connection with the performance of its obligations under this Purchase Order
+                                            and the Partner shall keep confidential &amp; shall not disclose the same to
+                                            any
+                                            other party at any time during the tenure of this Purchase Order and
+                                            three (3) years after its termination, except where necessary to disclose
+                                            the same to its employee or its subcontractors, for the purpose solely
+                                            related to performance of their obligation for the company and Partner shall
+                                            take such steps as may be reasonably required to cause its employees
+                                            or subcontractors to safeguard the confidentiality of such information,
+                                            unless disclosure in confidence to a governmental agency is required by
+                                            applicable law or governmental regulation or order.
+
+                                        </li>
+
+                                        <li>
+                                            The foregoing restrictions on disclosure &amp; use will not apply to:
+                                            <ul type="a">
+                                                <li>
+                                                    information which is or becomes generally known or available
+                                                    through
+                                                    no act or failure to act by Partners / its sub-contractors.
+                                                </li>
+
+                                                <li>
+                                                    information which is, proved by written records as already known
+                                                    by
+                                                    Partners / its subcontractors at the time of receipt.
+                                                </li>
+                                            </ul>
+                                        </li>
+
+                                        <li>
+                                            Partner shall not, without Company's prior written consent, engage in
+                                            publicity related to this Purchase Order, or make public use of any
+                                            Identification in any circumstances related to this Purchase Order.
+                                            "Identification" means any semblance of any trade name, trademark, service
+                                            mark, insignia, symbol, logo, or any other designation or drawing of company
+                                            or its affiliates. Partner shall remove or obliterate any Identification
+                                            prior to any use or disposition of any material rejected or not purchased by
+                                            Company.
+                                        </li>
+
+                                        <li>
+                                            Upon the Company's written request, "Insignia", including certain
+                                            trademarks, trade names, insignia, symbols, decorative designs, or packaging
+                                            designs of Company, will be properly affixed by Partner. Such Insignia will
+                                            not be affixed, used, or otherwise displayed on the material furnished or
+                                            in connection therewith without written approval of the Company. The Company
+                                            must approve the way such Insignia will be affixed in writing in
+                                            accordance with standards established by the Company. The Company shall
+                                            retain all rights, title and interest in any and all designs, finished
+                                            artwork, and separations furnished to Partner.
+                                        </li>
+                                        <li>
+                                            Personal Data, defined as any information relating to an identified or
+                                            identifiable natural person, shall be considered Confidential Information of
+                                            the
+                                            Company and afforded all of the protections set forth in this Purchase Order
+                                            Terms and Conditions and in accordance with Digital Personal Data
+                                            Protection Act, 2023. In addition to and without limiting the terms
+                                            generally applicable to Confidential Information, Partner agrees that it may
+                                            process, apply, view and use Personal Data only to the extent necessary to
+                                            fulfil its obligation under this Purchase Order. The Partner shall not
+                                            transfer or otherwise allow the use of Personal Data of the Company unless
+                                            expressly instructed or authorized by the Company. Partner shall
+                                            comply with applicable laws and best practices relating to data privacy and
+                                            data security.
+                                        </li>
+                                    </ol>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>I. Force Majeure:</strong>
+                                    <br/>
+
+                                    <ol type="i">
+                                        <li>
+                                            Neither Partner nor Company shall be held responsible for any delay or
+                                            failure in performance of any part of this Purchase Order to the extent such
+                                            delay or failure is caused by fire, flood, strike, civil, governmental or
+                                            military authority, act of God, beyond its control and without the fault or
+                                            negligence of the delayed or non-performing party or its subcontractors.
+                                            Partner's liability for loss or damage to Company's material in Partner's
+                                            possession or control shall not be modified by this clause.
+                                        </li>
+
+                                        <li>
+                                            If any Force Majeure Event affects the performance of obligations Partner,
+                                            then Partner will make all commercially reasonable efforts to mitigate
+                                            the effect of the Force Majeure event.
+                                        </li>
+
+                                        <li>
+                                            In the event such delay or non-performance continues for a period of at
+                                            least thirty (30) days, the Company party may terminate, at no charge, this
+                                            Purchase Order by giving notice to that effect.
+                                        </li>
+                                    </ol>
+                                </td>
+                            </tr>
+
+                        </table>
+
+                        <div style="page-break-after: always;"></div>
+
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
+                            <tr>
+                                <td colspan="2" style="padding: 5px;">
+                                    <strong>Purchase Order Continuation Sheet</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding: 5px;">
+                                    <strong>PO No:
+                                        <span t-field="o.name"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding: 5px;">
+                                    <strong>Partner Name:
+                                        <span t-field="o.partner_id.name"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                        </table>
+                        <br/>
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
+
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>J. Termination:</strong>
+                                    <br/>
+
+                                    <ol type="i">
+                                        <li>
+                                            Company, upon its election, and in addition to any other legal remedies that
+                                            it may have, cancel and terminate this Purchase Order without
+                                            compensation, if the breach is not remedied by the Partner with in thirty
+                                            (30) days after the notice requiring the same to be remedied is given to
+                                            Partner by any means of communication.
+                                        </li>
+                                        <li>
+                                            Company may terminate this Purchase Order, for convenience, by providing
+                                            written notice to Partner.
+                                        </li>
+                                        <li>
+                                            Company may terminate this Purchase Order with immediate effect, upon
+                                            Partner's filing or institution of bankruptcy proceedings or if the Partner
+                                            is declared insolvent by a court of competent jurisdiction or an appropriate
+                                            or upon assignment of a substantial portion of the assets for the benefit of
+                                            its creditors by the Partner.
+                                        </li>
+                                        <li>
+                                            The provisions of this Purchase Order which, by their terms, require
+                                            performance after the termination or expiration or have application to
+                                            events
+                                            that may occur after the termination or expiration of this Purchase Order,
+                                            will survive the termination or expiration of this Purchase Order. All
+                                            indemnity obligations and indemnification procedures will survive the
+                                            termination or expiration of this Purchase Order.
+                                        </li>
+                                        <li>
+                                            After termination or expiration of this Purchase Order the Company shall
+                                            have the right to demand the return of any or all of the technical
+                                            information furnished by the Company to the Partner. Partner shall
+                                            immediately cease to use the technical information for any purpose
+                                            whatsoever.
+                                        </li>
+                                    </ol>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>K. Notices:</strong>
+                                    <br/>
+                                    Any notice, report, request or demand to be given hereunder or under any statute
+                                    shall be in writing in English language and may be provided by delivery from hand to
+                                    hand, by mail or by courier service, by facsimile to the respective parties or to
+                                    such other address of a Party as that Party may notify the other one from time to
+                                    time. Any notice given as aforesaid shall be considered as received by the other
+                                    Party after delivery and shall be considered as received in case of (i) delivery
+                                    from hand to hand: when being delivered; or (ii) courier service: on the fifth
+                                    business day following the date of dispatch; or (iii) facsimile: upon confirmation
+                                    of receipt in writing.
+                                </td>
+                            </tr>
+                            <!-- L. Arbitration -->
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>L. Arbitration:</strong>
+                                    <br/>
+                                    Any differences or disputes arising out of or in connection with this Purchase Order
+                                    shall be settled by an amicable effort on the part of both Parties. If the attempt
+                                    at settlement has failed, the disputes or differences arising out of or in
+                                    connection with the Purchase Order shall be finally settled in accordance with the
+                                    Indian Arbitration and Conciliation Act 1996 (Act) as amended from time to time by a
+                                    sole arbitrator mutually appointed by both the Parties. The decision of arbitrators
+                                    shall be final and binding on each of the Parties hereto. The seat and place of
+                                    arbitration will be New Delhi. The language of arbitration will be English. When any
+                                    dispute is under arbitration, except for the matter under dispute the parties shall
+                                    continue to exercise their remaining respective obligations under this Purchase
+                                    Order.
+                                </td>
+                            </tr>
+                            <!--                            &lt;!&ndash; M. Compliance with <span t-field="o.company_prefix"/> Policies &ndash;&gt;-->
+                            <!--                            <tr>-->
+                            <!--                                <td>-->
+                            <!--                                    <strong>M. Compliance with <span t-field="o.company_prefix"/> Policies:</strong>-->
+                            <!--                                    <br/>-->
+                            <!--                                    Partner shall comply with the most current Code of Conduct which includes complying-->
+                            <!--                                    with the human rights policies, <a-->
+                            <!--                                        href="https://www.<span t-field="o.company_prefix"/>.in/partnerworld/Business_Code_of_conduct">Business Code-->
+                            <!--                                    of Conduct</a>, Bharti Information Security and Privacy Policy at <a-->
+                            <!--                                        href="https://assets.<span t-field="o.company_prefix"/>.in/static-assets/cms/Information-Security-and-Privacy-at-<span t-field="o.company_prefix"/>.pdf">-->
+                            <!--                                    Information Security and Privacy at <span t-field="o.company_prefix"/>-->
+                            <!--                                </a> and such other policies and procedures of the Company as notified from time to time-->
+                            <!--                                    while performing its obligations under the Purchase Order.-->
+                            <!--                                </td>-->
+                            <!--                            </tr>-->
+                            <!-- N. Carbon Emission -->
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>M. Carbon Emission:</strong>
+                                    <br/>
+                                    Partner shall fully make efforts to reduce net carbon emission through energy
+                                    efficiency, usage of renewable sources of energy, carbon offsetting, supply chain
+                                    management etc. If requested by <span t-field="o.company_prefix"/>, Partner shall promptly provide the
+                                    information related to carbon emission released in manufacturing and delivery of
+                                    Products/Services to <span t-field="o.company_prefix"/>.
+                                </td>
+                            </tr>
+                            <!-- O. Health & Safety -->
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>N. Health &amp; Safety:</strong>
+                                    <br/>
+                                    Partner agrees that it will provide a safe and healthy workplace and to correct any
+                                    unsafe condition or health hazard. Further, Partner shall ensure adherence to the
+                                    policies/procedures communicated by <span t-field="o.company_prefix"/> from time to time which includes the
+                                    commitment to comply with all applicable laws and regulations. Partner shall provide
+                                    its employees and contractors with mutually-acceptable orientation and training to
+                                    perform their jobs safely, including instruction in proper work methods, use of
+                                    protective equipment, and safe maintenance, handling and use of materials and
+                                    equipment. Partner agrees to bear all costs for employees and contractors attending
+                                    such orientations and training.
+                                </td>
+                            </tr>
+                            <!-- P. Governing Law -->
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>O. Governing Law:</strong>
+                                    <br/>
+                                    This Purchase Order shall be governed by and construed in accordance with the laws
+                                    of India, excluding any conflict of law provision that would require the application
+                                    of laws of any other jurisdiction. The courts in New Delhi shall have exclusive
+                                    jurisdiction.
+                                </td>
+                            </tr>
+                            <!-- Q. Severability -->
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>P. Severability:</strong>
+                                    <br/>
+                                    If any provision of the Purchase Order is held by any court to be invalid, illegal
+                                    or unenforceable, either in whole or in part, that holding will not affect the
+                                    validity, legality or enforceability of the remaining provisions, or any part
+                                    thereof, of the Purchase Order, all of which will remain in full force and effect.
+                                </td>
+                            </tr>
+                            <!-- R. Waiver -->
+                            <tr>
+                                <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                    <strong>R. Waiver:</strong>
+                                    <br/>
+                                    No failure to exercise or any delay in exercising any right, power or remedy by the
+                                    Company
+                                    under this Purchase Order will operate as a waiver. A single or
+                                    partial exercise of any right, power or remedy does not preclude any other or
+                                    further
+                                    exercise of that or any other right, power or remedy of the Company.
+                                </td>
+                            </tr>
+
+                            <t t-if="o.terms_conditions">
+                                <tr>
+                                    <td style="padding: 5px; text-align: justify;text-justify: inter-word;">
+                                        <strong>S. Additional Terms:</strong>
+                                        <br/>
+                                        <span t-field="o.terms_conditions"/>
+                                    </td>
+                                </tr>
+                            </t>
+
+
+                        </table>
+                    </div>
+
+                </t>
+
+
+            </t>
+        </t>
+    </template>
+</odoo>

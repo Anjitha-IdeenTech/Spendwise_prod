@@ -1,0 +1,972 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="lease_view_search" model="ir.ui.view">
+            <field name="model">product.lease</field>
+            <field name="arch" type="xml">
+                <search string="Lease">
+                    <field name="name"/>
+<!--                    <field name="TDS"/>-->
+                    <field name="bill_to"/>
+                    <filter string="Accepted" name="status_approved" domain="[('state', '=', 'approve')]"/>
+                    <filter string="Draft" name="status_draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Requested" name="status_cancel" domain="[('state', '=', 'request')]"/>
+                    <filter string="Expire" name="status_expired" domain="[('state', '=', 'expire')]"/>
+                </search>
+            </field>
+        </record>
+
+
+        <record id="view_lease_tree" model="ir.ui.view">
+            <field name="name">Lease Agreements</field>
+            <field name="model">product.lease</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree>
+
+                    <field name="name"/>
+                     <field name="requested_date"/>
+                     <field name="user_id" widget="many2one_avatar_user"/>
+                    <field name="expense_type"/>
+                    <field name= "exp_category"/>
+                    <field name="ship_to"/>
+
+
+                    <field name="state"
+                           decoration-success="state == 'approve'"
+                           decoration-info="state == 'draft'"
+                           decoration-danger="state == 'reject'"
+                           decoration-warning="state == 'request'"
+                           decoration-primary="state == 'po'"
+                           widget="badge"/>
+
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="view_lease_form" model="ir.ui.view">
+            <field name="name">Lease Agreement</field>
+            <field name="model">product.lease</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <form string="Product Lease" duplicate="0" delete="0" attrs="{'readonly': [('state', '=', 'approve')]}">
+                    <header>
+
+                        <button name="action_request"
+                                string="Request" class="btn-primary" type="object"
+                                attrs="{'invisible': ['|',('check_requested_by','=',False),('state', 'not in', ['draft', 'revert'])]}"
+                                groups="product_purchase.group_buyers"
+                        />
+                        <button name="action_remark_approver" id="btn_approved"
+                                string="Approve" class="btn-primary" type="object"
+                                groups="product_purchase.group_approvers"
+                                attrs="{'invisible': ['|' ,('state', '!=', 'request'),('is_an_approver','!=',True)]}"/>
+                        <button name="action_remark_approver" id="btn_approved"
+                            string="Accept And Acknowledge" class="btn-primary" type="object"
+                            groups="vendor_portal.group_vendor_portal_user"
+                            attrs="{'invisible': ['|' ,('state', '!=', 'request'),('is_an_approver','!=',True)]}"/>
+
+                        <button name="action_remark_legal_approver" id="btn_approved"
+                                string="Approve" class="btn-primary" type="object"
+                                attrs="{'invisible': ['|' ,('state', '!=', 'legal_approve'),('is_an_legal_approver','!=',True)]}"/>
+
+
+                        <!--                                attrs="{'invisible': [('state', 'in',( 'draft','approve','reject')),('is_an_approver','=',True)]}"-->
+                        <!--                        />-->
+                        <button name="action_remark_reject" id="btn_decline"
+                                string="Reject" class="btn-danger" type="object"
+                                groups="product_purchase.group_approvers"
+                                attrs="{'invisible': ['|' ,('state', '!=', 'request'),('is_an_approver','!=',True)]}"/>
+
+<!--                        <button name="action_remark_legal_reject" id="btn_decline"-->
+<!--                                string="Reject" class="btn-danger" type="object"-->
+<!--                                attrs="{'invisible': ['|' ,('state', '!=', 'legal_approve'),('is_an_legal_approver','!=',True)]}"/>-->
+
+
+                        <button name="action_deligate" id="btn_deligate"
+                                string="Deligate" type="object"
+                                attrs="{'invisible': ['|', ('state', '!=', 'request'),  ('is_an_approver', '=', False)]}"
+                                groups="product_purchase.group_approvers"
+                        />
+                        <button name="action_deligate_legal" id="btn_deligate"
+                                string="Deligate" type="object"
+                                attrs="{'invisible': ['|' ,('state', '!=', 'legal_approve'),('is_an_legal_approver','!=',True)]}"
+                                groups="product_purchase.group_approvers"
+                        />
+                        <button name="action_delegate_admin_lease" id="btn_delegate_admin_lease"
+                                string="Delegate(admin)"
+                                class="btn-primary" type="object"
+                                attrs="{'invisible': [('state', 'not in', ['request', 'legal_approve'])]}"
+                                groups ="lease_management.group_master_admin"
+                        />
+
+
+                         <button name="action_lease_revert" id="btn_approved"
+                                string="Revert back" class="btn-primary" type="object"
+                                attrs="{'invisible': ['|', ('state', '!=', 'request'), ('is_an_approver', '=', False)]}"
+                                groups="product_purchase.group_approvers"
+                        />
+
+                        <button name="action_add_legal_approver" id="btn_approve"
+                            string="Add Approver Request" class="btn-primary" type="object"
+                            attrs="{'invisible': ['|' ,('state', '!=', 'legal_approve'),('is_an_legal_approver','!=',True)]}"
+                            groups="product_purchase.group_approvers">
+                    </button>
+
+                        <button name="action_add_approver" id="btn_approve"
+                            string="Add Approver" class="btn-primary" type="object"
+                            attrs="{'invisible': ['|', ('state', '!=', 'request'), ('is_an_approver','=',False)]}"
+                            groups="product_purchase.group_approvers">
+                    </button>
+
+                        <button name="action_log_message" id="btn_log_msg"
+                                string="Request For Information" class="btn-primary" type="object"
+                                attrs="{'invisible': [('state', 'not in', ('legal_approve','request'))]}"
+                                groups="product_purchase.group_approvers">
+                        </button>
+
+                        <button name="action_Modification" id="btn_log_msg"
+                                string="Modification" class="btn-primary" type="object"
+                                attrs="{'invisible': [('state', 'not in', ('approve'))]}"
+                                groups="product_purchase.group_buyers">
+                        </button>
+
+                        <button name="action_lease_termination" id="btn_log_msg"
+                                string="Terminate" class="btn-danger"  type="object"
+                                attrs="{'invisible': [('state', 'not in', ('approve'))]}"
+                                groups="product_purchase.group_buyers">
+                        </button>
+                        
+                     
+
+                        <button name="action_renew" id="btn_log_msg"
+                                string="Renew" class="btn-primary" type="object"
+                                attrs="{'invisible': ['|', ('state', 'not in', ('approve', 'legal_approve')), ('renew_visible', '=', False)]}"
+                                groups="product_purchase.group_buyers">
+                        </button>
+                         <button name="action_renew_close"
+                                string="No renew and Close Pending" class="btn-primary" type="object" groups="product_purchase.group_buyers"
+                                attrs="{'invisible': ['|', ('state', 'not in', ('approve', 'legal_approve')), ('renew_visible', '=', False)]}"
+                        />
+
+                        
+                        
+                        <button name="send_replay" id="btn_log_rfi"
+                                string="Request For Information Reply" class="btn-primary" type="object" attrs="{'invisible': [('is_to_user', '=', False)]}">
+                        </button>
+
+
+                        <button name="action_draft"
+                                string="Move to Draft" type="object" invisible="1"/>
+
+<!--                        <button name="action_generate_po"-->
+<!--                                string="Create PO" class="btn-primary" type="object"-->
+<!--                                attrs="{'invisible': ['|', ('state', '!=', 'approve'), ('product_request_id', '!=', False)]}"-->
+<!--                        />-->
+
+
+                        <widget name="attach_document" string="Attach Document" action="message_post"
+                                attrs="{'invisible': [('state', 'not in', ('draft','request'))]}" groups="product_purchase.group_approvers"/>
+
+
+                        <field name="state" widget="statusbar" statusbar_visible="draft,request,approve"/>
+                    </header>
+
+                    <sheet>
+
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_open_attachments" type="object"
+                                    class="oe_stat_button" icon="fa-book"
+                                    attrs="{'invisible': [('attachment_number', '=', 0)]}">
+                                <field name="attachment_number" widget="statinfo" string="Documents"
+                                       options="{'reload_on_button': true}"/>
+                                <span class="o_stat_text">Documents</span>
+                            </button>
+                             <button name="view_purchase_order" type="object" string="Purchase Order" class="oe_stat_button" icon="fa-pencil-square-o" attrs="{'invisible': [('state', 'not in', ('approve','legal_approve'))]}">
+<!--                            <field name="invoice_count" widget="statinfo" string="Invoices"/>-->
+                        </button>
+                             <button name="view_purchase_request" type="object" string="Purchase Request" class="oe_stat_button" icon="fa-pencil-square-o" attrs="{'invisible': [('product_request_id', '=', False)]}">
+<!--                            <field name="invoice_count" widget="statinfo" string="Invoices"/>-->
+                        </button>
+                        </div>
+                         <div attrs="{'invisible': [('state','in',('approve','expire','legal_approve'))]}">
+                            <h1  style="text-align: center; font-weight: bold;font-size: 28px; ">Lease Request</h1>
+                        </div>
+                        <div attrs="{'invisible': [('state','not in',('approve','expire','legal_approve'))]}">
+                            <h1  style="text-align: center; font-weight: bold;font-size: 28px; ">Lease </h1>
+                        </div>
+
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+
+                        <group>
+                            <group col="2">
+<!--                                <field name="state"/>-->
+
+                                <field name="main_remark" class="o_form_input o_form_field"  style="font-weight: bold; font-size: 14px; width: 100%;"/>
+                                <field name="requested_date"/>
+                                  <field name="user_id" readonly="1"/>
+<!--                                <field name="product_id" required="1" options='{ "no_quick_create": true,"no_create": True, "no_create_edit": true,"no_open": True,}'/>-->
+<!--                                <field name="vendor_id" required="1"/>-->
+                                <field name="start_date" required="1" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="end_date" required="1" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+<!--                                <field name="qty"/>-->
+<!--                                <field name="product_uom"/>-->
+<!--                                <field name="price"/>-->
+                                <field name="department_id" required="1" options='{ "no_quick_create": true,"no_create": True, "no_create_edit": true,"no_open": True,}' attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="exp_category_domain" invisible="1" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="expense_type" required="1" readonly="1"/>
+                                 <field name= "exp_category"
+                                options='{"always_reload": True, "no_quick_create": True, "no_create_edit": True,"no_open": True,"no_create": True,}'
+                                        domain="exp_category_domain" required="1"
+                                        attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="TDS" attrs="{'readonly': [('state', '!=', 'draft')]}" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                <field name="rent_free" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="rent_free_start_date" attrs="{'invisible': [('rent_free', '=', False)],'required': [('rent_free', '=', True)]}"/>
+                                <field name="rent_free_end_date" attrs="{'invisible': [('rent_free', '=', False)],'readonly': [('state', '!=', 'draft')],'required': [('rent_free', '=', True)]}"/>
+
+                                <field name="lessee_period" placeholder="Enter days" string="Lessee Notice Period (days)" style="width: 100px;" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="lessor_period" placeholder="Enter days" string="Lessor Notice Period (days)" style="width: 100px;" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+
+
+                                <field name="original_lease_id" readonly="1"
+                                       attrs="{'invisible': [('original_lease_id', '=', False)]}"/>
+                                <field name="is_an_approver" invisible="1"/>
+                                <field name="is_an_legal_approver" invisible="1"/>
+                                <field name="user_approved" invisible="1"/>
+                                <field name="next_approve_user" invisible="1"/>
+                                <field name="product_request_id" readonly="1" invisible="1"/>
+                                <field name="compute_state" invisible="1"/>
+                                <field name="attachment_number" invisible="1"/>
+                                <field name="check_requested_by" invisible="1"/>
+                                <field name="is_to_user" invisible="1"/>
+                                <field name="renew_visible" invisible="1"/>
+<!--                                <field name="approve_users"/>-->
+<!--                                <field name="approved_users"/>-->
+<!--                                <field name="next_approve_user"/>-->
+
+
+                            </group>
+                            <group col="2">
+<!--                                <field name="user_id" readonly="1"/>-->
+                                <field name="company_id" readonly="1" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="bill_to" required="1" options='{ "no_quick_create": true, "no_create_edit": true,"no_open": True,"no_create": True,}' attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="ship_to" required="1" options='{ "no_quick_create": true, "no_create_edit": true,"no_open": True,"no_create": True,}' attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="approve_users" readonly="1" widget="many2many_tags" invisible="1" edit="0"/>
+                                <field name="approved_users" readonly="1" widget="many2many_tags" invisible="1"/>
+                                <field name="next_approve_user" readonly="1" widget="many2many_tags" invisible="1"/>
+                                <!--                                <field name="total" widget="monetary" />-->
+
+
+<!--                                <field name="total" required="1" readonly="1"/>-->
+                                <field name="auto_po" readonly="1"/>
+                                <field name="auto_invoice"
+                                      readonly="1"/>
+
+                                <field name="with_gst"
+                                       attrs="{'readonly': [('state', '!=', 'draft')], 'invisible': [('auto_po', '=', False)]}"/>
+                                <field name="tax"
+                                       attrs="{'readonly': [('state', '!=', 'draft')], 'invisible': [('with_gst', '=', False)],'required': [('with_gst', '=', True)]}"
+                                       options='{"no_quick_create": true, "no_create_edit": true,"no_open": True,"no_create": True}'/>
+                                <!--                                <field name="auto_invoice"-->
+                                <!--                                       attrs="{'invisible': ['|', ('auto_po', '=', False), ('with_gst', '=', True)]}"/>-->
+
+                                <field name="is_increment"
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+
+                                <field name="increment_method" class="o_light_label" widget="radio"
+                                       options="{'horizontal': true}"
+                                       attrs="{'invisible': [('is_increment', '=', False)],'readonly': [('state', '!=', 'draft')]}"/>
+
+                                <field name="inc_date"
+                                       attrs="{'invisible': [('is_increment', '=', False)],'readonly': [('increment_method', '!=', 'custom')]}" store="True"
+                                       force_save="1"/>
+                                <field name="lock_period"
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="lock_start_date"
+                                       attrs="{'invisible': [('lock_period', '=', False)],'readonly': [('state', '!=', 'draft')],'required': [('lock_period', '=', True)]}"/>
+
+                                <field name="lock_end_date"
+                                       attrs="{'invisible': [('lock_period', '=', False)],'readonly': [('state', '!=', 'draft')],'required': [('lock_period', '=', True)]}"/>
+                                 <field name="total" required="1" readonly="1"/>
+
+                            </group>
+                        </group>
+                        <group>
+                            <field name="responsible_person" attrs="{'readonly': ['|',('state', '=', 'approve'),('is_an_legal_approver','!=',True)],'invisible': [('state', 'not in', ('approve','legal_approve'))]}"/>
+                            <field name="signed_copy" widget="many2many_binary" attrs="{'readonly': ['|',('state', '=', 'approve'),('is_an_legal_approver','!=',True)],'invisible': [('state', 'not in', ('approve','legal_approve'))]}"/>
+                            <field name="agreement_copy" widget="many2many_binary" attrs="{'readonly': ['|',('state', '=', 'approve'),('is_an_legal_approver','!=',True)],'invisible': [('state', 'not in', ('approve','legal_approve'))]}"/>
+                        </group>
+
+
+                        <notebook>
+
+                            <page string="Products" required="1" name="product_lease_request_line_id">
+                                <field name="product_lease_request_line_ids"
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}">
+                                    <tree editable="bottom" delete="1">
+
+                                        <field name="product"
+                                               options='{ "no_quick_create": true, "no_create_edit": true,"no_open": True,"no_create": True,}'
+                                               attrs="{'readonly': [('parent.state', '!=', 'draft')]}"
+                                               required="1"/>
+
+
+                                        <field name="uom" width="50px"/>
+
+
+                                        <field name="quantity"
+                                               width="80px" required="1"
+                                               attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
+
+
+                                        <field name="unit_price"
+
+                                               width="90px"
+                                               attrs="{'readonly': [('parent.state', '!=', 'draft')]}"
+                                               required="1"/>
+                                        <field name="amount"/>
+
+                                        <field name="increment_amount" attrs="{'column_invisible': [('parent.is_increment', '=', False)],'readonly': [('parent.state', '!=', 'draft')],'required': [('parent.is_increment', '=', True)]}"/>
+
+                                        <!--                                        <field name="inc_value"-->
+                                        <!--                                               attrs="{'readonly': [('increment_amount', '!=', 'custom')]}" store="True"-->
+                                        <!--                                               force_save="1"/>-->
+                                        <field name="inc_value"
+                                               attrs="{'column_invisible': [('parent.is_increment', '=', False)],'readonly': [
+               ('parent.state', '!=', 'draft'),
+               ('increment_amount', '!=', 'custom')
+           ],'required': [('parent.is_increment', '=', True)]
+       }"/>
+
+                                        <field name="increment_by" class="o_light_label"
+                                               options="{'vertical': true}"
+                                               attrs="{'column_invisible': [('parent.is_increment', '=', False)],'readonly': [('parent.state', '!=', 'draft')],'required': [('parent.is_increment', '=', True)]}"/>
+
+                                        <field name="inc_amount"
+                                               attrs="{'column_invisible': [('parent.is_increment', '=', False)],'readonly': [('parent.state', '!=', 'draft')],'required': [('parent.is_increment', '=', True)]}"/>
+                                        <field name="total_increment_value"
+                                               attrs="{'column_invisible': [('parent.is_increment', '=', False)]}"/>
+                                        <field name="inc_period_value"
+                                               attrs="{'column_invisible': [('parent.is_increment', '=', False)]}"/>
+
+
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field name="product"
+                                                   options='{ "no_quick_create": true, "no_create_edit": true,"no_open": True,"no_create": True,}'
+                                                   attrs="{'readonly': [('parent.state', '!=', 'draft')]}"
+                                            />
+                                            <field name="quantity" required="1"
+                                                   attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
+
+                                            <field name="unit_price"
+                                                   attrs="{'readonly': [('parent.state', '!=', 'draft')]}"
+                                            />
+                                            <field name="increment_amount" class="o_light_label"
+                                                   options="{'horizontal': true}" attrs="{'column_invisible': [('parent.is_increment', '=', False)],'readonly': [('parent.state', '!=', 'draft')]}"/>
+
+                                            <field name="inc_value"
+                                                   attrs="{'column_invisible': [('parent.is_increment', '=', False)],'readonly': [('parent.state', '!=', 'draft')]}"/>
+
+                                            <field name="increment_by" class="o_light_label"
+                                                   options="{'horizontal': true}"
+                                                  attrs="{'column_invisible': [('parent.is_increment', '=', False)],'readonly': [('parent.state', '!=', 'draft')]}"/>
+
+                                            <field name="inc_amount"
+                                                   attrs="{'column_invisible': [('parent.is_increment', '=', False)],'readonly': [('parent.state', '!=', 'draft')]}"/>
+                                            <field name="total_increment_value"
+                                                   attrs="{'column_invisible': [('parent.is_increment', '=', False)],'readonly': [('parent.state', '!=', 'draft')]}"/>
+                                            <field name="inc_period_value"
+                                                   attrs="{'column_invisible': [('parent.is_increment', '=', False)],'readonly': [('parent.state', '!=', 'draft')]}"/>
+
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+
+
+                            <page string="Vendors" name="vendor_lease_request_line_id">
+                                <field name="vendor_lease_request_line_ids" attrs="{'readonly': [('state', '!=', 'draft')]}">
+                                    <tree editable="bottom" delete="1">
+
+                                        <field name="vendor_id" required="1" width="70px" options='{ "no_quick_create": true, "no_create_edit": true,"no_open": True,"no_create": True,}'/>
+
+
+                                        <field name="percentage_of_amount" width="70px"/>
+
+                                        <field name="amount" width="70px" required="1"/>
+
+
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field name="vendor_id" required="1" width="70px" options='{ "no_quick_create": true, "no_create_edit": true,"no_open": True,"no_create": True,}'/>
+
+
+                                            <field name="percentage_of_amount" width="70px" />
+
+                                            <field name="amount" width="70px" />
+
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+
+
+                            <page string="Details" name="prdct_details">
+                                <group>
+                                    <group>
+                                        <field name="address1" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                        <field name="address2" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                        <field name="city" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                        <field name="state_name" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+
+
+                                    </group>
+
+                                    <group>
+                                        <field name="location" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                        <field name="security" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                        <field name="terms" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                    </group>
+
+                                </group>
+
+                            </page>
+
+<!--                            <page string="Increments" name="increment_details"-->
+<!--                                  attrs="{'invisible': [('is_increment', '=', False)]}" >-->
+<!--                                <group>-->
+<!--                                    <group>-->
+<!--                                        <field name="increment_method" class="o_light_label" widget="radio"-->
+<!--                                               options="{'horizontal': true}" attrs="{'readonly': ['|', '|',  ('state', '=', 'approve'), ('state', '=', 'legal_approve'), ('state', '=', 'request')]}"/>-->
+
+<!--                                        <field name="inc_date"-->
+<!--                                               attrs="{'readonly': [('increment_method', '!=', 'custom')]}" store="True"-->
+<!--                                               force_save="1" />-->
+
+<!--                                        <field name="increment_amount" class="o_light_label" widget="radio"-->
+<!--                                               options="{'horizontal': true}" attrs="{'readonly': ['|', '|',  ('state', '=', 'approve'), ('state', '=', 'legal_approve'), ('state', '=', 'request')]}"/>-->
+
+<!--                                        <field name="inc_value"-->
+<!--                                               attrs="{'readonly': [('increment_amount', '!=', 'custom')]}" store="True"-->
+<!--                                               force_save="1"/>-->
+
+<!--                                        <field name="increment_by" class="o_light_label" widget="radio"-->
+<!--                                               options="{'horizontal': true}" attrs="{'readonly': ['|', '|',  ('state', '=', 'approve'), ('state', '=', 'legal_approve'), ('state', '=', 'request')]}"/>-->
+
+<!--                                        <field name="inc_amount" attrs="{'readonly': ['|',  ('state', '=', 'approve'), ('state', '=', 'legal_approve')]}"/>-->
+<!--                                        <field name="total_increment_value" invisible="0" attrs="{'readonly': ['|', '|', ('state', '=', 'approve'), ('state', '=', 'legal_approve'), ('state', '=', 'request')]}"/>-->
+<!--                                        <field name="inc_period_value"/>-->
+
+<!--&lt;!&ndash;                                        <field name="amount_payable"&ndash;&gt;-->
+<!--&lt;!&ndash;                                               readonly="1"&ndash;&gt;-->
+<!--&lt;!&ndash;                                               store="1"&ndash;&gt;-->
+<!--&lt;!&ndash;                                               force_save="1"&ndash;&gt;-->
+<!--&lt;!&ndash;                                               attrs="{'invisible': [('state', 'in', ('request','draft'))]}"/>&ndash;&gt;-->
+
+<!--                                    </group>-->
+<!--                                </group>-->
+<!--                            </page>-->
+
+
+                            <page string="Lease Approvers" name="pade_apprs">
+                                <field name="approve_line" readonly="1">
+                                    <tree editable="bottom" delete="0">
+                                        <field name="user_id" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="company_id"/>
+                                        <field name="department_id"/>
+                                        <field name="designation"/>
+                                        <field name="approve_order"/>
+                                        <field name="status" readonly="1" store="1" force_save="1"/>
+                                    </tree>
+                                    <form>
+                                        <field name="user_id" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="company_id" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="location" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="department_id" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="designation" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="approve_order" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="status"/>
+                                    </form>
+                                </field>
+                            </page>
+
+
+                             <page string="Legal Approvers" name="pade_apprs" attrs="{'invisible': [('state', 'not in', ('approve','legal_approve'))]}">
+                                <field name="legal_approve_line" readonly="1">
+                                    <tree editable="bottom" delete="0">
+                                        <field name="user_id" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="company_id"/>
+                                        <field name="department_id"/>
+                                        <field name="designation"/>
+                                        <field name="approve_order"/>
+                                        <field name="status" readonly="1" store="1" force_save="1"/>
+                                    </tree>
+                                    <form>
+                                        <field name="user_id" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="company_id" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="location" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="department_id" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="designation" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="approve_order" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="status"/>
+                                    </form>
+                                </field>
+                            </page>
+
+
+                            <page string="PO" name="page_recurring_po">
+                                <field name="reccuring_line" readonly="1">
+                                    <tree editable="bottom">
+                                        <field name="po"/>
+                                        <field name="date"/>
+                                        <field name="to_date"/>
+                                        <field name="vendor" options="{'group_by': 'vendor'}"/>
+                                        <field name="amount"/>
+                                        <field name="status"/>
+
+                                    </tree>
+                                    <form>
+                                        <!--                                        <field name="date"/>-->
+                                        <field name="po"/>
+                                        <!--                                        <field name="status"/>-->
+
+                                    </form>
+                                </field>
+                            </page>
+
+                            <page string="Request For Information" name="page_rfi">
+                                <field name="pr_rfi_ids" readonly="1">
+                                    <tree editable="bottom">
+                                        <field name="user_id"/>
+                                        <field name="to_user"/>
+                                        <field name="message"/>
+                                        <field name="replay"/>
+                                        <field name="status" invisible="1"/>
+                                        <field name="replayed" invisible="1"/>
+                                        <field name="is_to_user_id" invisible="1"/>
+                                        
+
+                                    </tree>
+                                    <!--                                    <form>-->
+                                    <!--                                        <field name="user_id"/>-->
+                                    <!--                                        <field name="to_user"/>-->
+                                    <!--                                        <field name="message"/>-->
+                                    <!--                                        <field name="replay"/>-->
+                                    <!--                                        <field name="status"/>-->
+                                    <!--                                    </form>-->
+                                </field>
+                            </page>
+
+                            <page string="Termination Details" name="termination_detail">
+                                 <field name="termination_details" placeholder="Enter termination details here..."  attrs="{'readonly': [('state', '!=', 'draft')]}" />
+
+                            </page>
+
+                            <page string="Remarks" name="remark_line"
+                                  attrs="{'invisible': [('state', '=','draft')]}">
+
+                                <field name="remarks_ids" readonly="1">
+                                    <tree editable="bottom">
+                                        <field name="from_user" readonly="1"/>
+
+                                        <field name="for_type" readonly="1"/>
+                                        <field name="replay" readonly="1"/>
+                                        <field name="approve_type" readonly="1"/>
+
+                                    </tree>
+                                </field>
+
+                            </page>
+
+                            <page string="Reason for Roll Back" name="revert_reason_line"
+                                  attrs="{'invisible': [('state', '=','draft')]}">
+
+                                <field name="revert_reason">
+                                    <tree editable="bottom">
+                                        <field name="revert_from"/>
+                                        <field name="reason"/>
+                                    </tree>
+                                </field>
+
+                            </page>
+
+                        </notebook>
+
+
+                    </sheet>
+
+
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                    </div>
+
+
+                </form>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="action_product_lease">
+            <field name="name">Lease Agreements</field>
+            <field name="res_model">product.lease</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">['|',('approved_users', 'in', uid),('create_uid', '=', uid)]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"></p>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="action_my_product_lease">
+            <field name="name">Lease Agreements</field>
+            <field name="res_model">product.lease</field>
+            <field name="view_mode">tree,form</field>
+             <field name="domain">[('vendor_user.id','=',uid)]</field>
+            <field name="context">{
+                'search_default_status_cancel': 1,
+                'create': False,
+                'edit' : False,
+
+                }
+            </field>
+
+
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"></p>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="action_approve_lease_view">
+            <field name="name">Lease Agreements</field>
+            <field name="res_model">product.lease</field>
+            <field name="view_mode">tree,form</field>
+             <field name="domain">[('state', 'not in', ['request', 'draft','reject','rfi','revert','renew'])]</field>
+            <field name="context">{
+
+                'create': False,
+                'edit' : False,
+
+                }
+            </field>
+
+
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"></p>
+            </field>
+        </record>
+
+<!--        <record model="ir.actions.act_window" id="action_all_product_lease">-->
+<!--            <field name="name">All Lease Agreements</field>-->
+<!--            <field name="res_model">product.lease</field>-->
+<!--            <field name="view_mode">tree,form</field>-->
+<!--            <field name="help" type="html">-->
+<!--                <p class="oe_view_nocontent_create"></p>-->
+<!--            </field>-->
+<!--        </record>-->
+
+<!--        <menuitem id="menu_all_product_lease" name="All Lease/Rent Agreements"-->
+<!--                  parent="product_purchase.root_contracts_agreements"-->
+<!--                  action="action_all_product_lease" groups="base.group_erp_manager"-->
+<!--                  sequence="15"/>-->
+
+
+
+<!--        <menuitem id="root_product_lease" name="Contracts"-->
+<!--                  web_icon="lease_management,static/icons/agreement.png"/>-->
+
+        <menuitem id="root_lease_management" name="Lease/Rent" web_icon="vendor_portal,static/icons/icon2.png"/>
+
+        <menuitem id="menu_product_lease" name="Lease/Rent Request" parent="root_lease_management"
+                  action="action_product_lease" groups="product_purchase.group_buyers,product_purchase.group_approvers"
+                  sequence="13"/>
+
+
+
+        <menuitem id="menu_vendors_product_lease" name="My Lease/Rent Request" parent="lease_management.root_lease_management"
+                  action="action_my_product_lease" groups="vendor_portal.group_vendor_portal_user"
+                  sequence="14"/>
+
+        <menuitem id="menu_approve_lease" name="Lease Agreements" parent="lease_management.root_lease_management"
+                  action="action_approve_lease_view" groups="product_purchase.group_buyers,product_purchase.group_purchase_head"
+                  sequence="15"/>
+
+        
+
+
+        <record id="purchase.purchase_rfq" model="ir.actions.act_window">
+
+            <field name="context">{'search_default_draft': 1}</field>
+
+        </record>
+
+
+<!--        <record id="request_button_inherit" model="ir.ui.view">-->
+<!--            <field name="name">product.request.inherited_new</field>-->
+<!--            <field name="model">product.request</field>-->
+<!--            <field name="inherit_id" ref="product_purchase.view_product_purchase_form"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//button[@name='action_log_message']" position="attributes">-->
+<!--                    <attribute name="string">RFI</attribute>-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <!--   ################# Master Module Action ##################    -->
+
+        <record model="ir.actions.act_window" id="action_master_product_lease">
+            <field name="name">Lease Agreements</field>
+            <field name="res_model">product.lease</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">"[]"</field>
+            <field name="context">{
+                'group_by': 'vendor_user',
+                'create': False,
+
+                }
+            </field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"></p>
+            </field>
+        </record>
+
+          <record id="update_log_message" model="ir.ui.view">
+            <field name="name">RFI</field>
+            <field name="model">log.message</field>
+            <field name="arch" type="xml">
+
+
+                <form string="RFI">
+
+                    <group>
+
+                        <group col="2">
+
+                            <field name="message"/>
+                            <field name="user_cc" widget="many2many_tags" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                            <field name="cc_email"/>
+                        </group>
+                        <group col="2">
+                            <field name="user" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                            <field name="to_users" widget="many2many_tags" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                            <field name="branch_id" readonly="1" widget="many2many_tags"/>
+                            <field name="email" readonly="1"/>
+                            <!--                            <field name="user_ids" widget="many2many_tags"/>-->
+                            <field name="request_id" invisible="1"/>
+<!--                            <field name="user_cc" widget="many2many_tags"/>-->
+
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="confirm"
+                                string="Confirm" class="btn-primary"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+         </record>
+
+        <record id="update_log_message_action1" model="ir.actions.act_window">
+            <field name="name">RFI</field>
+            <field name="res_model">log.message</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="update_log_message"/>
+            <field name="target">new</field>
+        </record>
+
+
+        <record id="update_log_replay" model="ir.ui.view">
+            <field name="name">Replay RFI</field>
+            <field name="model">message.replay</field>
+            <field name="arch" type="xml">
+
+
+                <form string="RFI Replay">
+
+                    <group>
+
+                        <group col="2">
+                            <field name="message"/>
+                            <field name="replay"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="confirm"
+                                string="Confirm" class="btn-primary"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+        <record id="update_log_replay_action1" model="ir.actions.act_window">
+            <field name="name">Replay Message</field>
+            <field name="res_model">message.replay</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="update_log_replay"/>
+            <field name="target">new</field>
+        </record>
+
+
+        <record id="remark_approve_form" model="ir.ui.view">
+            <field name="name">Remarks</field>
+            <field name="model">lease.remark</field>
+            <field name="arch" type="xml">
+
+
+                <form string="Remarks">
+
+                    <group>
+
+                        <group col="2">
+                            <field name="lease_id" invisible="1"/>
+                            <field name="replay"/>
+                            <field name="approve_type" invisible="1"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="confirm_remark"
+                                string="Approve" class="btn-primary"
+                                attrs="{'invisible': [('approve_type', '!=', 'approve')]}"
+                                confirm="Confirm Approval"/>
+                        <button type="object" name="confirm_remark"
+                                string="Reject" class="btn-primary"
+                                attrs="{'invisible': [('approve_type', '!=', 'reject')]}"
+                                confirm="Confirm Reject"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+        <record id="remark_lease_approve_action" model="ir.actions.act_window">
+            <field name="name">Remark</field>
+            <field name="res_model">lease.remark</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="remark_approve_form"/>
+            <field name="target">new</field>
+        </record>
+
+
+        <record id="add_approver_lease_view" model="ir.ui.view">
+
+            <field name="name">Add Approver</field>
+
+            <field name="model">add.approver.lease.wizard</field>
+
+            <field name="arch" type="xml">
+
+
+                <form string="Adding User Details">
+
+
+                    <group>
+
+
+                        <group col="2">
+
+                            <field name="lease_id" readonly="1" invisible="1"/>
+
+                            <field name="user"/>
+
+                            <field name="branch_id" readonly="1"/>
+
+                            <field name="email" readonly="1"/>
+
+                            <field name="order"/>
+
+
+                        </group>
+
+                    </group>
+
+                    <footer>
+
+                        <button type="object" name="add_user"
+
+                                string="Confirm" class="btn-primary"/>
+
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+
+                    </footer>
+
+                </form>
+
+
+            </field>
+
+        </record>
+
+
+        <record id="add_approver_lease_action" model="ir.actions.act_window">
+
+            <field name="name">Lease Add Approver Details</field>
+
+            <field name="res_model">add.approver.lease.wizard</field>
+
+            <field name="view_mode">form</field>
+
+            <field name="view_id" ref="add_approver_lease_view"/>
+
+            <field name="target">new</field>
+
+        </record>
+
+          <record id="lease_termination_action" model="ir.ui.view">
+            <field name="name">Lease Termination</field>
+            <field name="model">lease.terminate.wizard</field>
+            <field name="arch" type="xml">
+
+
+                <form string="Lease Termination">
+
+                    <group>
+
+                        <group col="2">
+                            <field name="reason"/>
+                            <field name="lease_id" invisible="1"/>
+
+                        </group>
+                        <group>
+                            <field name="cancel_date"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="terminate"
+                                string="Terminate" class="btn-primary"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+        <record id="termination_lease_action" model="ir.actions.act_window">
+            <field name="name">Lease Termination</field>
+            <field name="res_model">lease.terminate.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="lease_termination_action"/>
+            <field name="target">new</field>
+        </record>
+
+
+        <!--   ######################################     -->
+
+
+    </data>
+</odoo>

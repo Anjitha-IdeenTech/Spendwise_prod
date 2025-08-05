@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="view_vendor_approval_tree">
+            <field name="name">Vendor Approval</field>
+            <field name="model">vendor.approval</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree string="Example Tree">
+                    <field name="name"/>
+                    <field name="company_id"/>
+<!--                    <field name="location"/>-->
+                    <field name="department_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_vendor_approval_form">
+            <field name="name">vendor.approval.form</field>
+            <field name="model">vendor.approval</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                        <group>
+                            <group>
+                                <field name="company_id" style="width:25%%"/>
+<!--                                <field name="location" style="width:25%%"/>-->
+                                <field name="department_id" style="width:25%%"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Approve Users" name="vendor_approve_users_id">
+                                <field name="vendor_approve_users_id">
+                                    <tree editable="bottom">
+                                        <field name="company_id"/>
+                                        <field name="location"/>
+                                        <field name="department_id"/>
+                                        <field name="approve_order"/>
+                                        <field name="designation"/>
+                                        <field name="user_id" invisible="1"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field name="company_id"/>
+<!--                                            <field name="location"/>-->
+                                            <field name="department_id"/>
+                                            <field name="approve_order"/>
+                                            <field name="designation"/>
+                                            <field name="user_id" invisible="1"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_vendor_workflow">
+            <field name="name">Vendor Workflow</field>
+            <field name="res_model">vendor.approval</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first Vendor approval workflow!
+                </p>
+            </field>
+        </record>
+
+<!--        <menuitem id="menu_vendor_workflow"-->
+<!--                  name="Vendor Approve Workflow"-->
+<!--                  action="action_vendor_workflow"/>-->
+<!--&lt;!&ndash;                  parent="menu_create_approve_user"&ndash;&gt;-->
+
+
+    </data>
+</odoo>

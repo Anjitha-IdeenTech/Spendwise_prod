@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="view_bid_request_details_tree">
+            <field name="name">Bid Request Details</field>
+            <field name="model">bid.request</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree string="Example Tree" create="0" delete="1" edit="0">
+                    <field name="name"/>
+<!--                    <field name="product_id"/>-->
+<!--                    <field name="quantity"/>-->
+<!--                    <field name="unit_price"/>-->
+<!--                    <field name="total_price"/>-->
+                    <field name="rank"/>
+                    <field name="updated_price"/>
+                    <field name="start_date"/>
+
+<!--                    <field name="time"/>-->
+                    <field name="deadline"/>
+                    <field name="status"
+                           decoration-success="status == 'accept'"
+                           decoration-danger="status == 'cancel'"
+                           decoration-info="status == 'draft'"
+                           widget="badge"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_bid_request_form" model="ir.ui.view">
+            <field name="name">bid.request.from</field>
+            <field name="model">bid.request</field>
+            <field name="arch" type="xml">
+                <form create="1" delete="1">
+                    <header>
+                        <button name="action_accept_bid" id="btn_accept_bid"
+                                string="Accept" class="btn-primary" type="object"
+                                attrs="{'invisible': [('status', '!=', 'draft')]}"
+                                confirm="Accept Bid Request?"/>
+                        <button name="action_reject_bid" id="btn_reject_bid"
+                                string="Reject" class="btn-danger" type="object"
+                                attrs="{'invisible': [('status', '!=', 'draft')]}"
+                                confirm="Reject Bid Request?"/>
+                    </header>
+                    <sheet>
+                        <h1 style="margin-left: 550px">
+                            State: <field name="status" readonly="1">Status</field>
+                        </h1>
+                        <h1>
+                            <field name="request_to"
+                                       readonly="1"
+                                       style="width:25%%">Product
+                                </field>
+                        </h1>
+                        <h1>
+                            <field name="name">Name</field>
+                        </h1>
+                        <h1 attrs="{'invisible': [('status', '!=', 'live')]}" readonly="1">
+                            Rank:
+                            <field name="rank" readonly="1">Rank</field>
+                        </h1>
+                        <group>
+                            <group>
+                                <field name="request_from"
+                                       readonly="1"
+                                       style="width:25%%">Product
+                                </field>
+                                <field name="user_id"/>
+<!--                                <field name="request_to"-->
+<!--                                       readonly="1"-->
+<!--                                       style="width:25%%">Product-->
+<!--                                </field>-->
+<!--                                <field name="product_id"-->
+<!--                                       readonly="1"-->
+<!--                                       style="width:25%%">Product-->
+<!--                                </field>-->
+<!--                                <field name="quantity"-->
+<!--                                       readonly="1"-->
+<!--                                       style="width:25%%">Quantity-->
+<!--                                </field>-->
+<!--                                <field name="unit_price"-->
+<!--                                       readonly="1"-->
+<!--                                       style="width:25%%">Unit Price-->
+<!--                                </field>-->
+                                <field name="total_price"
+                                       readonly="1"
+                                       style="width:25%%">Total Price
+                                </field>
+                                <field name="status" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="start_date"
+                                       readonly="1"
+                                       style="width:25%%">Requested
+                                    Date
+                                </field>
+                                <field name="deadline"
+                                       readonly="1"
+                                       style="width:25%%">Expected Date
+                                </field>
+
+<!--                                <field name="request_from"-->
+<!--                                       readonly="1"-->
+<!--                                       style="width:25%%">Vendor-->
+<!--                                </field>-->
+                                <field name="realtime_update" widget="bid_request_realtime"
+                                       options="{'no_open': True, 'no_create': True}" force_save="1"/>
+                                <h3>
+
+                                <field name="remaining_time" widget="bidding_timer"/>
+                            </h3>
+                            </group>
+                        </group>
+                        <h3 attrs="{'invisible': [('status', '!=', 'live')]}">
+                            Price
+                        </h3>
+                        <h1>
+                            <field name="updated_price" attrs="{'invisible': [('status', '!=', 'live')]}"
+                                   style="width:25%%">Your Price
+                            </field>
+
+                        </h1>
+                        <h1 attrs="{'invisible': [('status', '!=', 'complete')]}" readonly="1">
+                            Bid Status:
+                            <field name="bid_status" readonly="1">Bid Status</field>
+
+                        </h1>
+                        <button name="update_price" id="btn_initiated" attrs="{'invisible': [('status', '!=', 'live')]}"
+                                string="Update Price" class="btn-primary" type="object"/>
+                        <notebook>
+                            <page string="Bidding Products" name="bid_products">
+                                <field name="bidding_request_products" readonly="0">
+                                    <tree editable="bottom" delete="0" create="0">
+                                        <field name="product_id" width="110px" readonly="1"/>
+                                        <field name="quantity" width="110px" readonly="1" />
+                                        <field name="unit_price" width="110px"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                             <field name="product_id" />
+                                            <field name="quantity" />
+                                            <field name="unit_price" />
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                             <page string="Other Info">
+                                <field name="terms" placeholder="Terms And Conditions"
+                                       required="0" attrs="{'readonly': [('status', 'not in', ['draft', 'bid'])]}"/>
+
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <!--                    attrs="{'invisible': [('status', '!=', 'live')]}"-->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_bid_request" model="ir.actions.act_window">
+            <field name="name">Bid Request</field>
+            <field name="res_model">bid.request</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('user_id','=',uid)]</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first Bid Request!
+                </p>
+            </field>
+        </record>
+         <record id="action_bidding_requests_master" model="ir.actions.act_window">
+            <field name="name">Bid Request</field>
+            <field name="res_model">bid.request</field>
+            <field name="view_mode">tree,form</field>
+<!--            <field name="domain">[('user_id','=',uid)]</field>-->
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first Bid Request!
+                </p>
+            </field>
+        </record>
+<!--        <menuitem id="menu_create_bidding"-->
+<!--                  name="Bidding Management System"-->
+<!--                  web_icon="bidding,static/icons/bidding.png"-->
+<!--        />-->
+<!--        <menuitem id="menu_bid_request"-->
+<!--                  name="Bid Request"-->
+<!--                  parent="menu_create_bidding"-->
+<!--                  action="action_bid_request"-->
+<!--                  groups="bidding.group_bid_vendors"-->
+<!--        />-->
+
+        <menuitem id="menu_bid_request"
+                  name="Bidding Management System"
+                  web_icon="bidding,static/icons/bidding_1.jpg"
+
+        />
+
+<!--         groups="bidding.group_bid_vendors"-->
+        <menuitem id="menu_bid_user"
+                  name="Bidding"
+                     web_icon="bidding,static/icons/bidding_1.jpg"
+                  action="action_bid_request"
+                  groups="vendor_portal.group_vendor_portal_user"
+        />
+        <menuitem id="menu_bid_admin"
+                  name="Bidding"
+                     web_icon="bidding,static/icons/bidding_1.jpg"
+                  action="action_bid_request"
+                  groups="product_purchase.group_pr_initiator"
+        />
+<!--         parent="menu_bid_request"-->
+
+
+
+
+    </data>
+</odoo>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_vendor_limit_tree" model="ir.ui.view">
+        <field name="name">vendor.limit.tree</field>
+        <field name="model">vendor.limit</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="vendor_id"/>
+                <field name="balance_amount"/>
+                <field name="status"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_vendor_limit_form" model="ir.ui.view">
+        <field name="name">vendor.limit.form</field>
+        <field name="model">vendor.limit</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                     <button name="activate" id="limit_activate"
+                                string="Activate" type="object" class="btn-primary"
+                                attrs="{'invisible': [('status', '!=', 'draft')]}"
+
+                        />
+                    <button name="log_reason_wizard" id="limit_activate"
+                                string="Terminate" type="object" class="btn-primary"
+                                attrs="{'invisible': [('status', '!=', 'active')]}"
+
+                        />
+                    <field name="status" widget="statusbar" nolabel="1" readonly="False"
+                           statusbar_visible="draft,active"/>
+
+                </header>
+                <sheet>
+                    <group>
+
+                        <div class="oe_title" style="margin-bottom: 10px;">
+                            <h1>
+                                <label for="vendor_id" class="oe_edit_only" style="font-weight: bold; font-size:18px;"/>
+                                <field name="vendor_id" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                            </h1>
+                        </div>
+                        <field name="start_date" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                        <field name="end_date" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                        <field name="vendor_budget" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                        <field name="amount_used" readonly="1"/>
+                        <field name="balance_amount" readonly="1" />
+                        <field name="terminate_date" attrs="{'invisible': [('status', '!=', 'terminate')]}" readonly="1" />
+
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_vendor_limit_action" model="ir.actions.act_window">
+        <field name="name">Vendor Limit</field>
+        <field name="res_model">vendor.limit</field>
+        <field name="view_mode">tree,form</field>
+        <!--        <field name="view_id" ref="view_expense_category_tree"/>-->
+
+    </record>
+
+    <menuitem id="menu_vendor_limit_list" name="Vendor Limit" action="action_vendor_limit_action"
+              parent="lease_management.sub_root_workflow" sequence="10"/>
+    <menuitem id="menu_vendor_limit_list" name="Vendor Limit" action="action_vendor_limit_action"
+              parent="lease_management.sub_root_products" sequence="0"/>
+
+    <!--    <menuitem id="menu_expense_category_list" name="Expense Categories" action="action_expense_category_action"-->
+    <!--              sequence="30"/>-->
+    <record id="vendor_limit_termination_form" model="ir.ui.view">
+            <field name="name">Terminate</field>
+            <field name="model">log.reason.wizard</field>
+            <field name="arch" type="xml">
+
+
+                <form string="Terminate">
+
+                    <group>
+
+                        <group col="2">
+                            <field name="reason"/>
+
+                        </group>
+                    </group>
+                    <footer>
+
+                        <button type="object" name="confirm_reason"
+                                string="Terminate" class="btn-primary"
+                                confirm="Confirm !!!"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+    <record id="action_termination" model="ir.actions.act_window">
+        <field name="name">Terminate</field>
+        <field name="res_model">log.reason.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="vendor_limit_termination_form"/>
+
+    </record>
+
+</odoo>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_expense_category_tree" model="ir.ui.view">
+        <field name="name">expense.category.tree</field>
+        <field name="model">expense.category</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="exp_type"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_expense_category_form" model="ir.ui.view">
+        <field name="name">expense.category.form</field>
+        <field name="model">expense.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="exp_type"/>
+                         <field name="reject_not_possible"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                    </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_expense_category_action" model="ir.actions.act_window">
+        <field name="name">Expense Categories</field>
+        <field name="res_model">expense.category</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_expense_category_tree"/>
+        <field name="context">{
+                'group_by': 'exp_type',
+
+                }
+            </field>
+    </record>
+
+<!--    <menuitem id="menu_expense_category_list" name="Expense Categories" action="action_expense_category_action"-->
+<!--              parent="lease_management.sub_root_workflow" sequence="30"/>-->
+
+<!--    <menuitem id="menu_expense_category_list" name="Expense Categories" action="action_expense_category_action"-->
+<!--              sequence="30"/>-->
+</odoo>

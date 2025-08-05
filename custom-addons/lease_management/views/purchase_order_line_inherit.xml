@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_purchase_order_line_custom_tree" model="ir.ui.view">
+        <field name="name">Purchase Order Line Custom Tree</field>
+        <field name="model">purchase.order.line</field>
+        <field name="arch" type="xml">
+            <tree>
+                <!-- Define your custom tree view fields here -->
+                <field name="order_id"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="price_unit"/>
+                <field name="product_qty"/>
+                <field name="price_subtotal"  sum="Total Value"/>
+                 <field name="date_planned"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

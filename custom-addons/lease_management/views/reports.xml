@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <menuitem id="root_reports" name="Reports"
+                  web_icon="lease_management,static/icons/icons.png"
+                  groups="lease_management.group_record_admin"/>
+
+        <menuitem id="sub_root_purchase" name="Purchase" parent="root_reports"
+                  sequence="10"/>
+
+        <menuitem id="sub_root_accounts" name="Accounts" parent="root_reports"
+                  sequence="10"/>
+        <menuitem id="sub_root_bill" name="Vendor Bills" parent="root_reports"
+                  sequence="11"/>
+
+        <menuitem id="menu_root_accounts_gl" name="General Ledger" parent="sub_root_accounts"
+                  action="dynamic_accounts_report.action_general_ledger" sequence="10"/>
+
+        <menuitem id="menu_purchase_reports_pl" name="Partner Ledger" parent="sub_root_accounts"
+                  action="dynamic_accounts_report.action_partner_ledger" sequence="11"/>
+
+         <menuitem id="menu_purchase_reports_aged" name="Aged Partner Balance" parent="sub_root_accounts"
+                  action="dynamic_accounts_report.action_ageing_partner" sequence="12"/>
+
+         <menuitem id="menu_pl" name="Profit and Loss" parent="sub_root_accounts"
+                  action="dynamic_accounts_report.action_dynamic_profit_and_loss" sequence="13"/>
+
+         <menuitem id="menu_bls" name="Balance sheet" parent="sub_root_accounts"
+                  action="dynamic_accounts_report.action_dynamic_balance_sheet" sequence="14"/>
+
+        <menuitem id="menu_csf" name="Cash Flow Statements" parent="sub_root_accounts"
+                  action="dynamic_accounts_report.action_cash_flow" sequence="15"/>
+
+         <menuitem id="menu_tb" name="Trail Balance" parent="sub_root_accounts"
+                  action="dynamic_accounts_report.action_trial_balance" sequence="15"/>
+
+         <menuitem id="menu_cash" name="Cash Book" parent="sub_root_accounts"
+                  action="dynamic_accounts_report.action_cash_book" sequence="16"/>
+
+        <menuitem id="menu_bank" name="Bank Book" parent="sub_root_accounts"
+                  action="dynamic_accounts_report.action_bank_book" sequence="17"/>
+
+        <menuitem id="menu_day" name="Day Book" parent="sub_root_accounts"
+                  action="dynamic_accounts_report.action_day_book" sequence="18"/>
+
+
+        <menuitem id="menu_purchase_reports" name="Purchase Reports" parent="sub_root_purchase"
+                  action="purchase.action_purchase_order_report_all" sequence="10"/>
+
+        <menuitem id="menu_purchase_request_reports" name="Purchase Requests" parent="sub_root_purchase"
+                  action="product_purchase.action_product_requests_admin" sequence="11"/>
+        <menuitem id="menu_budget_reports" name="Budget" parent="sub_root_purchase"
+                  action="product_purchase.action_product_budget_admin" sequence="11"/>
+
+         <menuitem id="action_vendor_bill_tree" name="Vendor Bills List View" parent="sub_root_bill"
+                  action="product_purchase.action_vendor_bill_tree" sequence="14"/>
+        <menuitem id="action_vendor_bill_graph" name="Vendor Bills Graph View" parent="sub_root_bill"
+                  action="product_purchase.action_vendor_bill_admin" sequence="15"/>
+
+
+    </data>
+</odoo>

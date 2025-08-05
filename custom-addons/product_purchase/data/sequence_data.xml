@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="product_group_seq" model="ir.sequence">
+            <field name="name">Product Group Sequence</field>
+            <field name="code">product.group.code</field>
+            <field name="prefix">PDG</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+
+        <record id="seq_product_request_params" model="ir.sequence">
+            <field name="name">Product Request Sequence</field>
+            <field name="code">product.request</field>
+            <field name="prefix">PR</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_tender_params" model="ir.sequence">
+            <field name="name">Purchase Tender Sequence</field>
+            <field name="code">product.tender.line</field>
+            <field name="prefix">TN</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_tender_request_number_params" model="ir.sequence">
+            <field name="name">Tender Request Number Sequence</field>
+            <field name="code">tender.request</field>
+            <field name="prefix">TRN</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_tender_request_response_number_params" model="ir.sequence">
+            <field name="name">Tender Request Response Sequence</field>
+            <field name="code">tender.request.response</field>
+            <field name="prefix">TRRN</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_tender_item_number_params" model="ir.sequence">
+            <field name="name">Tender Item Number Sequence</field>
+            <field name="code">tenders</field>
+            <field name="prefix">CTR</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_bidding_number_params" model="ir.sequence">
+            <field name="name">Bidding Number Sequence</field>
+            <field name="code">bidding</field>
+            <field name="prefix">BID</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_bid_rfq_number_params" model="ir.sequence">
+            <field name="name">Bid Request Number Sequence</field>
+            <field name="code">bid.request</field>
+            <field name="prefix">BID-RFQ</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_bid_vendor_number_params" model="ir.sequence">
+            <field name="name">Bid Vendor Number Sequence</field>
+            <field name="code">vendor.bid</field>
+            <field name="prefix">BID/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_company_approve_users_number_params" model="ir.sequence">
+            <field name="name">Company Approve User Sequence</field>
+            <field name="code">pr.company</field>
+            <field name="prefix">COMP-APPROVE/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_product_request_budget_params" model="ir.sequence">
+            <field name="name">Product Request Budget</field>
+            <field name="code">product.request.budget</field>
+            <field name="prefix">BUDG/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_vendor_approve_users" model="ir.sequence">
+            <field name="name">Vendor Approval</field>
+            <field name="code">vendor.approval</field>
+            <field name="prefix">VA/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_contract" model="ir.sequence">
+            <field name="name">Contract SQN</field>
+            <field name="code">contract</field>
+            <field name="prefix">CTR/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_group" model="ir.sequence">
+            <field name="name">groups SQN</field>
+            <field name="code">groups</field>
+            <field name="prefix">GRP/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+    <!-- <record id="group_pending_action_user" model="res.groups">
+        <field name="name">Show Pending Actions</field>
+    </record> -->
+
+<!--    <record id="model_ir_model_access" model="ir.model.access">-->
+<!--        <field name="name">Access to ir.model</field>-->
+<!--        <field name="model_id" ref="model_ir_model"/>-->
+<!--        <field name="group_id" ref="pending_actions.group_pending_action_user"/>-->
+<!--        <field name="perm_read" eval="True"/>-->
+
+<!--    </record>-->
+</odoo>

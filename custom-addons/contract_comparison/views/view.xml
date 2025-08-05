@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+
+        <record id="contract_compare_tree" model="ir.ui.view">
+            <field name="name">Contract Comparison</field>
+            <field name="model">contract.compare.wizard</field>
+            <field name="arch" type="xml">
+
+
+                <form string="Contract Comparison">
+
+                    <group>
+
+                        <group col="2">
+                            <field name="is_purchase_request" attrs="{'invisible': [('is_product', '=', True)]}"/>
+                            <field name="is_product" attrs="{'invisible': [('is_purchase_request', '=', True)]}"/>
+                            <button name="action_get_contracts" string="Get Contracts" type="object"
+                                    class="btn-primary"/>
+
+                        </group>
+                        <group>
+                            <field name="purchase_request" attrs="{'invisible': [('is_purchase_request', '=', False)]}"/>
+                            <field name="product" attrs="{'invisible': [('is_product', '=', False)]}"/>
+
+
+                        </group>
+
+
+                    </group>
+
+                    <notebook>
+                        <page>
+
+                            <field name="compare_line" widget="one2many_list" readonly="1">
+                                <tree editable="bottom" delete="0" create="0">
+                                    <field name="name"/>
+                                    <field name="vendor"/>
+                                    <field name="payment_terms"/>
+                                    <field name="product"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price"/>
+                                    <field name="lead_time"/>
+                                    <field name="total_price"/>
+                                </tree>
+                            </field>
+
+
+                        </page>
+                    </notebook>
+
+                    <field name="result"></field>
+
+                    <group>
+                        <group>
+                            <button type="object" name="action_compare"
+                                    string="Compare" class="btn-primary"/>
+                            <button type="object" name="action_print"
+                                    string="Print"/>
+                        </group>
+
+                    </group>
+
+
+                    <footer>
+
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+        <record id="contract_comparison_action" model="ir.actions.act_window">
+            <field name="name">Compare Contract</field>
+            <field name="res_model">contract.compare.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="contract_compare_tree"/>
+            <field name="target">new</field>
+        </record>
+
+
+        <menuitem id="menu_compare_wizard" name="Compare Contract" parent="product_purchase.menu_tenders"
+                  action="contract_comparison_action" sequence="10"/>
+
+
+    </data>
+</odoo>

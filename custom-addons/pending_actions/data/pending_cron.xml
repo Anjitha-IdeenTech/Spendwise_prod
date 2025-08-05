@@ -1,0 +1,40 @@
+<odoo>
+    <data noupdate="1">
+        <record id="ir_cron_pending_actions_notification" model="ir.cron">
+            <field name="name">Pending Actions Notification</field>
+            <field name="model_id" ref="model_pending_actions"/>
+            <field name="state">code</field>
+            <field name="code">model.send_pending_actions_email()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <!-- <field name="doall" eval="False"/> -->
+            <!-- <field name="nextcall" eval="(DateTime.now() + relativedelta(days=1)).strftime('%Y-%m-%d 06:00:00') if DateTime.now().hour >= 6 else DateTime.now().strftime('%Y-%m-%d 06:00:00')"/> -->
+        </record>
+        <record id="cron_add_branches_to_approvers" model="ir.cron">
+            <field name="name">Add Branches to Approvers</field>
+            <field name="model_id" ref="model_pending_actions"/>
+            <field name="state">code</field>
+            <field name="code">model.add_branches_to_approvers()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">weeks</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <record id="ir_cron_send_pending_actions_email" model="ir.cron">
+            <field name="name">Send Pending Actions Email</field>
+            <field name="model_id" ref="model_pending_actions"/>
+            <field name="state">code</field>
+            <field name="code">model._send_pending_actions_email_initiator()</field>
+            <field name="active" eval="True"/>
+            <field name="interval_number">1</field> <!-- How often you want to run the cron (e.g., every day, week) -->
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>  <!-- Unlimited execution -->
+        </record>
+    </data>
+</odoo>
+
+
+
+

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+     <template id="report_pan_no_inherit" inherit_id="account.report_invoice_document">
+            <xpath expr="//div[@class='page']" position="before">
+                <div t-if="o.pan" name="pan">Customer Pan No:
+                    <span t-field="o.pan"/>
+                </div>
+            </xpath>
+     </template>
+
+</odoo>

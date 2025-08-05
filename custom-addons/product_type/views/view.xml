@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_product_types_tree" model="ir.ui.view">
+        <field name="name">product.types.tree</field>
+        <field name="model">product.types</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="reference"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_product_types_form" model="ir.ui.view">
+        <field name="name">product.types.form</field>
+        <field name="model">product.types</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="reference"/>
+                        <field name="disc"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for Tree View -->
+    <record id="action_product_types_tree" model="ir.actions.act_window">
+        <field name="name">Product Types</field>
+        <field name="res_model">product.types</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+    </record>
+
+    <!-- Menu Item -->
+
+    <menuitem id="menu_product_types_tree" name="Product Types" parent="lease_management.sub_root_products" action="action_product_types_tree"/>
+
+
+     <record id="product_template_type" model="ir.ui.view">
+            <field name="name">purchase.template.inherited_new</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='detailed_type']" position="after">
+                    <field name="product_type" options="{'no_create': True}"/>
+                </xpath>
+            </field>
+     </record>
+
+
+
+</odoo>
+

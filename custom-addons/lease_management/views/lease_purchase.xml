@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="lease_po" model="ir.ui.view">
+            <field name="name">purchase.order.lease</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+            
+            <field name="partner_id" position="attributes">
+                    <attribute name="options">{"no_quick_create": true, "no_create": true, "no_create_edit": true, "no_open": true}</attribute>
+                </field>
+                <field name="bill_to" position="attributes">
+                    <attribute name="options">{"no_quick_create": true, "no_create": true, "no_create_edit": true, "no_open": true}</attribute>
+                </field>
+                <field name="ship_to" position="attributes">
+                    <attribute name="options">{"no_quick_create": true, "no_create": true, "no_create_edit": true, "no_open": true}</attribute>
+                </field>
+                <field name="department_id" position="attributes">
+                    <attribute name="options">{"no_quick_create": true, "no_create": true, "no_create_edit": true, "no_open": true}</attribute>
+                </field>
+                <field name="expense_type" position="attributes">
+                    <attribute name="options">{"no_quick_create": true, "no_create": true, "no_create_edit": true, "no_open": true}</attribute>
+                </field>
+                <field name="exp_category" position="attributes">
+                    <attribute name="options">{"no_quick_create": true, "no_create": true, "no_create_edit": true, "no_open": true}</attribute>
+                </field>
+                <field name="currency_id" position="attributes">
+                    <attribute name="options">{"no_quick_create": true, "no_create": true, "no_create_edit": true, "no_open": true}</attribute>
+                </field>
+                <field name="company_id" position="attributes">
+                    <attribute name="options">{"no_quick_create": true, "no_create": true, "no_create_edit": true, "no_open": true}</attribute>
+                </field>
+
+                <field name="branch_id" position="attributes">
+                    <attribute name="options">{"no_quick_create": true, "no_create": true, "no_create_edit": true, "no_open": true}</attribute>
+                </field>
+
+                <xpath expr="//field[@name='ship_to']" position="after">
+                    <field name="lease_id"
+                           attrs="{'invisible': [('lease_id', '=', False)]}"
+                           options='{"no_quick_create": true, "no_create_edit": true,"no_create": true}'
+                           readonly="1"/>
+
+                    <field name="from_date" attrs="{'invisible': [('lease_id', '=', False)]}" options='{"no_quick_create": true, "no_create_edit": true, "no_open": true, "no_create": true}'
+                           readonly="1"/>
+                    <field name="to_date" attrs="{'invisible': [('lease_id', '=', False)]}" options='{"no_quick_create": true, "no_create_edit": true, "no_open": true, "no_create": true}'
+                           readonly="1"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

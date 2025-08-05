@@ -1,0 +1,41 @@
+<odoo>
+    <data>
+          <record id="view_contract_po_search" model="ir.ui.view">
+            <field name="name">contract.po.search</field>
+            <field name="model">contract.po.line</field>
+            <field name="arch" type="xml">
+                <search string="Contracts PO">
+                    <field name="vendor_id" string="Vendor"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Vendor" name="group_by_vendor_id" context="{'group_by':'vendor_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        <!-- Define the tree view for contract.po -->
+        <record id="view_contract_po_tree" model="ir.ui.view">
+            <field name="name">contract.po.tree</field>
+            <field name="model">contract.po.line</field>
+            <field name="arch" type="xml">
+                <tree string="Contracts and Purchase Orders">
+                    <field name="contract_id" widget='many2one' options='{"no_quick_create": true, "no_create_edit": true,"no_create": true}'/>
+                    <field name="vendor_id"/>
+                    <field name="purchase_order_id" widget='many2one'/>
+                    <field name="pr_id" widget='many2one'/>
+                </tree>
+            </field>
+        </record>
+
+
+        <!-- Action window for contract.po.line -->
+        <record id="detail_contract" model="ir.actions.act_window">
+            <field name="name">Contracts</field>
+            <field name="res_model">contract.po.line</field>
+            <field name="view_mode">tree,form</field>
+<!--            <field name="view_id" ref="view_contract_po_tree"/>-->
+<!--            <field name="search_view_id" ref="view_contract_po_search"/>-->
+            <field name="context">{'group_by':'pr_id'}</field>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

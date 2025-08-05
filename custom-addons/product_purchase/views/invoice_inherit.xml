@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+
+    <data>
+
+        <record id="account_move_inherited_form" model="ir.ui.view">
+
+            <field name="name">account.move.inherited.form</field>
+
+            <field name="model">account.move</field>
+
+            <field name="inherit_id" ref="account.view_move_form"/>
+
+            <field name="arch" type="xml">
+
+                <xpath expr="//page[@name='other_info']" position="after">
+
+                    <!-- Define your new page here -->
+
+                    <page string="Accounting Users" name="invoice_approve_liness">
+
+                        <!-- Add fields or other elements to your new page -->
+
+                        <field name="invoice_approve_line" readonly="1">
+
+                            <tree editable="bottom">
+
+                                <field name="user_id" readonly="1"/>
+
+                                <field name="company_id" readonly="1"/>
+
+                                <field name="branch_id" readonly="1"/>
+
+                                <!--                                        <field name="location"/>-->
+
+                                <field name="department_id" readonly="1"/>
+
+                                <field name="designation" readonly="1"/>
+
+                                <field name="approve_order" readonly="1"/>
+
+                                <field name="status" readonly="1"/>
+
+                            </tree>
+
+                            <form>
+
+                                <field name="user_id" readonly="1"/>
+
+                                <field name="company_id" readonly="1"/>
+
+                                <field name="branch_id" readonly="1"/>
+
+                                <!--                                        <field name="location"/>-->
+
+                                <field name="department_id" readonly="1"/>
+
+                                <field name="designation" readonly="1"/>
+
+                                <field name="approve_order" readonly="1"/>
+
+                                <field name="status" readonly="1"/>
+
+                            </form>
+
+                        </field>
+
+                    </page>
+                       <page string="Payment Users" name="invoice_payment_approve_liness">
+
+                        <!-- Add fields or other elements to your new page -->
+
+                        <field name="invoice_payment_approve_line" readonly="1">
+
+                            <tree editable="bottom">
+
+                                <field name="user_id" readonly="1"/>
+
+                                <field name="company_id" readonly="1"/>
+
+                                <field name="branch_id" readonly="1"/>
+
+                                <!--                                        <field name="location"/>-->
+
+                                <field name="department_id" readonly="1"/>
+
+                                <field name="designation" readonly="1"/>
+
+                                <field name="approve_order" readonly="1"/>
+
+                                <field name="status" readonly="1"/>
+
+                            </tree>
+
+                            <form>
+
+                                <field name="user_id" readonly="1"/>
+
+                                <field name="company_id" readonly="1"/>
+
+                                <field name="branch_id" readonly="1"/>
+
+                                <!--                                        <field name="location"/>-->
+
+                                <field name="department_id" readonly="1"/>
+
+                                <field name="designation" readonly="1"/>
+
+                                <field name="approve_order" readonly="1"/>
+
+                                <field name="status" readonly="1"/>
+
+                            </form>
+
+                        </field>
+
+                    </page>
+                    <page string="Purchase Request Approvals">
+                        <field name="purchase_request_approvals">
+                            <tree editable="bottom">
+                                <field name="user_id"/>
+                                <field name="branch_id"/>
+                                <field name="status"/>
+                                <field name="approve_date"/>
+                            </tree>
+                        </field>
+                    </page>
+                    <page string="Contract Request Approvals">
+                        <field name="contract_request_approvals">
+                            <tree>
+                                <field name="user_id"/>
+                                <field name="branch_id"/>
+                                <field name="status"/>
+                                <field name="approve_date"/>
+                            </tree>
+                        </field>
+                    </page>
+                    <page string="Request For Information" name="page_invoice_rfi">
+                        <field name="invoice_rfi_ids" readonly="1">
+                            <tree editable="bottom">
+                                <field name="user_id"/>
+                                <field name="to_user"/>
+                                <field name="message"/>
+                                <field name="replay"/>
+                                <field name="status" invisible="1"/>
+                                <field name="replayed" invisible="1"/>
+                                <field name="is_to_user_id" invisible="1"/>
+                                <button name="send_replay" string="Replay" type="object"
+                                        class="oe_link" attrs="{'invisible': [('is_to_user_id', '=', False)]}"
+                                />
+
+                            </tree>
+                        </field>
+                    </page>
+
+                       <page string="Remarks" name="remark_line"
+                                  attrs="{'invisible': [('state', '=','draft')]}">
+
+                                <field name="remarks_ids" readonly="1">
+                                    <tree editable="bottom">
+                                        <field name="from_user" readonly="1"/>
+
+                                        <field name="for_type" readonly="1"/>
+                                        <field name="replay" readonly="1"/>
+                                        <field name="approve_type" readonly="1"/>
+
+                                    </tree>
+                                </field>
+
+                            </page>
+
+                </xpath>
+
+                <xpath expr="//button[@name='button_cancel']" position="before">
+
+
+                    <button name="action_remark_approver" id="btn_approved"
+
+                            string="Approve" class="btn-primary" type="object"
+                            groups="product_purchase.group_approvers"
+
+                            attrs="{'invisible': ['|', ('state', 'in', ('draft','finance','posted','reject','rfi')), ('is_an_approver','=',False)]}"/>
+
+                    <button name="action_remark_approver" id="btn_approved"
+
+                            string="Approve" class="btn-primary" type="object"
+                            groups="product_purchase.group_approvers"
+
+                            attrs="{'invisible': ['|', ('state', 'in', ('draft','accounting','posted','reject','rfi')), ('is_an_payment_approver','=',False)]}"/>
+
+                    <button name="action_remark_approver" id="btn_approved"
+
+                            string="Accept And Acknowledge" class="btn-primary" type="object"
+                             groups="vendor_portal.group_vendor_portal_user"
+
+                            attrs="{'invisible': ['|', ('state', 'in', ('draft','finance','posted','reject','rfi')), ('is_an_approver','=',False)]}"/>
+
+
+                    <button name="action_remark_reject" id="btn_decline"
+
+                            string="Reject" class="btn-danger" type="object"
+                            groups="product_purchase.group_approvers"
+
+                            attrs="{'invisible': ['|', ('state', 'in', ('draft', 'approved','posted','reject','rfi')), ('is_an_approver','=',False)]}"/>
+                            
+                     <button name="action_remark_reject" id="btn_decline"
+
+                            string="Reject" class="btn-danger" type="object"
+                            groups="product_purchase.group_approvers"
+
+                            attrs="{'invisible': ['|', ('state', 'in', ('draft','accounting','posted','reject','rfi')), ('is_an_payment_approver','=',False)]}"/>
+
+                    <field name="is_an_approver" invisible="1"/>
+
+                    <field name="state" invisible="1"/>
+
+
+                    <button name="action_deligate" id="btn_deligate"
+                            string="Deligate" type="object"
+                            attrs="{'invisible': ['|', ('state', 'in', ('draft', 'approved','posted','reject','rfi')), ('is_an_approver','=',False)]}"
+                            groups="product_purchase.group_approvers"
+                    />
+                    
+                    <button name="action_deligate" id="btn_deligate"
+                            string="Deligate" type="object"
+                            attrs="{'invisible': ['|', ('state', 'in', ('draft', 'approved','posted','reject','rfi')), ('is_an_payment_approver','=',False)]}"
+                            groups="product_purchase.group_approvers"
+                    />
+
+                    <button name="action_log_message" id="btn_log_msg"
+                            string="Request For Information" class="btn-primary" type="object"
+                            attrs="{'invisible': ['|', ('state', 'in', ('draft', 'approved','posted','reject','rfi')), ('is_an_approver','=',False)]}"
+                            groups="product_purchase.group_approvers">
+                    </button>
+                    
+                    <button name="action_log_message" id="btn_log_msg"
+                            string="Request For Information" class="btn-primary" type="object"
+                            attrs="{'invisible': ['|', ('state', 'in', ('draft', 'approved','posted','reject')), ('is_an_payment_approver','=',False)]}"
+                            groups="product_purchase.group_approvers">
+                    </button>
+
+                     <button name="action_add_approver" id="btn_approve"
+                            string="Add Approver Request" class="btn-primary" type="object"
+                            attrs="{'invisible': ['|', ('state', 'in', ('draft', 'approved','posted','reject','rfi')), ('is_an_approver','=',False)]}"
+                            groups="product_purchase.group_approvers">
+                    </button>
+                    <button name="action_add_approver_admin" id="btn_log_msg"
+                            string="Add Approver(Admin)" class="btn-primary" type="object"
+                            attrs="{'invisible': [('state', '!=', 'accounting')]}"
+                            groups="lease_management.group_master_admin"
+                    />
+                    <button name="action_add_approver_admin_finance" id="btn_log_msg"
+                            string="Add Approver(Admin)" class="btn-primary" type="object"
+                            attrs="{'invisible': [('state', '!=', 'finance')]}"
+                            groups="lease_management.group_master_admin"
+                    />
+                    <button name="action_add_approver" id="btn_approve"
+                            string="Add Approver Request" class="btn-primary" type="object"
+                            attrs="{'invisible': ['|', ('state', 'in', ('draft', 'approved','posted','reject','rfi')), ('is_an_payment_approver','=',False)]}"
+                            groups="product_purchase.group_approvers">
+                    </button>
+                    <button name="action_delegate_admin" id="btn_approved"
+                                string="Delegate(Admin)"
+                                class="btn-primary" type="object"
+                                attrs="{'invisible': [('state', '!=', 'accounting')]}"
+                                groups="lease_management.group_master_admin"
+                        />
+                    <button name="action_delegate_admin_fin" id="btn_approved"
+                                string="Delegate(Admin)"
+                                class="btn-primary" type="object"
+                                attrs="{'invisible': [('state', '!=', 'finance')]}"
+                                groups="lease_management.group_master_admin"
+                        />
+                    <button name="send_replay" id="btn_log_rfi"
+                                string="Request For Information Reply" class="btn-primary" type="object" attrs="{'invisible': [('is_to_user', '=', False)]}">
+                        </button>
+
+                        <!-- <button name="status_change" id="btn_log_id" string="change" class="btn-primary" type="object"></button> -->
+
+                </xpath>
+                <xpath expr="//button[@name='action_post']" position="attributes">
+                    <attribute name="attrs">{'invisible': True}</attribute>
+                </xpath>
+
+                <xpath expr="//button[@name='action_post'][2]" position="attributes">
+                    <attribute name="attrs">{'invisible': True}</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_register_payment']" position="attributes">
+                    <attribute name="attrs">{'invisible': True}</attribute>
+                </xpath>
+                <xpath expr="//form" position="attributes">
+                    <attribute name="create">false</attribute>
+                </xpath>
+                <xpath expr="//page[@id='aml_tab']" position="attributes">
+            <attribute name="attrs">{'invisible': True}</attribute>
+        </xpath>
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="po_number" invisible="1"/>
+                    <field name="purchase_request" invisible="1"/>
+                    <field name="is_to_user" invisible="1"/>
+                    <field name="is_an_approver" invisible="1"/>
+                    <field name="is_an_payment_approver" invisible="1"/>
+                    <field name="approve_users" widget="many2many_tags" invisible="1"/>
+                    <field name="next_approve_user" widget="many2many_tags" invisible="1"/>
+                    <field name="approved_users" widget="many2many_tags" invisible="1"/>
+                    <field name="payment_approve_users" widget="many2many_tags" invisible="1"/>
+                    <field name="payment_approved_users" widget="many2many_tags" invisible="1"/>
+                    <field name="payment_next_approve_user" widget="many2many_tags" invisible="1"/>
+                    <field name="voucher_code" attrs="{'readonly': ['|',('state', '!=', 'accounting'),('is_an_approver', '=', False)], 'invisible': [('state', '=', 'draft')]}"  groups="product_purchase.group_approvers"/>
+                    <field name="accounting_person" attrs="{'readonly': ['|',('state', '!=', 'accounting'),('is_an_approver', '=', False)], 'invisible': [('state', '=', 'draft')]}" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"  groups="product_purchase.group_approvers"/>
+                    <field name="utr_no" attrs="{'readonly': ['|', ('state', '!=', 'finance'), ('is_an_payment_approver', '=', False)], 'invisible': ['|', ('state', '=', 'draft'), ('state', '=', 'accounting')]}"/>
+                    <field name="payment_date" attrs="{'readonly': [('state', '!=', 'finance')], 'invisible': ['|', ('state', '=', 'draft'), ('state', '=', 'accounting')]}"/>
+                    <field name="TDS" attrs="{'readonly': ['|', ('state', '!=', 'finance'), ('is_an_payment_approver', '=', False)], 'invisible': ['|', ('state', '=', 'draft'), ('state', '=', 'accounting')]}"/>
+                    <field name="other_deductions" attrs="{'readonly': ['|', ('state', '!=', 'finance'), ('is_an_payment_approver', '=', False)], 'invisible': ['|', ('state', '=', 'draft'), ('state', '=', 'accounting')]}"/>
+                    <field name="payment_amount" readonly="1" attrs="{'invisible': ['|', ('state', '=', 'draft'), ('state', '=', 'accounting')]}"/>
+                    <field name="additional_charges" attrs="{'readonly': ['|',('state', '!=', 'accounting'),('is_an_approver', '=', False)], 'invisible': [('state', '=', 'draft')]}"  groups="product_purchase.group_approvers"/>
+                    <field name="vendor_addresss" invisible="1"/>
+                    <field name="vendor_change_name" invisible="1"/>
+                </xpath>
+                <xpath expr="//div[@name='button_box']" position="inside">
+
+                         <button name="view_purchase_request" class="oe_stat_button" icon="fa-bars"
+                            string="Purchase Request"  type="object"
+                          >
+                    </button>
+                    <button name="view_purchase_order" class="oe_stat_button" icon="fa-bars"
+                            string="Purchase Order"  type="object"
+                          >
+                    </button>
+                     <button name="action_contract_list" class="oe_stat_button" icon="fa-bars"
+                            string="Rate Contract" type="object"
+                    >
+                    </button>
+
+                </xpath>
+                <xpath expr="//group[@class='oe_subtotal_footer oe_right']//field[@name='tax_totals_json']" position="before">
+                    <field name="reduced_amount" readonly="1" widget="monetary" attrs="{'readonly': [('state', '!=', 'finance')], 'invisible': ['|', ('state', '=', 'draft'), ('state', '=', 'accounting')]}" class="oe_subtotal_footer_separator" />
+                </xpath>
+            </field>
+
+        </record>
+
+             <record id="view_vendor_bill_graph" model="ir.ui.view">
+            <field name="name">vendor.bill.graph</field>
+            <field name="model">account.move</field>
+            <field name="arch" type="xml">
+                <graph string="Vendor Bill">
+                    <field name="branch_id"/>
+                    <field name="amount_residual"/>
+
+                </graph>
+            </field>
+        </record>
+           <record id="action_vendor_bill_admin" model="ir.actions.act_window">
+            <field name="name">Vendor Bills</field>
+            <field name="res_model">account.move</field>
+            <field name="view_mode">graph</field>
+            <field name="domain">[]</field>
+            <field name="context">{
+                'create': False,
+                'edit': False,
+                }
+            </field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                </p>
+            </field>
+        </record>
+
+        <record id="view_account_move_tree" model="ir.ui.view">
+            <field name="name">account.move.tree</field>
+            <field name="model">account.move</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="date"/>
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="state"/>
+                    <field name="amount_total"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="action_vendor_bill_tree" model="ir.actions.act_window">
+            <field name="name">Vendor Bills</field>
+            <field name="res_model">account.move</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_account_move_tree"/>
+            <field name="domain">[('move_type', '=', 'in_invoice')]</field>
+            <field name="context">{'create': False, 'edit': False}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face"></p>
+            </field>
+        </record>
+
+    </data>
+
+</odoo>

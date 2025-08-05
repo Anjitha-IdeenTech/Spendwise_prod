@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+
+        <record id="test_menu" model="website.menu">
+            <field name="name">Vendors</field> <!-- Name of the menu-->
+            <field name="url">/vendors</field>
+            <field name="parent_id" ref="website.main_menu"/>
+            <field name="sequence" type="int">80</field>
+            <!--sequence of the menu-->
+        </record>
+
+
+        <template id="portal_my_home_vendor" inherit_id="portal.portal_my_home">
+            <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="url">/my/vendors</t>
+                    <t t-set="title">Vendor Registration</t>
+                </t>
+
+            </xpath>
+
+        </template>
+
+
+        <template id="new_vendor_form_view" name="Vendor-Registration">
+
+            <t t-call="portal.portal_layout">
+                <t t-call="portal.portal_table">
+
+
+                    <style>
+
+                        #new_vendor_creation {
+
+                        background-image: url('vendor_portal/static/icons/bg3.jpg');
+                        background-size: cover;
+
+                        }
+
+
+                        .custom-form-style {
+                        background-color: rgba(255, 255, 255, 0.8);
+                        padding: 5vh;
+
+                        }
+
+
+                        .centered-content {
+                        text-align: center;
+                        margin-bottom: 20px;
+
+                        }
+
+
+                    </style>
+
+                    <div class="alert alert-success" role="alert" t-if="success_msg">
+                        <t t-out="success_msg"/>
+                    </div>
+                    <t t-foreach="error_list" t-as="error">
+                        <div class="alert alert-danger" role="alert">
+                            <t t-out="error"/>
+                        </div>
+
+                    </t>
+
+                    <div class="alert alert-warning" id="vendor_client_side_validation" role="alert"
+                         style="display:none">
+                        warning msg
+                    </div>
+                    <div id="new_vendor_creation" style="background-color: white; padding:10vh;" class="border p-6">
+                        <form method="post" enctype="multipart/form-data">
+                            <div class="centered-content">
+                                <strong>
+                                    <h2 style="text-align:center; font-weight:bold;">Vendor Registration</h2>
+                                </strong>
+                            </div>
+                            <div class="form-row row">
+                                <div class="form-group col-md-12">
+                                    <label for="address">Company Name *</label>
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="char" name="name" id="name" class="form-control"
+                                           placeholder="Enter Company Name" required="1"/>
+                                </div>
+                            </div>
+                            <div class="form-row row">
+                                <div class="form-group col-md-6">
+                                    <label for="contactperson">Contact Person 1 *</label>
+                                    <input type="text" name="contactperson" id="contactperson"
+                                           placeholder="Enter Contact Person 1" class="form-control" required="1"/>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="contactperson2">Contact Person 2 </label>
+                                    <input type="text" name="contactperson2" id="contactperson2"
+                                           placeholder="Enter Contact Person 2" class="form-control" required="0"/>
+                                </div>
+                            </div>
+                            <div class="form-row row">
+                                <div class="form-group col-md-12">
+                                    <label for="address">Address Line 1 *</label>
+                                    <input type="text" name="address" id="address" placeholder="Enter Address Line 1"
+                                           class="form-control" required="1"/>
+                                </div>
+                            </div>
+                            <div class="form-row row">
+                                <div class="form-group col-md-12">
+                                    <label for="address2">Address Line 2 *</label>
+                                    <input type="text" name="address2" id="address2" placeholder="Enter Address Line 2"
+                                           class="form-control" required="1"/>
+                                </div>
+                            </div>
+                            <div class="form-row row">
+                                <div class="form-group col-md-6">
+                                    <label for="street">Street </label>
+                                    <input type="text" name="street" id="street" placeholder="Enter Street Name"
+                                           class="form-control" required="0"/>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="city">City *</label>
+                                    <input type="text" name="city" id="city" placeholder="Enter City Name"
+                                           class="form-control" required="1"/>
+                                </div>
+                            </div>
+                            <div class="form-row row">
+                                <div class="form-group col-md-6">
+                                    <label for="pin">Pin Code *</label>
+                                    <input type="text" name="pin" id="pin" placeholder="Enter PIN Code"
+                                           class="form-control" required="1"/>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="state_id">State *</label>
+                                    <select name="state_id" id="state_id" class="form-control" required="1">
+                                        <option>Select State</option>
+                                        <t t-foreach="vendor_states" t-as="state_id">
+                                            <option t-att-value="state_id.id">
+                                                <t t-out="state_id.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row row">
+                                <div class="form-group col-md-6">
+                                    <label for="pan">PAN No *</label>
+                                    <input type="text" name="pan" id="pan" placeholder="Enter PAN Number"
+                                           class="form-control" required="1"/>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="gst">GST Provisional ID *</label>
+                                    <input type="text" name="gst" id="gst" placeholder="Enter GSTIN Number"
+                                           class="form-control" required="1"/>
+                                </div>
+                            </div>
+                            <div class="form-row row">
+                                <div class="form-group col-md-6">
+                                    <label for="tel">Telephone No </label>
+                                    <input type="text" name="tel" id="tel" placeholder="Enter Telephone Number"
+                                           class="form-control" required="0"/>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="mobile">Mobile No *</label>
+                                    <input type="text" name="mobile" id="mobile" class="form-control"
+                                           placeholder="Enter Mobile Number Excluding Country Code" required="1"/>
+                                </div>
+                            </div>
+                            <div class="form-row row">
+                                <div class="form-group col-md-12">
+                                    <label for="mail">Email ID *</label>
+                                    <input type="text" name="mail" id="mail" placeholder="Enter Email ID"
+                                           class="form-control" required="1"/>
+                                </div>
+                            </div>
+
+                            <div class="form-row row">
+                                <div class="form-group col-md-6">
+                                    <label for="msme">MSME Number </label>
+                                    <input type="text" name="msme_no" id="msme_no" placeholder="MSME Number"
+                                           class="form-control" required="0"/>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="msme">MSME Category</label>
+                                    <input type="text" name="msme" id="msme" placeholder="MSME Category"
+                                           class="form-control"/>
+                                </div>
+                            </div>
+                            <div class="form-row row">
+
+                                <div class="form-group col-md-6">
+                                    <label for="msme_file">MSME Certificate</label>
+                                    <input type="file" name="msme_file" id="msme_file" class="form-control"
+                                           accept=".pdf, .doc, .docx" filename="msme_file" widget="binary"/>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="dan_number">DAN Number</label>
+                                    <input type="text" name="dan_number" id="dan_number"
+                                           placeholder="Enter DAN Number" class="form-control" required="0"/>
+                                </div>
+                            </div>
+
+                            <div class="form-row row">
+
+                                <div class="form-group col-md-6">
+                                    <label for="msme">Company Type *</label>
+                                    <select name="type" id="type" class="form-control" required="1">
+                                        <option value="">Select Company Type</option>
+                                        <option value="type1">Companies Limited by Shares</option>
+                                        <option value="type2">Companies Limited by Guarantee</option>
+                                        <option value="type3">Unlimited Companies</option>
+                                        <option value="type4">One Person Companies (OPC)</option>
+                                        <option value="type5">Private Companies</option>
+                                        <option value="type6">Public Companies</option>
+                                        <option value="type7">Holding and Subsidiary Companies</option>
+                                        <option value="type8">Associate Companies</option>
+                                        <option value="type9">Companies in terms of Access to Capital</option>
+                                        <option value="type10">Government Companies</option>
+                                        <option value="type11">Foreign Companies</option>
+                                        <option value="type12">Charitable Companies</option>
+                                        <option value="type13">Dormant Companies</option>
+                                        <option value="type14">Nidhi Companies</option>
+                                        <option value="type15">Public Financial Institutions</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group col-md-6">
+                                    <label for="msme">Vendor Category *</label>
+                                    <select name="pdt_category" id="pdt_category" class="form-control" required="1">
+                                        <option>Vendor Category</option>
+                                        <t t-foreach="pdt_category" t-as="pdt_category">
+                                            <option t-att-value="pdt_category.id">
+                                                <t t-out="pdt_category.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                    <!--                                    <input type="text" name="vendor_category" id="vendor_category" placeholder="Vendor Category"-->
+                                    <!--                                           class="form-control" required="1"/>-->
+                                </div>
+                            </div>
+
+
+                            <div class="form-row row">
+                                <div class="form-group col-md-12">
+                                    <label for="msme">Website Link</label>
+                                    <input type="text" name="website" id="website" placeholder="Website Link"
+                                           class="form-control"/>
+                                </div>
+
+                            </div>
+                            <div class="form-row row">
+                                <div class="form-group col-md-6">
+                                    <label for="msme">Payment Terms *</label>
+                                    <select name="payment_terms" id="payment_terms" class="form-control" required="1">
+                                        <option>Payment Terms</option>
+                                        <t t-foreach="payment_terms" t-as="payment_terms">
+                                            <option t-att-value="payment_terms.id">
+                                                <t t-out="payment_terms.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="msme">Credit Terms *</label>
+                                    <select name="credit_terms" id="credit_terms" class="form-control" required="1">
+                                        <option>Credit Terms</option>
+                                        <t t-foreach="credit_terms" t-as="credit_terms">
+                                            <option t-att-value="credit_terms.id">
+                                                <t t-out="credit_terms.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row row">
+                                <div class="form-group col-md-6">
+                                    <label for="bank_acc">Bank A/C No *</label>
+                                    <input type="text" name="bank_acc" id="bank_acc" placeholder="Enter Bank A/C Number"
+                                           class="form-control" required="1"/>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="bank_name">Bank Name *</label>
+                                    <input type="text" name="bank_name" id="bank_name" placeholder="Enter Bank Name"
+                                           class="form-control" required="1"/>
+                                </div>
+                            </div>
+                            <div class="form-row row">
+                                <div class="form-group col-md-6">
+                                    <label for="bank_branch">Bank Branch *</label>
+                                    <input type="text" name="bank_branch" id="bank_branch"
+                                           placeholder="Enter Bank Branch Name" class="form-control" required="1"/>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="bank_ifsc">IFSC Code *</label>
+                                    <input type="text" name="bank_ifsc" id="bank_ifsc"
+                                           placeholder="Enter Bank IFSC Code" class="form-control" required="1"/>
+                                </div>
+                            </div>
+                            <div class="form-row row">
+                                <div class="form-group col-md-6">
+                                    <label for="bank_beneficiary">Bank Beneficiary Name *</label>
+                                    <input type="text" name="bank_beneficiary" id="bank_beneficiary"
+                                           placeholder="Enter Bank Beneficiary Name" class="form-control" required="1"/>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="bank_upi">Bank UPI ID</label>
+                                    <input type="text" name="bank_upi" id="bank_upi"
+                                           placeholder="Enter UPI ID" class="form-control"/>
+                                </div>
+                            </div>
+
+                            <div class="form-row row">
+
+                                <div class="form-group col-md-6">
+                                    <label for="bank_file">Bank Cheque file</label>
+                                    <input type="file" name="bank_cheque_file" id="bank_cheque_file"
+                                           class="form-control"
+                                           accept=".pdf, .doc, .docx" filename="bank_cheque_file"
+                                           widget="binary"/>
+                                </div>
+
+                                <div class="form-group col-md-6">
+                                    <label for="bank_statement">Statement Copy file</label>
+                                    <input type="file" name="bank_statement" id="bank_statement" class="form-control"
+                                           accept=".pdf, .doc, .docx" filename="bank_statement"
+                                           widget="binary"/>
+                                </div>
+
+
+                            </div>
+
+
+                            <div class="form-row row">
+
+                                <div class="form-group col-md-6">
+                                    <label for="gst_file">GSTIN File</label>
+                                    <input type="file" name="gst_file" id="gst_file" class="form-control"
+                                           accept=".pdf, .doc, .docx" filename="gst_file" widget="binary"/>
+                                </div>
+
+
+                                <div class="form-group col-md-6">
+                                    <label for="pan_file">Pan Card file</label>
+                                    <input type="file" name="pan_file" id="pan_file" class="form-control"
+                                           accept=".pdf, .doc, .docx" filename="pan_file" widget="binary"/>
+                                </div>
+
+                            </div>
+
+
+                            <!-- <div class="form-row row">
+
+
+
+                                <div class="form-group col-md-6">
+                                    <label for="msme">GST Registration Certificate Upload</label>
+                                    <input type="file" name="gst_file" id="gst_file" class="form-control"
+                                           accept=".pdf, .doc, .docx" required="0" filename="gst_file" widget="binary"/>
+                                </div>
+
+                                <div class="form-group col-md-6">
+                                    <label for="msme">Bank Details Upload</label>
+                                    <input type="file" name="bank_file" id="bank_file" class="form-control"
+                                           accept=".pdf, .doc, .docx" required="0" filename="bank_file" widget="binary"/>
+                                </div>
+
+                            </div> -->
+
+
+                            <div class="form-row row" style="margin-top:1vh;">
+                                <div class="form-group col-md-12">
+                                    * All fields in this form are mandatory.
+                                </div>
+                                <div class="form-group col-md-12 s_website_form_submit">
+                                    <button type="submit" class="form-control btn btn-primary">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </t>
+            </t>
+        </template>
+
+        <template id="submit_return" name="Submit Thankyou">
+
+            <!--            <t t-call="portal.portal_layout">-->
+            <t t-call="website.layout">
+                <div class="oe_structure">
+                    <!--                    <div class="container text-center">-->
+                    <div class="container">
+                        <div class="mt-4">
+                            <!--                        <div class="col-lg-4 text-center">-->
+                            <!--                            <img src="/vendor_portal/static/icons/hand.png" alt="Thank You Image"/>-->
+                            <!--                        </div>-->
+                            <!--                            <h1>Thank You &#9989;</h1>-->
+                            <h1>Thank You</h1>
+                            <div class="row">
+                                <div class="col-lg-8">
+                                    <div class="alert alert-success" role="status">
+                                        Vendor Details have been Submitted Successfully.
+                                    </div>
+                                    <p>
+                                        We'll get back to you soon.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+
+
+    </data>
+</odoo>

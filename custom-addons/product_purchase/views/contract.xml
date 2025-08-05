@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+
+        <!--        <record id="contracts_view_search" model="ir.ui.view">-->
+        <!--            <field name="model">contract</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <search string="Tenders">-->
+        <!--                    &lt;!&ndash;                    <field name="product"/>&ndash;&gt;-->
+        <!--                    <field name="vendor_id"/>-->
+        <!--                    <filter string="Confirmed" name="status_confirmed" domain="[('state', '=', 'confirm')]"/>-->
+        <!--                    <filter string="Approved" name="status_approved" domain="[('state', '=', 'approve')]"/>-->
+        <!--                    <filter string="Draft" name="status_draft" domain="[('state', '=', 'draft')]"/>-->
+        <!--                    <filter string="Cancelled" name="status_cancel" domain="[('state', '=', 'cancel')]"/>-->
+        <!--                </search>-->
+        <!--            </field>-->
+        <!--        </record>-->
+
+
+        <record model="ir.ui.view" id="view_contract_details_tree">
+            <field name="name">Contract Requests</field>
+            <field name="model">contract</field>
+
+            <field name="arch" type="xml">
+                <tree string="Example Tree" create="1" edit="1" default_order="id desc">
+
+                    <!--                    <header>-->
+                    <!--                        <button name="action_compare"-->
+                    <!--                                string="Compare" class="btn-primary" type="object"/>-->
+                    <!--                    </header>-->
+
+                    <field name="name"/>
+                    <field name="requested_date"/>
+                    <!--                    <field name="product"/>-->
+                    <field name="vendor_id"/>
+                    <field name="deadline"/>
+                    <field name="state"/>
+                    <field name="approved_users" widget="many2many_tags" invisible="1"/>
+                    <field name="approve_users" widget="many2many_tags" invisible="1"/>
+                    <field name="next_approve_user_id" widget="many2many_tags" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_contract_form" model="ir.ui.view">
+            <field name="name">contract.from</field>
+            <field name="model">contract</field>
+            <field name="arch" type="xml">
+                <form create="0" delete="0" duplicate="0">
+                    <header>
+                        <button name="action_accept"
+                                string="Accept and Acknowledge" class="btn-primary" type="object"
+                                attrs="{'invisible': [('state', 'in',('reject','accept','expire'))]}"
+                                groups="vendor_portal.group_vendor_portal_user"/>
+
+                        <button name="action_reject"
+                                string="Reject" class="btn-primary" type="object"
+                                attrs="{'invisible': [('state', 'in', ('reject','accept','expire'))]}"
+                                groups="vendor_portal.group_vendor_portal_user"/>
+
+
+                        <field name="state" widget="statusbar" nolabel="1" readonly="False"
+                        statusbar_visible="pending,reject,accept,expire"/>
+                    </header>
+                    <sheet>
+
+                        <!--                        <div class="oe_button_box" name="button_box">-->
+                        <!--                            <button name="action_open_contract" type="object"-->
+                        <!--                                    class="oe_stat_button" icon="fa-calendar"-->
+                        <!--                                    attrs="{'invisible': [('state','!=','approve')]}">-->
+                        <!--                                <span class="o_stat_text">Rate Contract</span>-->
+                        <!--                            </button>-->
+
+                        <!--                            <button name="action_open_pur_req" type="object"-->
+                        <!--                                    class="oe_stat_button" icon="fa-files-o"-->
+                        <!--                            >-->
+                        <!--                                <span class="o_stat_text">Purchase Request</span>-->
+                        <!--                            </button>-->
+
+                        <!--                            <button name="action_vendor_contract_request" type="object"-->
+                        <!--                                    class="oe_stat_button" icon="fa-id-card-o"-->
+                        <!--                                    attrs="{'invisible': [('state','=','draft')]}">-->
+                        <!--                                <span class="o_stat_text">Vendor Request</span>-->
+                        <!--                            </button>-->
+
+                        <!--                            <button name="action_view_multi_rfq" type="object"-->
+                        <!--                                    class="oe_stat_button" icon="fa-envelope">-->
+                        <!--                                <span class="o_stat_text">RFQ's</span>-->
+                        <!--                            </button>-->
+                        <!--                        </div>-->
+
+
+                        <h1>
+                            <field name="name">Name</field>
+                        </h1>
+                        <h2>
+                            <field name="vendor_id"
+                                   readonly="1"
+                                   store="True"
+                                   force_save="True"/>
+                        </h2>
+                        <group>
+                            <group>
+                             <field name="main_remark" string="Purchase Requisition Details And Justification" class="o_form_input o_form_field"
+                                       style="font-weight: bold; font-size: 14px; width: 100%;"/>
+
+                                <!--                                <field name="vendor_id"-->
+                                <!--                                       readonly="1"-->
+                                <!--                                       store="True"-->
+                                <!--                                       force_save="True"/>-->
+                                <!--                                'invisible': [('contracting_method', '=', 'multi')]-->
+
+
+                                <!--                                <field name="vendor_ids" widget="many2many_tags" attrs="{'required': [('contracting_method', '=', 'multi')],-->
+                                <!--                                                'readonly': [('state', 'not in', ('draft','rfq'))],-->
+                                <!--                                                'invisible': [('contracting_method', '!=', 'multi')]}"-->
+                                <!--                                       store="True"-->
+                                <!--                                       force_save="True"/>-->
+                                <field name="from_date"
+                                       readonly="1"/>
+                                <field name="to_date"
+                                       readonly="1"/>
+
+                                <!--                                <field name="exp_category_domain" invisible="1"/>-->
+                                <field name="expense_type" required="1"
+                                       readonly="1"/>
+                                <field name="lead_time" readonly="1"/>
+                                <field name="payment_terms" readonly="1"/>
+                                 <field name="deadline" readonly="1"/>
+                                <field name="purchase_plan" readonly="1"/>
+
+                                <field name="approved_users" widget="many2many_tags" invisible="1"/>
+                                <field name="approve_users" widget="many2many_tags" invisible="1"/>
+                                <field name="next_approve_user_id" widget="many2many_tags" invisible="1"/>
+
+
+                            </group>
+                            <group>
+                                <field name="requested_date"
+                                       readonly="1"
+                                />
+                                <!--                                <field name="expected_date" required="1">-->
+                                <!--                                </field>-->
+
+                                <field name="vendor_request_status"
+                                       readonly="1"
+                                       invisible="1"
+                                />
+
+                                <field name="tender_response_tender_check"
+                                       readonly="1"
+                                       invisible="1"
+                                />
+
+                                <!--                                <field name="user_approve_check"-->
+                                <!--                                       readonly="1"-->
+                                <!--                                       invisible="1"-->
+                                <!--                                />-->
+                                <field name="tender_response_tender_check"
+                                       readonly="1"
+                                       invisible="1"
+                                />
+                                <field name="renew_id" invisible="1"/>
+                                <field name="requested" readonly="1"/>
+
+                                <!--                                <field name="company_ids_domain" invisible="0"/>-->
+                                <field name="company_ids" widget="many2many_tags" readonly="1"
+                                />
+                                <field name="branch_domain" invisible="1"/>
+                                <field name="branch_ids" widget="many2many_tags" domain="branch_domain" readonly="1"
+                                />
+                                <field name="product_group" widget="many2many_tags"
+                                       readonly="1"/>
+                                <field name="rfq_heads" widget="many2many_tags" readonly="1"/>
+                                <field name="main_rfq" readonly="1" invisible="1"/>
+                                <field name="total_price" readonly="1"/>
+                                <field name="total_vendor_amount" readonly="1"/>
+                                <field name="reference_doc" widget="many2many_binary" readonly="1"/>
+                                 <field name="attachment_ids" widget="many2many_binary" attrs="{'readonly': [('state', 'not in', ('pending','negotiation'))]}"/>
+                            </group>
+                        </group>
+                        <notebook>
+
+                            <page string="Products Line" name="vendor_product_line">
+                                <field name="vendor_contract_line" attrs="{'readonly': [('state', 'not in', ('pending','negotiation'))]}"
+                                       store="True" force_save="True">
+                                     <tree editable="bottom" delete="0" create="1" attrs="{'create': [('parent.state', 'in', ('pending', 'negotiation'))]}">
+                                        <field name="vendor_lines" invisible="1" store="True" force_save="True"/>
+                                        <field name="product_id" attrs="{'readonly': [('parent.state', 'not in', ('pending','negotiation'))]}"/>
+                                        <field name="brand" attrs="{'readonly': [('parent.state', 'not in', ('pending','negotiation'))]}"/>
+                                        <field name="oem" attrs="{'readonly': [('parent.state', 'not in', ('pending','negotiation'))]}"/>
+                                        <field name="pack" attrs="{'readonly': [('parent.state', 'not in', ('pending','negotiation'))]}"/>
+                                        <field name="uom" attrs="{'readonly': [('parent.state', 'not in', ('pending','negotiation'))]}"/>
+                                        <field name="quantity" attrs="{'readonly': [('parent.state', 'not in', ('pending','negotiation'))]}"/>
+                                        <field name="unit_price" sum="Total Value"
+                                               readonly="1"/>
+                                        <field name="vendor_price" sum="Total Value"
+                                               attrs="{'readonly': [('parent.state', 'not in', ('pending','negotiation'))]}"/>
+<!--                                        <field name="product_group" readonly="1"/>-->
+<!--                                        <field name="tender_line_id" />-->
+<!--                                        <field name="status" readonly="1"/>-->
+                                    </tree>
+                                    <form>
+                                        <field name="product_id" readonly="1"/>
+                                        <field name="brand" readonly="1"/>
+                                        <field name="oem" readonly="1"/>
+                                        <field name="pack" readonly="1"/>
+                                        <field name="uom" readonly="1"/>
+                                        <field name="quantity" readonly="1"/>
+                                        <field name="unit_price" sum="Total Value"
+                                              readonly="1"/>
+                                        <field name="vendor_price" sum="Total Value"
+                                               attrs="{'readonly': [('parent.state', 'not in', ('pending','negotiation'))]}"/>
+<!--                                        <field name="tender_line_id" />-->
+<!--                                        <field name="status" readonly="1"/>-->
+                                    </form>
+                                </field>
+                            </page>
+
+
+                            <page string="Other Info">
+                                <field name="terms" placeholder="Terms And Conditions"
+                                       required="0" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            </page>
+                            <page string="Vendor Notes">
+                                <field name="vendor_details" placeholder="Vendor Notes"
+                                       required="0" attrs="{'readonly': [('state', 'not in',  ('pending','negotiation'))]}"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_contract_requests" model="ir.actions.act_window">
+            <field name="name">Contract Request</field>
+            <field name="res_model">contract</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('user_id','=',uid)]</field>
+            <!--            <field name="context">{-->
+            <!--                'search_default_status_draft': 1-->
+            <!--                }-->
+            <!--            </field>-->
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first Contract!
+                </p>
+            </field>
+        </record>
+
+
+        <record id="action_contract_requests_admin" model="ir.actions.act_window">
+            <field name="name">Vendor Contract Request</field>
+            <field name="res_model">contract</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{ }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                </p>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

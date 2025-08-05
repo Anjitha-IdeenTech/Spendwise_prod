@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="product_workflow_view_search" model="ir.ui.view">
+            <field name="model">pr.company</field>
+            <field name="arch" type="xml">
+                <search string="Workflow">
+                    <field name="type"/>
+
+                </search>
+            </field>
+        </record>
+
+
+        <record model="ir.ui.view" id="view_pr_company_tree">
+            <field name="name">Workflows</field>
+            <field name="model">pr.company</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree string="Example Tree">
+                    <field name="name"/>
+
+                    <!--                    <field name="location"/>-->
+                    <field name="department_id"/>
+                    <field name="expense_type"/>
+                    <field name="exp_category"/>
+                    <field name="from_amount"/>
+                    <field name="to_amount"/>
+                    <field name="company_id"/>
+                    <field name="branch_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_pr_approve_users_form">
+            <field name="name">pr.company.form</field>
+            <field name="model">pr.company</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                        <group>
+                            <group>
+                                <field name="company_id"
+                                       options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+
+                                <field name="branch_domain" invisible="1"/>
+                                <field name="branch_id"
+                                       options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"
+                                       domain="branch_domain"/>
+                                <field name="department_id"
+                                       options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                <field name="type"/>
+                                <field name="exp_category_domain" invisible="1"/>
+                                <field name="expense_type"/>
+                                <field name="exp_category"
+                                       options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"
+                                       domain="exp_category_domain"/>
+
+                                <field name="from_amount"/>
+                                <field name="to_amount"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Approve Users" name="pr_approve_users_id">
+                                <field name="pr_approve_users_id">
+                                    <tree editable="bottom">
+                                        <field name="company_id"
+                                              options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="branch_line_domain" invisible="1"/>
+                                        <field name="branch_id" domain="branch_line_domain"
+                                               options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="department_id"
+                                               options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="approve_order"/>
+                                        <field name="designation" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                        <field name="user_id" invisible="1"/>
+
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field name="company_id"/>
+                                            <field name="branch_line_domain" invisible="1"/>
+                                            <field name="branch_id" domain="branch_line_domain"/>
+                                            <field name="department_id"/>
+                                            <field name="approve_order"/>
+                                            <field name="designation"/>
+                                            <field name="user_id"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_pr_company_approve_users" model="ir.actions.act_window">
+            <field name="name">Workflows</field>
+            <field name="res_model">pr.company</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'group_by': 'type'}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first PR Company Approve Users!
+                </p>
+            </field>
+        </record>
+        <!--  ################# Master Module Action ###########      -->
+
+        <record id="action_pr_company_approve_users_master" model="ir.actions.act_window">
+            <field name="name">Workflows</field>
+            <field name="res_model">pr.company</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{
+                'create': False,
+                'edit': False
+                }
+            </field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                </p>
+            </field>
+        </record>
+
+        <!--        ###############################-->
+
+        <!--        <menuitem id="menu_create_approve_user"-->
+        <!--                  name="Workflow"-->
+        <!--                  web_icon="product_purchase,static/icons/approve.png"-->
+        <!--                  action="action_pr_company_approve_users"-->
+        <!--        />-->
+    </data>
+</odoo>

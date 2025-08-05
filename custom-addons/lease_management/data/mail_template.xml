@@ -1,0 +1,47 @@
+
+<odoo>
+    <data>
+        <record id="lease_management.email_template_id" model="mail.template">
+            <field name="name">Vendor Email Template</field>
+            <field name="email_from">{{object.company_id.name or ''}}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="subject">Create ASN for the corresponding purchase order: ${object.name}</field>
+            <field name="body_html">
+                <![CDATA[
+                <div style="background-color: #f2f2f2; padding: 20px; font-family: Arial, sans-serif;">
+                    <div style="text-align: right;">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnOc_OdaF6koZG4D7TYFIFM6YIDe8nYMdpbg&s" alt="Company Logo" style="width: 150px; height: auto;"/>
+                    </div>
+                    <div style="margin: 20px 0; padding: 20px; background-color: #ffffff; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+                        <p style="margin: 0; padding: 0; font-size: 14px; line-height: 1.6;">
+                            Dear <t t-out="object.partner_id.name or 'Vendor'"/>
+                            <t t-if="object.partner_id.parent_id">
+                                (<t t-out="object.partner_id.parent_id.name or ''"/>)
+                            </t>
+                            <br/><br/>
+
+                            <br/><br/>
+                            We are pleased to inform you that your purchase order <strong><t t-out="object.name or ''"/></strong>
+                            <t t-if="object.partner_ref">
+                                with reference: <t t-out="object.partner_ref or ''"/>
+                            </t>
+                            amounting to <strong><t t-out="format_amount(object.amount_total, object.currency_id) or ''"/></strong>
+                            from <t t-out="object.company_id.name or 'YourCompany'"/> has been Approved.
+                            <br/><br/>
+                            Kindly upload the corresponding invoice in your vendor portal at your earliest convenience. Please note that further processing will proceed only upon submission of the invoice.
+
+                        </p>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <p style="font-size: 12px; color: #666;">Thank you for your business!</p>
+                    </div>
+                </div>
+                ]]>
+            </field>
+            <field name="model_id" ref="purchase.model_purchase_order"/>
+            <!--            <field name="attachment_ids" eval="[(6, 0, [ref('your_module.company_logo')])]"/>-->
+        </record>
+    </data>
+</odoo>
+
+

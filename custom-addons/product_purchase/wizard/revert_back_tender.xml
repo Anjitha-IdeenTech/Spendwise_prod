@@ -1,0 +1,31 @@
+<odoo>
+    <data>
+        <record id="view_revert_back_tender_form" model="ir.ui.view">
+            <field name="name">revert.back.tender.wizard.form</field>
+            <field name="model">revert.back.tender.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Select Product Category">
+                    <group>
+                        <group col="2">
+                            <field name="tender_id" readonly="1"/>
+                            <field name="revert_from" readonly="1"/>
+                            <field name="initiator" readonly="1"/>
+                            <field name="contracting_method" invisible="1"/>
+                        </group>
+                        <group col="2">
+                            <field name="reason" string="Reason"/>
+                            <field name="all_multi_is_revert"
+                                   attrs="{'invisible': [('contracting_method', '!=', 'multi')]}"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="action_confirm" string="Confirm Revert" type="object" class="btn-primary " style="float: right;" confirm="Are you sure to revert back to initiator?"/>
+                        <div style="float: right;padding-right: 10px;">
+                            <button string="Cancel" class="btn-secondary" special="cancel"/>
+                        </div>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

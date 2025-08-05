@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+<!--    <record id="group_lease_mangement_user" model="res.groups">-->
+<!--        <field name="name">Agreements Admin</field>-->
+<!--    </record>-->
+    <record model="ir.module.category" id="module_category_masters">
+        <field name="name">Master</field>
+        <field name="sequence">1</field>
+    </record>
+    <record model="ir.module.category" id="module_category_master">
+        <field name="name">Master Access Rights</field>
+        <field name="sequence">2</field>
+    </record>
+
+
+    <record id="group_master_admin_data" model="res.groups">
+        <field name="name">Master Read Only</field>
+        <field name="category_id" ref="module_category_masters"/>
+    </record>
+
+     <record id="group_record_admin" model="res.groups">
+        <field name="name">Report Admin</field>
+         <field name="category_id" ref="module_category_masters"/>
+    </record>
+    <record id="group_record_company" model="res.groups">
+        <field name="name">Company Master Edit/Write</field>
+        <field name="category_id" ref="module_category_master"/>
+    </record>
+
+    <record id="group_record_bank" model="res.groups">
+        <field name="name">Bank Master Edit/Write</field>
+        <field name="category_id" ref="module_category_master"/>
+    </record>
+
+    <record id="group_record_product" model="res.groups">
+        <field name="name">Product Master Edit/Write</field>
+        <field name="category_id" ref="module_category_master"/>
+    </record>
+
+    <record id="group_record_pr" model="res.groups">
+        <field name="name">Purchase Request Edit/Write</field>
+        <field name="category_id" ref="module_category_master"/>
+    </record>
+
+    <record id="group_record_workflow" model="res.groups">
+        <field name="name">Work Flow Edit/Write</field>
+        <field name="category_id" ref="module_category_master"/>
+    </record>
+
+    <record id="group_record_user" model="res.groups">
+        <field name="name">Vendor Master Edit/Write</field>
+        <field name="category_id" ref="module_category_master"/>
+    </record>
+<!--    <record id="group_record_vendor" model="res.groups">-->
+<!--        <field name="name">Vendor And User Edit/Write</field>-->
+<!--    </record>-->
+    <record id="group_master_admin" model="res.groups">
+        <field name="name">User Master Edit/Write</field>
+        <field name="category_id" ref="module_category_master"/>
+        <field name="comment">Vendor And User Edit/Write</field>
+    </record>
+</odoo>

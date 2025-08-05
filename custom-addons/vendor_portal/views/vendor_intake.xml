@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_vendor_intake_tree" model="ir.ui.view">
+            <field name="name">vendor.intake.tree</field>
+            <field name="model">vendor.intake</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree>
+                    <!--                    <field name="name"/>-->
+                    <field name="name"/>
+                    <field name="city"/>
+                    <!--                    <field name="state_id"/>-->
+                    <field name="contactperson"/>
+                    <field name="vendor_approve_users" widget="many2many_tags" invisible="1"/>
+                    <field name="vendor_approved_users" widget="many2many_tags" invisible="1"/>
+                    <field name="next_approve_user_id" widget="many2many_tags" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="view_vendor_intake_form" model="ir.ui.view">
+            <field name="name">vendor.intake.form</field>
+            <field name="model">vendor.intake</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <form string="Vendor Registration">
+                    <header>
+                        <!--                        <button name="action_validate" class="btn-primary" type="object" string="validate"></button>-->
+                        <!--                        <button name="action_approve" class="btn-primary" type="object" string="Approve"-->
+                        <!--                                groups="vendor_portal.group_admin_vendor_portal"-->
+                        <!--                                attrs="{'invisible': [('states','in',('approved','done') )]}"/>-->
+                        <button name="action_review" class="btn-primary" type="object" string="Review"
+                                attrs="{'invisible': [('states','in',('approved','review','cancelled','done','vendor') )]}"
+                        />
+                        <button name="action_done" class="btn-primary" type="object" string="Generate Vendor"
+                                groups="vendor_portal.group_admin_vendor_portal"
+                                attrs="{'invisible': [('states','in',('draft','done','review','cancelled') )]}"/>
+
+                        <button name="action_approval" id="btn_approved"
+                                string="Approve" class="btn-primary" type="object"
+                                attrs="{'invisible': [('is_an_approver','=',False)]}"
+                                confirm="Accept request?"/>
+                        <button name="action_decline" id="btn_decline"
+                                string="Reject" class="btn-danger" type="object"
+                                attrs="{'invisible': [('is_an_approver','=',False)]}"
+                                confirm="Reject request?"/>
+
+                        <button name="action_generate_vendor" class="btn-primary" type="object" string="Create Vendor Without Contract"
+                                groups="vendor_portal.group_admin_vendor_portal" invisible="1" />
+<!--                                attrs="{'invisible': [('states','in',('draft','done','review','cancelled','vendor') )]}"/>-->
+
+                        <button name="action_draft" type="object" string="Reset to draft"
+                                confirm="Are you sure to Reset to draft"
+                                groups="vendor_portal.group_admin_vendor_portal"
+                                attrs="{'invisible': [('states','in',('draft') )]}"/>
+
+                        <field name="states" widget="statusbar" statusbar_visible="draft,approved,done"/>
+                    </header>
+
+
+                    <sheet>
+
+                        <h1>
+                            Vendor Registration
+                            <!--                                                            <field name="name"/>-->
+
+
+                        </h1>
+
+
+                        <group>
+
+                            <group col="2">
+                                <field name="approve_check" readonly="1"
+                                       invisible="1"
+                                >Approve Check
+                                </field>
+                                <field name="name" attrs="{'readonly':  [('states','in',('approved','done') )]}"/>
+                                <field name="ref" readonly="1"/>
+                                <field name="contactperson"/>
+                                <field name="contactperson2"/>
+                                <span class="o_form_label o_td_label" name="address_name">
+                                    <b>Address</b>
+                                </span>
+                                <div class="o_address_format">
+                                    <field name="address1" placeholder="Address 1" class="o_address_street"/>
+                                    <field name="address2" placeholder="Address 2" class="o_address_street"/>
+                                    <field name="street" placeholder="Street..." class="o_address_street"/>
+
+                                    <field name="city" placeholder="City" class="o_address_city"/>
+                                    <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                    <field name="state_ids" class="o_address_state" placeholder="State"
+                                           options='{"no_open": True}'/>
+
+                                    <!--                                    <field name="state_id" class="o_address_state" placeholder="State"-->
+                                    <!--                                           options='{"no_open": True}'/>-->
+                                    <field name="country_id" placeholder="Country" class="o_address_country"
+                                           options='{"no_open": True, "no_create": True}'/>
+
+
+                                </div>
+                                <field name="payment_terms"/>
+                                <field name="credit_terms"/>
+                                <field name="tel"/>
+                                <!--                                <field name="user_approve_check" invisible="1"/>-->
+                                <field name="mob" attrs="{'readonly':  [('states','in',('approved','done') )]}"/>
+                                <field name="mail_id" attrs="{'readonly':  [('states','in',('done') )]}"/>
+
+
+                            </group>
+                            <group col="2">
+
+
+                                <field name="gst" placeholder="GST No"
+                                       attrs="{'readonly':  [('states','in',('approved','done') )]}"/>
+                                <field name="pan"/>
+
+
+                                <field name="msme_number"/>
+                                <field name="msme"/>
+                                <field name="website"/>
+                                <field name="user_approve_check" invisible="1"/>
+                                <field name="vendor_category"/>
+                                <field name="company_type"/>
+                                <!--                                    <field name="gst_file"/>-->
+                                <field name="gst_file" widget="binary" filename="file_name"/>
+                                <field name="pan_card" widget="binary" filename="file_name"/>
+                                <field name="msme_file" widget="binary" filename="file_name"/>
+
+
+                                <field name="approve_users" widget="many2many_tags" invisible="1"/>
+                                <field name="approved_users" widget="many2many_tags" invisible="1"/>
+                                <field name="next_approve_user" widget="many2many_tags" invisible="1"/>
+                                <field name="is_an_approver" invisible="1"/>
+
+
+                            </group>
+                        </group>
+
+
+                        <notebook colspan="4">
+                            <page name="bank_details" string="Bank Details">
+                                <group>
+                                    <group col="2">
+                                        <field name="bank"/>
+                                        <field name="bank_acc_no"/>
+                                        <field name="bank_beneficiary"/>
+                                        <field name="bank_upi"/>
+                                        <field name="dan_number"/>
+                                    </group>
+                                    <group col="2">
+
+                                        <field name="branch"/>
+                                        <field name="ifsc"/>
+                                        <field name="bank_file" widget="binary" filename="file_name"/>
+                                        <field name="bank_cheque_file" widget="binary" filename="file_name"/>
+
+                                    </group>
+
+                                </group>
+
+                            </page>
+
+
+                            <page name="price_list" string="Price List" invisible="1">
+                                <field name="vendor_price_line" invisible="1">
+                                    <tree editable="bottom">
+                                        <field name="company" widget="many2many_tags"/>
+                                        <field name="product"/>
+                                        <field name="qty"/>
+                                        <field name="delay"/>
+                                        <field name="price"/>
+
+                                    </tree>
+                                    <form>
+                                        <field name="product"/>
+                                        <field name="qty"/>
+                                        <field name="price"/>
+                                        <field name="company" widget="many2many_tags"/>
+                                    </form>
+                                </field>
+
+                            </page>
+
+
+                            <page name="office_use" string="Company Details">
+                                <group>
+                                    <group col="2">
+                                        <field name="company_id" options='{"no_open": True, "no_create": True}'/>
+<!--                                        <field name="location" options='{"no_open": True, "no_create": True}'/>-->
+                                    </group>
+                                    <group col="2">
+
+                                        <field name="department" options='{"no_open": True, "no_create": True}'/>
+                                        <field name="vendor_representative"
+                                               options='{"no_open": True, "no_create": True}'/>
+
+
+                                    </group>
+
+                                </group>
+
+                            </page>
+
+                            <page string="Approve Users" name="vendor_approve_line" readonly="1">
+                                <field name="vendor_approve_line" readonly="1">
+                                    <tree editable="bottom" delete="0">
+                                        <field name="user_id" readonly="1"/>
+                                        <field name="company_id" readonly="1"/>
+<!--                                        <field name="location" readonly="1"/>-->
+                                        <field name="department_id" readonly="1"/>
+                                        <field name="designation" readonly="1"/>
+                                        <field name="approve_order" readonly="1"/>
+                                        <field name="status" readonly="1"/>
+                                    </tree>
+                                    <form>
+                                        <field name="user_id" readonly="1"/>
+                                        <field name="company_id" readonly="1"/>
+<!--                                        <field name="location" readonly="1"/>-->
+                                        <field name="department_id" readonly="1"/>
+                                        <field name="designation" readonly="1"/>
+                                        <field name="approve_order" readonly="1"/>
+                                        <field name="status" readonly="1"/>
+                                    </form>
+                                </field>
+                            </page>
+                            <page name="bank_details" string="Notes">
+                                <field name="remarks"/>
+
+                            </page>
+                        </notebook>
+
+
+                    </sheet>
+
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                    </div>
+
+
+                </form>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_view_vendor_intake">
+            <field name="name">Vendors</field>
+            <field name="res_model">vendor.intake</field>
+            <!--            <field name="view_type">form</field>-->
+            <field name="view_mode">tree,form</field>
+            <!--            <field name="domain">['|',('vendor_approved_users', 'in', uid),('next_approve_user_id', '=', uid)]</field>-->
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">No New Vendor Registration</p>
+            </field>
+        </record>
+
+        <menuitem id="root_vendor_intake" name="Vendors Portal" web_icon="vendor_portal,static/icons/icon.png"/>
+
+        <menuitem id="menu_vendor_intake" name="Vendor Registration" parent="root_vendor_intake"
+                  action="action_view_vendor_intake"
+                  sequence="10"/>
+
+    </data>
+</odoo>

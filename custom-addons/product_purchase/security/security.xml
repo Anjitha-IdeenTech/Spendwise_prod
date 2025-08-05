@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record model="ir.module.category" id="module_category_product">
+        <field name="name">User Categories</field>
+    </record>
+
+    <record id="group_pr_initiator" model="res.groups">
+        <field name="name">PR Initiator</field>
+        <field name="category_id" ref="module_category_product"/>
+    </record>
+
+    <record id="group_approvers" model="res.groups">
+        <field name="name">Approvers</field>
+        <field name="category_id" ref="module_category_product"/>
+    </record>
+
+
+    <record id="group_purchase_head" model="res.groups">
+        <field name="name">Purchase Head</field>
+        <field name="category_id" ref="module_category_product"/>
+    </record>
+
+    <record id="group_buyers" model="res.groups">
+        <field name="name">Buyer</field>
+        <field name="category_id" ref="module_category_product"/>
+    </record>
+
+    <record id="group_finance" model="res.groups">
+        <field name="name">Finance</field>
+        <field name="category_id" ref="module_category_product"/>
+    </record>
+
+    <record id="group_fleet_manager" model="res.groups">
+        <field name="name">Fleet Manager</field>
+        <field name="category_id" ref="module_category_product"/>
+    </record>
+    
+    <record model="ir.module.category" id="module_category_another_user">
+        <field name="name">User Selection</field>
+    </record>
+
+    <record id="group_user_vendor" model="res.groups">
+        <field name="name">Vendor User</field>
+        <field name="category_id" ref="module_category_another_user"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_user_employee" model="res.groups">
+        <field name="name">Employee User</field>
+        <field name="category_id" ref="module_category_another_user"/>
+        <field name="implied_ids" eval="[(4, ref('group_user_vendor'))]"/>
+    </record>
+
+  
+
+</odoo>

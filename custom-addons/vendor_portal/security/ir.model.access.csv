@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+access_vendor_intake,access.vendor.intake,model_vendor_intake,vendor_portal.group_admin_vendor_portal,1,1,1,1
+
+access_vendor_intake_user,access.vendor.intake,model_vendor_intake,vendor_portal.group_user_vendor_portal,1,1,1,0
+
+access_vendor_approve_line,access.vendor.approve.line,model_vendor_approve_line,,1,1,1,1
+
+access_vendor_pricelist_line,access.vendor.pricelist.line,model_vendor_pricelist_line,,1,1,1,1
+

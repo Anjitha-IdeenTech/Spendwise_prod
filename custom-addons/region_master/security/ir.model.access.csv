@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+access_region_masters,access.region.masters,model_region_masters,,1,1,1,1
+
+access_division_masters,access.division.masters,model_division_masters,,1,1,1,1
+
+access_subdivision_masters,access.subdivision.masters,model_subdivision_masters,,1,1,1,1
+
+access_vendor_limit,access.vendor.limit,model_vendor_limit,,1,1,1,1
+
+access_log_reason_wizard,access.log.reason.wizard,model_log_reason_wizard,,1,1,1,1

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_subdivision_masters_tree" model="ir.ui.view">
+        <field name="name">subdivision.masters.tree</field>
+        <field name="model">subdivision.masters</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="subdivision_code"/>
+                <field name="name"/>
+                <field name="company_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_subdivision_masters_form" model="ir.ui.view">
+        <field name="name">subdivision.masters.form</field>
+        <field name="model">subdivision.masters</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <div class="oe_title" style="margin-bottom: 10px;">
+                                <h1>
+                                    <label for="name" class="oe_edit_only"/>
+                                    <field name="name"/>
+                                </h1>
+                            </div>
+                            <field name="subdivision_code"/>
+
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_subdivision_masters_action" model="ir.actions.act_window">
+        <field name="name">Sub Divisions</field>
+        <field name="res_model">subdivision.masters</field>
+        <field name="view_mode">tree,form</field>
+        <!--        <field name="view_id" ref="view_expense_category_tree"/>-->
+
+    </record>
+
+    <menuitem id="menu_subdivision_masters_list" name="Sub Division Master" action="action_subdivision_masters_action"
+              parent="lease_management.sub_root_admin" sequence="12"/>
+
+    <!--    <menuitem id="menu_expense_category_list" name="Expense Categories" action="action_expense_category_action"-->
+    <!--              sequence="30"/>-->
+</odoo>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <report
+        id="report_purchase_detail_xlx"
+        string="Purchase Order Excel"
+        model="export.purchase.wizard"
+        report_type="xlsx"
+        name="lease_management.report_purchase_xls"
+        file="lease_management.report_purchase_xls"/>
+
+
+    <report
+        id="report_invoice_detail_xlx"
+        string="Invoice Report Excel"
+        model="export.purchase.wizard"
+        report_type="xlsx"
+        name="lease_management.report_invoice_xls"
+        file="lease_management.report_invoice_xls"/>
+
+    <report
+        id="report_lease_detail_xlx"
+        string="lease Report Excel"
+        model="export.lease.wizard"
+        report_type="xlsx"
+        name="lease_management.report_lease_xls"
+        file="lease_management.report_lease_xls"/>
+</odoo>

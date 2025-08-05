@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="po_approval_flow" model="ir.ui.view">
+            <field name="name">purchase.order.workflow</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+            <xpath expr="//form" position="attributes">
+            <attribute name="create">false</attribute>
+            </xpath>
+                <xpath expr="//sheet" position="before">
+                    <div class="alert alert-warning" role="alert" attrs="{'invisible': [('in_budget', '=', True)]}">
+                        Budget Exceeded! The available budget is negative.
+                        Please review and adjust the budget accordingly.
+                    </div>
+                </xpath>
+
+                 <xpath expr="//div[@class='oe_title']" position="replace">
+                      <span class="o_form_label" attrs="{'invisible': [('state','not in',('draft','sent'))]}">Purchase Order </span>
+                        <span class="o_form_label" attrs="{'invisible': [('state','in',('draft','sent'))]}">Purchase Order </span>
+                       <h1>
+                            <field name="priority" widget="priority" class="mr-3"/>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                 </xpath>
+
+
+                <xpath expr="//button[@name='button_confirm']" position="after">
+                    <!-- <button name="action_remark_approver" id="btn_approved"
+                            string="Approve" class="btn-primary" type="object"/> -->
+
+                    <button name="action_remark_approver" id="btn_approved"
+                            string="Approve" class="btn-primary" type="object"
+                            groups="product_purchase.group_approvers"
+                            attrs="{'invisible': ['|',('state', 'in', ('to_approve', 'cancel', 'done', 'purchase','rfi')),('is_an_approver','!=',True)]}"/>
+
+                    <button name="action_remark_approver" id="btn_approved"
+                            string="Accept And Acknowledge" class="btn-primary" type="object"
+                            groups="vendor_portal.group_vendor_portal_user"
+                            attrs="{'invisible': ['|',('state', 'in', ('to_approve', 'cancel', 'done', 'purchase','rfi')),('is_an_approver','!=',True)]}"/>
+                    
+                    <button name="action_remark_reject" id="btn_decline"
+                            string="Reject" class="btn-danger" type="object"
+                            attrs="{'invisible': ['|',('state', 'in', ('to_approve', 'cancel', 'done', 'purchase','rfi')),('is_an_approver','!=',True)]}"/>
+                    <button name="action_deligate_po" id="btn_deligate"
+                                string="Delegate " type="object"
+                                attrs="{'invisible': ['|', ('state', 'not in', ('draft','sent','to_approve')),  ('user_approve_check', '=', False)]}"
+                                groups="product_purchase.group_approvers"
+                        />
+                     <button name="action_log_message_po" id="btn_log_msg"
+                                string="Request For Information" class="btn-primary" type="object"
+                                attrs="{'invisible': [('state', 'not in',( 'draft','sent','to_approve'))]}"
+                              groups="product_purchase.group_approvers"
+                        />
+                    <button name="action_add_approver" id="btn_approved"
+                            string="Add Approver" class="btn-primary" type="object"
+                            attrs="{'invisible': ['|',('state', 'in', ('to_approve', 'cancel', 'done', 'purchase','rfi')),('is_an_approver','!=',True)]}"
+                            groups="product_purchase.group_approvers"/>
+                    <button name="action_add_approver_admin" id="btn_approved"
+                            string="Add Approver(Admin)" class="btn-primary" type="object"
+                            attrs="{'invisible': [ ('state', 'in', ['to_approve', 'cancel', 'done', 'purchase', 'rfi'])]}"
+                            groups="lease_management.group_master_admin"/>
+                    <button name="action_delegate_admin" id="btn_approved"
+                                string="Delegate(Admin)"
+                                class="btn-primary" type="object"
+                                attrs="{'invisible': [('state', '=', 'purchase')]}"
+                                groups="product_purchase.group_purchase_head"
+                        />
+                    <!-- <button name="po_close" id="btn_initiator"
+                                string="Close the PO" class="btn-primary" type="object"
+                                attrs="{'invisible': [('user_init_check','=',False)]}"
+                                groups="product_purchase.group_pr_initiator"
+                                confirm="Are you sure you want to close the PO Pending?"/> -->
+                    <!-- <button name="status_change" id="btn_log_id" string="change" class="btn-primary" type="object"></button> -->
+                    <button name="action_send_mail_vendor"
+                            type="object"
+                            string="Send Mail To Vendor"
+                            attrs="{'invisible': [('state', 'not in', ['purchase'])]}"
+                    />
+                     <button name="assign_user"
+                                string="Assign User"
+                                class="btn-primary"
+                                type="object"
+                                attrs="{'invisible': ['|','|',('state', '=', 'paid'), ('assigned', '=', True),('is_purchase_head', '=', False)]}"/>
+                    <button name="assign_user"
+                                string="Re-Assign User"
+                                class="btn-primary"
+                                type="object"
+                                attrs="{'invisible': ['|','|',('state', '!=', 'draft'), ('assigned', '=', False),('is_purchase_head', '=', False)]}"/>
+                     <button name="action_close" id="btn_initiator"
+                            string="Close the PO" class="btn-primary" type="object"
+                            groups="product_purchase.group_purchase_head"
+                            confirm="Are you sure you want to close the PO Pending?"/>
+
+                </xpath>
+
+
+                <xpath expr="//field[@name='currency_id']" position="after">
+
+
+                    <field name="approve_users" readonly="1" widget="many2many_tags" invisible="1"/>
+                    <field name="approved_users" readonly="1" widget="many2many_tags" invisible="1"/>
+                    <field name="next_approve_user" readonly="1" widget="many2many_tags" invisible="1"/>
+                    <field name="is_confirmed" invisible="1"/>
+                    <field name="is_an_approver" invisible="1"/>
+                    <field name="is_auto_po" invisible="1"/>
+                     <field name="in_budget" invisible="1"/>
+                     <field name="user_approve_check" invisible="1"/>
+                      <field name="user_init_check" invisible="1"/>
+                      <field name="utr_no"  readonly="1"/>
+                        <field name="vendor_addresss" invisible="1"/>
+                     <field name="vendor_change_name" invisible="1"/>
+                         <field name="assigned" invisible="1"/>
+                    <field name="is_purchase_head" invisible="1"/>
+                         <field name="closed" invisible="1"/>
+                </xpath>
+
+
+                <xpath expr="//button[@name='button_confirm']" position="attributes">
+                    <attribute name="attrs">{'invisible': ['|',('is_confirmed', '=', True)]}</attribute>
+                </xpath>
+
+                <xpath expr="//button[@name='button_confirm'][2]" position="attributes">
+                    <attribute name="attrs">{'invisible': ['|',('is_confirmed', '=', True)]}</attribute>
+                </xpath>
+
+                <xpath expr="//div[@name='button_box']" position="inside">
+
+                    <button name="action_purchase_list" class="oe_stat_button" icon="fa-bars"
+                            string="Purchase Request" type="object"
+                    >
+                    </button>
+                     <button name="action_contract_list" class="oe_stat_button" icon="fa-bars"
+                            string="Rate Contract" type="object"
+                    >
+                    </button>
+                </xpath>
+
+
+                <xpath expr="//page[@name='purchase_delivery_invoice']" position="after">
+                    <page string="Product Bundle">
+                            <field name="product_bundle"/>
+                    </page>
+                    <page string="Purchase Approvals" name="po_approvals"
+                          attrs="{'invisible': [('is_confirmed', '=', False)]}">
+                        <field name="approvers_line_ids" readonly="1">
+                            <tree editable="bottom" delete="0">
+                                <field name="user_id" readonly="1"/>
+                                <field name="company_id" readonly="1"/>
+                                <field name="branch_id" readonly="1"/>
+                                <field name="department_id" readonly="1"/>
+                                <field name="designation" readonly="1"/>
+                                <field name="approve_order" readonly="1"/>
+                                <field name="status" readonly="1" store="1" force_save="1"/>
+                            </tree>
+                        </field>
+                    </page>
+                    <page string="Request For Information" name="page_rfi">
+                        <field name="po_rfi_ids" readonly="1">
+                            <tree editable="bottom">
+                                <field name="user_id"/>
+                                <field name="to_user"/>
+                                <field name="message"/>
+                                <field name="replay"/>
+                                <field name="status" invisible="1"/>
+                                <field name="replayed" invisible="1"/>
+                                <field name="is_to_user_id" invisible="1"/>
+                                <button name="send_replay" string="Reply" type="object"
+                                        class="oe_link" attrs="{'invisible': [('is_to_user_id', '=', False)]}"
+                                />
+
+                            </tree>
+
+                        </field>
+                    </page>
+                    <page string="Remark" name="Po_remark">
+
+                        <field name="po_remark_ids" readonly="1">
+                            <tree editable="bottom">
+                                <field name="from_user"/>
+                                <field name="replay"/>
+                            </tree>
+                        </field>
+
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_view_purchase_order" model="ir.actions.act_window">
+            <field name="name">Purchase Order</field>
+            <field name="res_model">purchase.order</field>
+            <field name="view_mode">tree,form</field>
+             <field name="domain">[('state', '=', 'purchase')]</field>
+            <field name="context">{
+                'create': False,
+                'edit': False
+                }
+            </field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                </p>
+            </field>
+        </record>
+<!--        RFI>>>>-->
+        <record id="update_log_message_po" model="ir.ui.view">
+            <field name="name">RFI PO</field>
+            <field name="model">log.message.wizard.po</field>
+            <field name="arch" type="xml">
+
+
+                <form string="RFI">
+
+                    <group>
+
+                        <group col="2">
+
+                            <field name="message"/>
+                        </group>
+                        <group col="2">
+                            <field name="user" readonly="1"/>
+                            <field name="to_users"/>
+                            <field name="branch_id" readonly="1"/>
+                            <field name="email" readonly="1"/>
+                            <!--                            <field name="user_ids" widget="many2many_tags"/>-->
+                            <field name="purchase_id" invisible="1"/>
+
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="confirm"
+                                string="Confirm" class="btn-primary"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+        <record id="update_log_message_po_action" model="ir.actions.act_window">
+            <field name="name">RFI</field>
+            <field name="res_model">log.message.wizard.po</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="update_log_message_po"/>
+            <field name="target">new</field>
+        </record>
+
+
+        <record id="update_log_replay_po" model="ir.ui.view">
+            <field name="name">Replay RFI</field>
+            <field name="model">message.replay.wizard.po</field>
+            <field name="arch" type="xml">
+
+
+                <form string="RFI Replay">
+
+                    <group>
+
+                        <group col="2">
+                            <field name="message_id" invisible="1"/>
+                            <field name="replay"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="confirm"
+                                string="Confirm" class="btn-primary"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+        <record id="update_log_replay_po_action" model="ir.actions.act_window">
+            <field name="name">Replay Message</field>
+            <field name="res_model">message.replay.wizard.po</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="update_log_replay_po"/>
+            <field name="target">new</field>
+        </record>
+
+
+        <record id="remark_approve_po_form" model="ir.ui.view">
+            <field name="name">Remarks</field>
+            <field name="model">po.remark</field>
+            <field name="arch" type="xml">
+
+
+                <form string="Remarks">
+
+                    <group>
+
+                        <group col="2">
+                            <field name="po_id" invisible="1"/>
+                            <field name="replay"/>
+                            <field name="approve_type" invisible="1"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="confirm_remark"
+                                string="Approve" class="btn-primary"
+                                attrs="{'invisible': [('approve_type', '!=', 'approve')]}"
+                                confirm="Confirm Approval"/>
+                        <button type="object" name="confirm_remark"
+                                string="Reject" class="btn-primary"
+                                attrs="{'invisible': [('approve_type', '!=', 'cancel')]}"
+                                confirm="Confirm Reject"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+
+            </field>
+        </record>
+
+
+        <record id="remark_po_approve_action" model="ir.actions.act_window">
+            <field name="name">Remark</field>
+            <field name="res_model">po.remark</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="remark_approve_po_form"/>
+            <field name="target">new</field>
+        </record>
+
+           <record id="purchase_order_form_view_inherit" model="ir.ui.view">
+            <field name="name">purchase.order.form.inherit</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='order_line']/tree/field[@name='price_unit']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+
+
+             </field>
+        </record>
+
+    </data>
+</odoo>

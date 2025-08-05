@@ -1,0 +1,41 @@
+<odoo>
+    <data>
+        <record id="purchase_order_chatter_hide_inherited" model="ir.ui.view">
+            <field name="name">purchase.order.vendor.hide</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="groups_id" eval="[(6,0, (ref('vendor_portal.group_vendor_portal_user'),))]"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[hasclass('oe_chatter')]" position="replace">
+                    <div >
+                    </div>
+                </xpath>
+            </field>
+        </record>
+         <record id="contract_chatter_hide_inherited" model="ir.ui.view">
+            <field name="name">tenders.vendor.hide</field>
+            <field name="model">tenders</field>
+            <field name="inherit_id" ref="product_purchase.view_tenders_status_form"/>
+            <field name="groups_id" eval="[(6,0, (ref('vendor_portal.group_vendor_portal_user'),))]"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[hasclass('oe_chatter')]" position="replace">
+                    <div >
+                    </div>
+                </xpath>
+            </field>
+        </record>
+           <record id="purchase_chatter_hide_inherited" model="ir.ui.view">
+            <field name="name">purchase.request.vendor.hide</field>
+            <field name="model">product.request</field>
+            <field name="inherit_id" ref="product_purchase.view_product_purchase_form"/>
+            <field name="groups_id" eval="[(6,0, (ref('vendor_portal.group_vendor_portal_user'),))]"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[hasclass('oe_chatter')]" position="replace">
+                    <div >
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
+

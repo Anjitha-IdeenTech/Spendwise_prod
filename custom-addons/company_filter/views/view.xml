@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+
+         <record id="company_filter_view_search" model="ir.ui.view">
+            <field name="model">allowed.companies</field>
+            <field name="arch" type="xml">
+                <search string="Allowed Companies">
+                    <field name="company_id"/>
+                    <field name="parent_company_id"/>
+                    <field name="city"/>
+
+                    <group expand="0" string="Group By">
+                        <filter string="Parent Company" name="group_by_parent_company_id" context="{'group_by':'parent_company_id'}"/>
+                        <filter string="State" name="group_by_state"
+                                context="{'group_by':'state'}"/>
+                        <filter string="City" name="group_by_city"
+                                context="{'group_by':'city'}"/>
+                    </group>
+
+                </search>
+            </field>
+        </record>
+
+
+
+        <record id="view_allowed_companies_tree" model="ir.ui.view">
+            <field name="name">Company Allocations</field>
+            <field name="model">allowed.companies</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree editable="bottom" create="0" edit="0">
+
+                    <header>
+                        <button name="button_add_companies"
+                        string="Add Filter" class="btn-primary" type="object"/>
+
+
+                    </header>
+<!--                    <field name="d_id"/>-->
+                    <field name="id" invisible="1"/>
+                    <field name="sequence"/>
+                    <field name="com_id" invisible="1"/>
+                    <field name="company_id"/>
+                    <field name="parent_company_id"/>
+                    <field name="users"/>
+                    <field name="city"/>
+                    <field name="state"/>
+                    <!--                    <field name="sub_division"/>-->
+                    <!--                    <field name="region"/>-->
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_view_allowed_companies">
+            <field name="name">Company Allocation</field>
+            <field name="res_model">allowed.companies</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('users','=',uid)]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create"></p>
+            </field>
+        </record>
+
+        <menuitem id="root_menu_allowed_companies" name="Company Allocations"
+         web_icon="company_filter,static/icons/icon.png"/>
+
+        <menuitem id="menu_allow_companies" name="Company Allocations" parent="root_menu_allowed_companies"
+                  action="action_view_allowed_companies" sequence="10"/>
+    </data>
+</odoo>

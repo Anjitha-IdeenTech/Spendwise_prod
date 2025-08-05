@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+          <record id="view_purchase_request_status_result_search" model="ir.ui.view">
+        <field name="name">purchase.request.status.result.search</field>
+        <field name="model">purchase.request.status.result</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="purchase_request_id"/>
+                <field name="contract_ids" string="Contracts"/>
+                <field name="purchase_order_ids" string="Purchase Orders"/>
+                <field name="invoice_ids" string="Invoices"/>
+            </search>
+        </field>
+    </record>
+        <!-- Tree view definition for Purchase Request Status Results -->
+        <record id="view_purchase_request_status_result_tree" model="ir.ui.view">
+            <field name="name">purchase.request.status.result.tree</field>
+            <field name="model">purchase.request.status.result</field>
+            <field name="arch" type="xml">
+                <tree string="Purchase Request Status Results" create="0" edit="0">
+                    <field name="purchase_request_id" string="Purchase Request"/>
+                    <field name="purchase_request_status" string="Request Status" decoration-success="has_pending_purchase_action"/>
+                    <field name="approver_purchase_id"/>
+                    <field name="expense_category_id" optional="hide"/>
+                    <field name="branch_id" optional="hide"/>
+                    <field name="department_id" optional="hide"/>
+                    <field name="approve_users_pr_emails" optional="hide"/>
+                    <field name="contract_ids" widget="many2many_tags" readonly="1" optional="hide"/>
+                    <field name="contract_status" readonly="1" decoration-success="has_pending_contract_action"/>
+                    <field name="approver_contract_id" readonly="1"/>
+                    <field name="approve_users_cr_emails" readonly="1" optional="hide"/>
+                    <field name="purchase_order_ids" widget="many2many_tags" readonly="1" optional="hide"/>
+                    <field name="purchase_order_status" readonly="1" decoration-success="has_pending_po_action"/>
+                    <field name="approver_po_id" readonly="1"/>
+                    <field name="approve_users_po_emails" readonly="1" optional="hide"/>
+                    <field name="invoice_ids" widget="many2many_tags" readonly="1" optional="hide"/>
+                    <field name="invoice_status" readonly="1" decoration-success="has_pending_invoice_action"/>
+                    <field name="approver_invoice_id" readonly="1"/>
+                    <field name="approve_users_invoice_emails" readonly="1" optional="hide"/>
+                    <field name="is_completed" readonly="1" optional="hide"/>
+                    <field name="has_pending_purchase_action" invisible="1"/>
+                    <field name="has_pending_contract_action" invisible="1"/>
+                    <field name="has_pending_po_action" invisible="1"/>
+                    <field name="has_pending_invoice_action" invisible="1"/>
+                    <field name="initiator_id" string="Purchase Initiator" readonly="1" optional="hide"/>
+                    <field name="initiator_email" string="Initiator Email" readonly="1" optional="hide" />
+                 
+                </tree>
+            </field>
+        </record>
+
+        <!-- Form view definition for Purchase Request Status Result -->
+        <record id="view_purchase_request_status_result_form" model="ir.ui.view">
+            <field name="name">purchase.request.status.result.form</field>
+            <field name="model">purchase.request.status.result</field>
+            <field name="arch" type="xml">
+                <form string="Purchase Request Status Result" create="0" edit="0">
+                    <sheet>
+                        <group>
+                            <field name="purchase_request_id" readonly="1"/>
+                            <field name="purchase_request_status" readonly="1"/>
+                            <field name="approver_purchase_id" readonly="1"/>
+                            <field name="approve_users_pr_emails" readonly="1"/>
+                            <field name="expense_category_id"/>
+                            <field name="department_id"/>
+                            <field name="branch_id"/>
+                            <field name="initiator_id" string="Purchase Initiator" readonly="1"/>
+                            <field name="initiator_email" string="Initiator Email" readonly="1" />
+                        </group>
+                        <group>
+                            <field name="contract_ids" widget="many2many_tags" readonly="1"/>
+                            <field name="contract_status" readonly="1"/>
+                            <field name="approver_contract_id" readonly="1"/>
+                            <field name="approve_users_cr_emails" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="purchase_order_ids" widget="many2many_tags"  readonly="1"/>
+                            <field name="purchase_order_status" readonly="1"/>
+                            <field name="approver_po_id" readonly="1"/>
+                            <field name="approve_users_po_emails" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="invoice_ids" widget="many2many_tags" readonly="1"/>
+                              <field name="invoice_status" readonly="1"/>
+                             <field name="approver_invoice_id" readonly="1"/>
+                            <field name="approve_users_invoice_emails" readonly="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,35 @@
+<odoo>
+    <data>
+        <record id="view_deadline_extend_form" model="ir.ui.view">
+            <field name="name">deadline.extend.wizard.form</field>
+            <field name="model">deadline.extend.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Select Product Category">
+                    <group>
+                        <group col="2">
+                            <field name="contract" readonly="1"/>
+                            <field name="current_deadline" readonly="1"/>
+                            <field name="extend_date" readonly="0"/>
+                        </group>
+<!--                        <group col="2">-->
+<!--                            <field name="reason" string="Reason"/>-->
+<!--                        </group>-->
+                    </group>
+                    <footer>
+                        <button name="confirm" string="Confirm Change" type="object" class="btn-primary " style="float: right;" confirm="Are you sure to change the Deadline?"/>
+                        <div style="float: right;padding-right: 10px;">
+                            <button string="Cancel" class="btn-secondary" special="cancel"/>
+                        </div>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="view_deadline_extend_action" model="ir.actions.act_window">
+            <field name="name">Extend Deadline</field>
+            <field name="res_model">deadline.extend.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_deadline_extend_form"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,20 @@
+<odoo>
+    <data>
+        <!-- Inherit the existing view -->
+        <record id="view_branch_form_inherit" model="ir.ui.view">
+            <field name="name">res.branch.form.inherit</field>
+            <field name="model">res.branch</field>
+            <field name="inherit_id" ref="multi_branch_base.view_branch_form"/>
+            <field name="arch" type="xml">
+                <!-- Add a button to the form view -->
+                <xpath expr="//form/sheet" position="inside">
+                    <button name="action_show_contracts"
+                            string="Show Contract Details"
+                            type="object"
+                            class="btn-primary"/>
+                    <xpath expr="//div[@class='oe_title']" position="before"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

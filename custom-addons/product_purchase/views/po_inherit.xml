@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="purchase_vendor_user_field_inherited" model="ir.ui.view">
+            <field name="name">purchase.order.inherited_new</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="exp_category_domain" invisible="1"/>
+                    <field name="bill_to"
+                           attrs="{'readonly': [('state', 'in', ( 'done', 'to approve', 'purchase','cancel'))]}"/>
+                    <field name="ship_to"
+                           attrs="{'readonly': [('state', 'in', ( 'done', 'to approve', 'purchase','cancel'))]}"/>
+                    <!--                    <field name="company_id" attrs="{'readonly': [('state', 'in', ( 'done', 'to approve', 'purchase','cancel'))]}"/>-->
+<!--                    <field name="location"-->
+<!--                           attrs="{'readonly': [('state', 'in', ( 'done', 'to approve', 'purchase','cancel'))]}"/>-->
+                    <field name="department_id"
+                           attrs="{'readonly': [('state', 'in', ( 'done', 'to approve', 'purchase','cancel'))]}"/>
+                    <field name="expense_type"
+                           attrs="{'readonly': [('state', 'in', ( 'done', 'to approve', 'purchase','cancel'))]}"/>
+                    <field name= "exp_category" attrs="{'readonly': [('state', 'in', ( 'done', 'to approve', 'purchase','cancel'))]}"
+                                options='{"always_reload": True, "no_quick_create": True, "no_create_edit": True}'
+                                domain="exp_category_domain"/>
+                    <field name="pr_budget_id"
+                           attrs="{'readonly': [('state', 'in', ( 'done', 'to approve', 'purchase','cancel'))]}"/>
+<!--                    <field name="budget_group_id"-->
+<!--                           attrs="{'readonly': [('state', 'in', ( 'done', 'to approve', 'purchase','cancel'))]}"/>-->
+                </xpath>
+
+
+                <xpath expr="//field[@name='user_id']" position="after">
+
+                    <field name="is_readonly" invisible="1"/>
+                    <field name="qty_editable" />
+
+                </xpath>
+
+                <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('parent.is_readonly', '=', True)]}</attribute>
+                </xpath>
+                 <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('parent.is_readonly', '=', True)]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='product_qty']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('parent.is_readonly', '=', True)]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('parent.is_readonly', '=', True)]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='price_unit']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('parent.is_readonly', '=', True)]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='taxes_id']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('parent.is_readonly', '=', True)]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='date_planned']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('parent.is_readonly', '=', True)]}</attribute>
+                </xpath>
+
+
+<!--                <xpath expr="//field[@name='order_line']/tree/field[@name='product_qty']" position="attributes">-->
+<!--                    <attribute name="attrs">{'readonly': [('parent.qty_editable', '=', False)]}</attribute>-->
+<!--                </xpath>-->
+            </field>
+        </record>
+
+
+
+
+
+        <record id="price_list_view_inherited" model="ir.ui.view">
+            <field name="name">price_list.inherited</field>
+            <field name="model">product.supplierinfo</field>
+            <field name="inherit_id" ref="product.product_supplierinfo_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']" position="after">
+                    <field name="company_ids" widget="many2many_tags" required="1"
+                           options='{"always_reload": True, "no_quick_create": True, "no_create_edit": True}'/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

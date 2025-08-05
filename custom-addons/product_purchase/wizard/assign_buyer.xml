@@ -1,0 +1,36 @@
+<!-- product_category_wizard_view.xml -->
+
+<odoo>
+    <data>
+        <record id="view_assign_buyer_wizard_form" model="ir.ui.view">
+            <field name="name">assign.buyer.form</field>
+            <field name="model">assign.buyer</field>
+            <field name="arch" type="xml">
+                <form string="Select Buyer">
+                    <group>
+
+                        <field name="buyer_id" widget="many2many_tags" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+
+                    </group>
+                    <footer>
+
+                        <button name="action_confirm" string="Assign" type="object" class="btn-primary " style="float: right;"
+                                confirm="Are you sure you want to assign this CTR to this user?"/>
+                        <div style="float: right;padding-right: 10px;">
+                         <button string="Cancel" class="btn-secondary" special="cancel"  />
+                        </div>
+                    </footer>
+                </form>
+            </field>
+
+        </record>
+
+<record id="view_assign_buyer_action" model="ir.actions.act_window">
+            <field name="name">Assign</field>
+            <field name="res_model">assign.buyer</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_assign_buyer_wizard_form"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_purchase_order_tree_inherit" model="ir.ui.view">
+            <field name="name">purchase.order.tree.inherit</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='state']" position="attributes">
+                    <attribute name="decoration-success">state == 'paid'</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='state']" position="attributes">
+                    <attribute name="decoration-info">state == 'purchase'</attribute>
+                </xpath>
+<!--                <xpath expr="//field[@name='state']" position="attributes">-->
+<!--                    <attribute name="decoration-primary">state == 'draft'</attribute>-->
+<!--                </xpath>-->
+<!--               <xpath expr="//tree" position="attributes">-->
+<!--                    <attribute name="decoration-primary">state in ['draft', 'sent']</attribute>-->
+<!--                </xpath>-->
+            </field>
+        </record>
+        <record id="purchase_order_tree_inherit_close_button" model="ir.ui.view">
+            <field name="name">purchase.order.tree.inherit.close.button</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//tree" position="inside">
+                    <header>
+                        <button name="%(lease_management.action_close_po_wizard)d"
+                                string="Close Selected POs"
+                                type="action"
+                                class="btn-primary"
+                                context="{'default_purchase_order_ids': active_ids}"
+                                confirm="Are you sure you want to close the selected Purchase Orders?"
+                               />
+                    </header>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

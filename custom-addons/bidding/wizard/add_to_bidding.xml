@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_adding_to_bidding_form" model="ir.ui.view">
+            <field name="name">add.to.bidding.from</field>
+            <field name="model">add.to.bidding.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="allowed_partner_ids" invisible="1"/>
+<!--                                <field name="product_id"/>-->
+
+<!--                                <field name="quantity"/>-->
+<!--                                <field name="unit_price"/>-->
+                                <field name="requested_date"/>
+                                <field name="deadline"/>
+<!--                                    <field name="expected_date"/>-->
+                                <field name="tender_id" invisible="1"/>
+                                <field name="pr_id" invisible="1"/>
+                                <field name="product_id_domain" invisible="1"/>
+                                <field name="request_from" readonly="1"/>
+                                <field name="request_to" widget="many2many_tags" options="{'no_edit': True, 'no_create': True ,'no_open': True,'no_quick_create':True}"/>
+                                <field name="extension" placeholder="Minutes"/>
+                                <field name="extension_period" placeholder="Minutes"/>
+                                <field name="terms" placeholder="Terms And Conditions"/>
+                            </group>
+                        </group>
+                        <footer>
+                            <button name="add_to_bidding" id="btn_add_bidding"
+                                    string="Add" class="btn-primary" type="object"
+                            />
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_add_to_bidding">
+            <field name="name">Add to Bidding</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">add.to.bidding.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_adding_to_bidding_form"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

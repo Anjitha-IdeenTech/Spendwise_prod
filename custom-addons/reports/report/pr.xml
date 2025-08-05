@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<odoo>
+    <template id="purchase_request_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-foreach="docs" t-as="o">
+
+
+                    <div>
+                        <h2 style="text-align: center">
+                            PURCHASE REQUEST
+                        </h2>
+
+                    </div>
+
+                    <br/>
+                    <br/>
+                    <br/>
+
+
+                    <div id="deliver_bill_address" class="row mt32 mb32">
+                         <div class="col-auto col-3 mw-100 mb-2">
+                            <strong>Ship To Address:</strong>
+                            <br/>
+                            <t t-if="o.ship_to.name">
+                                <t t-if="o.ship_to.street">
+                                    <span t-field="o.ship_to.street"/>
+                                </t>
+                                <br/>
+                                <t t-if="o.ship_to.city">
+                                    <span t-field="o.ship_to.city"/>
+                                </t>
+                                <t t-if="o.ship_to.state_id">,
+                                    <span t-field="o.ship_to.state_id.name"/>
+                                </t>
+                                <t t-if="o.ship_to.zip">,
+                                    <span t-field="o.ship_to.zip"/>
+                                </t>
+                                <br/>
+                            </t>
+                        </div>
+                        <div class="col-auto col-3 mw-100 mb-2">
+                            <strong>Bill To Address:</strong>
+                            <br/>
+                            <t t-if="o.bill_to.name">
+                                <t t-if="o.bill_to.street">
+                                    <span t-field="o.bill_to.street"/>
+                                </t>
+                                <br/>
+                                <t t-if="o.bill_to.city">
+                                    <span t-field="o.bill_to.city"/>
+                                </t>
+                                <t t-if="o.bill_to.state_id">,
+                                    <span t-field="o.bill_to.state_id.name"/>
+                                </t>
+                                <t t-if="o.bill_to.zip">,
+                                    <span t-field="o.bill_to.zip"/>
+                                </t>
+                                <br/>
+                            </t>
+                        </div>
+                    </div>
+                    <br/>
+                    <br/>
+
+                    <div class="pages">
+                        <h3>
+                            PURCHASE REQUEST NO:
+                            <span t-field="o.name"/>
+                        </h3>
+                        <br/>
+                        <br/>
+
+                        <div class="row mt32 mb32">
+                            <div t-if="o.requested_date" class="col-auto" name="div_rdate">
+                                <strong>Request Date:</strong>
+                                <p t-field="o.requested_date"/>
+                            </div>
+
+                            <div t-if="o.expense_type" class="col-auto" name="div_ex_type">
+                                <strong>Expense Type:</strong>
+                                <p t-field="o.expense_type"/>
+                            </div>
+
+                            <div t-if="o.requested_by" class="col-auto" name="div_rby">
+                                <strong>Request By:</strong>
+                                <p t-field="o.requested_by.name"/>
+                            </div>
+
+                            <div t-if="o.department_id" class="col-auto" name="div_dep">
+                                <strong>Department:</strong>
+                                <p t-field="o.department_id.name"/>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <br/>
+                    <br/>
+
+
+                    <h3>Product Details</h3>
+
+                    <table align="center" style="width:100%; border: 1px solid black;" cellpadding="10">
+                        <thead>
+                            <tr style="border: 1px solid black;">
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Products</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Vendors</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Quantity</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Unit Price</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Payment Terms</strong>
+                                </td>
+
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <t t-set="lines"
+                               t-value="o.product_request_line_ids"/>
+                            <tr t-foreach="lines" t-as="move">
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.product"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.vendors"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.quantity"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.unit_price"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.payment_terms.name"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                `      <h3>Approvals</h3>
+
+                    <table align="center" style="width:100%; border: 1px solid black;" cellpadding="10">
+                        <thead>
+                            <tr style="border: 1px solid black;">
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>User</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Branch</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Department</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Status</strong>
+                                </td>
+                                <!-- <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>De</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Payment Terms</strong>
+                                </td> -->
+
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <t t-set="lines"
+                               t-value="o.pr_approve_line"/>
+                            <tr t-foreach="lines" t-as="move">
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.user_id.name"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.branch_id.name"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.department_id.name"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.status"/>
+                                </td>
+                                <!-- <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.unit_price"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.payment_terms.name"/>
+                                </td> -->
+                            </tr>
+                        </tbody>
+                    </table>
+                      <h3>Need For Request - Approvals</h3>
+
+                    <table align="center" style="width:100%; border: 1px solid black;" cellpadding="10">
+                        <thead>
+                            <tr style="border: 1px solid black;">
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>User</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Branch</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Department</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Status</strong>
+                                </td>
+                                <!-- <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>De</strong>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <strong>Payment Terms</strong>
+                                </td> -->
+
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <t t-set="lines"
+                               t-value="o.cr_need_approve_line"/>
+                            <tr t-foreach="lines" t-as="move">
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.user_id.name"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.branch_id.name"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.department_id.name"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.status"/>
+                                </td>
+                                <!-- <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.unit_price"/>
+                                </td>
+                                <td colspan="10" style="padding: 5px; border: 1px solid black;">
+                                    <span t-field="move.payment_terms.name"/>
+                                </td> -->
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+
+
+        <record id="qc_kanban_demo_overview" model="product.category">
+            <field name="name">Lease/Rent</field>
+        </record>
+
+    </data>
+</odoo>

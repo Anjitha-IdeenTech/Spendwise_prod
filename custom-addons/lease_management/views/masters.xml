@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <menuitem id="root_masters" name="Masters"
+                  web_icon="lease_management,static/icons/data.png"
+                  groups="lease_management.group_master_admin_data"/>
+
+        <menuitem id="sub_root_admin" name="Admin Masters" parent="root_masters"
+                  sequence="10"/>
+
+        <menuitem id="sub_root_products" name="Inventory Masters" parent="root_masters"
+                  sequence="11"/>
+
+        <menuitem id="sub_root_workflow" name="Workflow Masters" parent="root_masters"
+                  sequence="12"/>
+
+        <menuitem id="sub_root_requests" name="Requests" parent="lease_management.root_reports"
+                  sequence="13"/>
+
+        <menuitem id="sub_root_approve" name="Approved List" parent="root_masters"
+                  sequence="14" groups="product_purchase.group_finance"/>
+
+        <menuitem id="sub_menu_contract_approve" name="Approved Contracts" parent="sub_root_approve"
+                  action="product_purchase.action_view_product_contracts_request" sequence="18"/>
+
+        <menuitem id="sub_menu_purchase_order_approve" name="Approved Purchase Order" parent="sub_root_approve"
+                  action="action_view_purchase_order" sequence="18"/>
+
+
+        
+        <menuitem id="sub_menu_tax_master" name="Taxes" parent="sub_root_admin"
+                  action="account.action_tax_form" sequence="18"/>
+
+        <menuitem id="sub_menu_tds_master" name="TDS" parent="sub_root_admin"
+                  action="lease_management.action_tds_form" sequence="17"/>
+
+        <menuitem id="sub_menu_uom_master" name="Unit Of Measure" parent="sub_root_admin"
+                  action="uom.product_uom_categ_form_action" sequence="19"/>         
+
+
+
+        <menuitem id="sub_menu_pr" name="Purchase Requests" parent="sub_root_requests"
+                  action="product_purchase.action_product_requests_master" sequence="10"/>
+        <menuitem id="sub_menu_bid" name="Bidding Requests" parent="sub_root_requests"
+                  action="bidding.action_bidding_requests_master" sequence="19"/>
+        
+         <menuitem id="sub_menu_pr_status" name="Purchase Request Status" parent="lease_management.root_reports"
+                  action="product_purchase.action_purchase_request_status_wizard" sequence="20"/>
+
+        <menuitem id="sub_menu_products" name="Products Master" parent="sub_root_products"
+                  action="stock.product_template_action_product" sequence="10"/>
+        
+        <menuitem id="sub_menu_products_category" name="Products Category" parent="sub_root_products"
+                  action="product.product_category_action_form" sequence="11"/>
+
+        <menuitem id="sub_menu_product_groups" name="Product Groups" parent="sub_root_products"
+                  action="product_purchase.action_product_groups" sequence="11"/>
+
+        <menuitem id="sub_menu_contracts" name="Rate Contracts" parent="sub_root_products"
+                  action="product_purchase.action_view_product_contracts" sequence="12"/>
+
+        <menuitem id="sub_menu_contract_excel" name="Contract Excel" parent="product_purchase.root_contracts_agreements"
+                  action="product_purchase.action_export_contract_wizard" sequence="16"/>
+                  
+        <menuitem id="sub_menu_payment" name="Payment Terms" parent="sub_root_products"
+          action="account.action_payment_term_form" sequence="19"/>
+
+        <menuitem id="sub_menu_budget" name="Budget" parent="sub_root_workflow"
+                  action="product_purchase.action_pr_budget" sequence="14"/>
+
+        <menuitem id="sub_menu_lease" name="Lease Agreements" parent="sub_root_products"
+                  action="lease_management.action_master_product_lease" sequence="13"/>
+
+        <menuitem id="sub_menu_workflow" name="Workflows" parent="sub_root_workflow"
+                  action="product_purchase.action_pr_company_approve_users" sequence="13"/>
+
+        <menuitem id="menu_vendor_workflows"
+                  name="Vendor Onboarding Workflow"
+                  parent="sub_root_workflow"
+                  action="product_purchase.action_vendor_workflow" sequence="16"/>
+
+        <menuitem id="sub_menu_expense_category" name="Expense Category" parent="sub_root_workflow"
+                  action="product_purchase.action_expense_category_action" sequence="15"/>
+
+<!--        <menuitem id="sub_menu_groups" name="Expense Groups" parent="sub_root_workflow"-->
+<!--                  action="product_purchase.action_groups" sequence="14"/>-->
+
+
+
+
+
+        <menuitem id="sub_menu_vendors" name="Vendor Master" parent="sub_root_admin"
+                  action="account.res_partner_action_supplier" sequence="9"/>
+
+        <menuitem id="sub_menu_branch_master" name="Branch Master" parent="sub_root_admin"
+                  action="multi_branch_base.action_res_branch_form" sequence="10"/>
+
+
+        <menuitem id="sub_menu_companies" name="Company Master" parent="sub_root_admin"
+                  action="base.action_res_company_form" sequence="11"/>
+
+        <menuitem id="sub_menu_users" name="User Master" parent="sub_root_admin"
+                  action="base.action_res_users" sequence="12"/>
+
+        <!-- <menuitem id="sub_menu_employee" name="Employee Master" parent="sub_root_admin"
+                  action="hr.open_view_employee_list_my" sequence="13"/> -->
+
+        <menuitem id="sub_menu_departments" name="Departments" parent="sub_root_admin"
+                  action="hr.hr_department_kanban_action" sequence="14"/>
+        
+        <menuitem id="sub_menu_designations" name="Designations" parent="sub_root_admin"
+                  action="hr.action_hr_job" sequence="15"/>
+
+        <menuitem id="sub_menu_bank" name="Banks" parent="sub_root_admin"
+                  action="base.action_res_bank_form" sequence="16"/>
+        
+        <menuitem id="sub_menu_bank_accounts" name="Bank Accounts" parent="sub_root_admin"
+                  action="base.action_res_partner_bank_account_form" sequence="17"/>
+
+        <menuitem id="purchase_excel" name="Purchase/Invoice Excel Report" parent="purchase.menu_purchase_root"
+              action="lease_management.action_export_purchase_wizard" sequence="17"/>
+
+        <menuitem id="sub_menu_lease_excel" name="Lease Agreements Excel Report" parent="root_lease_management"
+                  action="lease_management.action_export_lease_wizard" sequence="15"/>
+
+        
+        <menuitem id="sub_root_report" name="Reports" parent="lease_management.root_reports"
+                  sequence="22"/>
+
+        <menuitem id="sub_menu_contract_nego"
+                  name="Contract Negotiation Comparison"
+                  parent="lease_management.sub_root_report"
+                  action="product_purchase.action_contract_negotiation_comparison_wizard"
+                  sequence="20"/>
+
+
+                  
+
+
+
+
+
+
+
+
+
+
+    </data>
+</odoo>

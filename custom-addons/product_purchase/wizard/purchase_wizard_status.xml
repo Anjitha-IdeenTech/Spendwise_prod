@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_purchase_request_status_wizard" model="ir.ui.view">
+            <field name="name">purchase.request.status.wizard.form</field>
+            <field name="model">purchase.request.status.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Purchase Request Status" create="false" edit="false">
+                    <group>
+                         <field name="allowed_company_ids" widget="many2many_tags"/>
+                        <field name="show_all"/>
+                         <field name="show_pending_request"/>
+                         <field name="show_withoutasn_pending_request"/>
+                        <field name="show_my_pending_request"/>
+
+                    </group>
+                    <footer>
+                        <button string="Confirm" type="object" name="action_confirm" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_purchase_request_status_wizard" model="ir.actions.act_window">
+            <field name="name">Purchase Request Status</field>
+            <field name="res_model">purchase.request.status.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+    </data>
+</odoo>

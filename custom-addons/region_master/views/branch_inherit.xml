@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="region_field_inherited" model="ir.ui.view">
+            <field name="name">re.branch.inherited_new</field>
+            <field name="model">res.branch</field>
+            <field name="inherit_id" ref="multi_branch_base.view_branch_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']" position="after">
+                    <field name="region" />
+                </xpath>
+                <xpath expr="//field[@name='code']" position="after">
+                    <field name="division" options="{'no_create': True}"/>
+                    <field name="sub_division" options="{'no_create': True}"/>
+                </xpath>
+                  <xpath expr="//sheet" position="inside">
+                    <div class="oe_chatter">
+                        <field name="message_ids" widget="mail_thread"/>
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
