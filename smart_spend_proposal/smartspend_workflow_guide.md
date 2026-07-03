@@ -44,15 +44,15 @@ This master chart outlines the entire lifecycle, showing the decision path when 
 ```mermaid
 flowchart TD
     User([Requester]) -->|1. Submit Request| Portal[Smart Spend Portal]
-    Portal -->|2. NLP Parsing & Extraction| Engine{AI Orchestration}
+    Portal -->|2. NLP Parsing and Extraction| Engine{AI Orchestration}
     Engine -->|Validate| Budget{Budget Check}
     
-    Budget -->|Exceeded| Transfer[Budget Alternative / Transfer Suggestion]
+    Budget -->|Exceeded| Transfer["Budget Alternative / Transfer Suggestion"]
     Budget -->|Available| Matrix{Resolve Approvals}
     
     Matrix -->|Manager Approved| Contract{Rate Contract Active?}
     
-    Contract -->|Yes: Direct Fast Path| PO[Auto-Create & Confirm PO]
+    Contract -->|Yes: Direct Fast Path| PO["Auto-Create & Confirm PO"]
     Contract -->|No: Sourcing Fallback| CR[Create Contract Request]
     
     CR -->|Workload Auto-Assign| Buyer[Assign SCM Buyer]
@@ -113,9 +113,9 @@ Instead of rejecting a requisition immediately when budget limits are breached, 
 
 ```mermaid
 flowchart TD
-    Start[PR Submitted] --> CostCenter[Identify Department & Cost Center]
+    Start[PR Submitted] --> CostCenter["Identify Department & Cost Center"]
     CostCenter --> FetchBudget[Fetch Budget Balance from Odoo]
-    FetchBudget --> Check{Request Amount <= Available Budget?}
+    FetchBudget --> Check{"Request Amount <= Available Budget?"}
     
     Check -->|Yes| Reserve[Reserve Budget & Proceed to Approval]
     
@@ -145,10 +145,10 @@ flowchart TD
     RFQ --> PortalSubmit[Vendors Submit Bids on Portal]
     Neg --> PortalSubmit
     Bid --> PortalSubmit
-    PortalSubmit --> AutoCompare[Auto-Comparison Dashboard & Scorecard]
+    PortalSubmit --> AutoCompare["Auto-Comparison Dashboard & Scorecard"]
     AutoCompare --> SelectBest[System Recommends Lowest Bid / Best Vendor]
-    SelectBest --> SCMApprove[SCM Approval & Optional Legal Vetting]
-    SCMApprove --> CreateRC[Create & Sign new Rate Contract]
+    SelectBest --> SCMApprove["SCM Approval & Optional Legal Vetting"]
+    SCMApprove --> CreateRC["Create & Sign new Rate Contract"]
     CreateRC --> TriggerPO[Auto-Trigger Purchase Order for Original PR]
 ```
 
@@ -160,19 +160,19 @@ This chart contrasts the user's high-level courier-style tracking view with the 
 ```mermaid
 flowchart TD
     subgraph PortalView["What the User Sees (Simple UI Timeline)"]
-        U1[Request Submitted] --> U2[Budget & Manager Approved]
+        U1[Request Submitted] --> U2["Budget & Manager Approved"]
         U2 --> U3[Sourcing In Progress]
         U3 --> U4[Purchase Order Created]
         U4 --> U5[Delivered]
     end
 
     subgraph BackendView["What Actually Happens (Abstracted ERP Execution)"]
-        B1[NLP Parsing & Budget Head Resolution] --> B2[Hierarchical Amount-Banded Approval Routing]
-        B2 --> B3[Contract Request Created & SCM Buyer Assigned]
-        B3 --> B4[Multi-RFQ Sourcing & Vendor Portal Bid Comparison]
-        B4 --> B5[Legal Vetting & Rate Contract Creation]
-        B5 --> B6[PO Generated, Confirmed, & Sent via EDI/Email]
-        B6 --> B7[Warehouse Goods Receipt (GRN) & 3-Way Invoice Match]
+        B1["NLP Parsing & Budget Head Resolution"] --> B2[Hierarchical Amount-Banded Approval Routing]
+        B2 --> B3["Contract Request Created & SCM Buyer Assigned"]
+        B3 --> B4["Multi-RFQ Sourcing & Vendor Portal Bid Comparison"]
+        B4 --> B5["Legal Vetting & Rate Contract Creation"]
+        B5 --> B6["PO Generated, Confirmed, & Sent via EDI/Email"]
+        B6 --> B7["Warehouse Goods Receipt (GRN) & 3-Way Invoice Match"]
     end
 
     U1 -.-> B1
