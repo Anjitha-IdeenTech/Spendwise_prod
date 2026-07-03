@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Smart Spend — Simplified Workflows &amp; Usability Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root[data-theme="light"] {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f1f5f9;
+      --border-color: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --accent-color: #4f46e5;
+      --accent-gradient: linear-gradient(135deg, #6366f1, #4f46e5);
+      --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+      --sidebar-shadow: 1px 0 0 0 #e2e8f0;
+      --badge-bg: #e0e7ff;
+      --badge-text: #4338ca;
+      --mermaid-theme: default;
+    }
+
+    :root[data-theme="dark"] {
+      --bg-primary: #090d16;
+      --bg-secondary: #111827;
+      --bg-tertiary: #1f2937;
+      --border-color: #1f2937;
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --accent-color: #6366f1;
+      --accent-gradient: linear-gradient(135deg, #818cf8, #4f46e5);
+      --card-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+      --sidebar-shadow: 1px 0 0 0 #1f2937;
+      --badge-bg: #1e1b4b;
+      --badge-text: #c7d2fe;
+      --mermaid-theme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text-primary);
+      background-color: var(--bg-primary);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar Styling */
+    aside {
+      width: 280px;
+      background-color: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .brand {
+      padding: 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      background: var(--accent-gradient);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-menu {
+      padding: 20px 16px;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    .nav-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      padding-left: 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      color: var(--text-primary);
+      background-color: var(--bg-tertiary);
+    }
+
+    .nav-item.active {
+      border-left: 3px solid var(--accent-color);
+      border-radius: 0 8px 8px 0;
+      padding-left: 9px;
+    }
+
+    /* Main Content Area */
+    main {
+      margin-left: 280px;
+      flex-grow: 1;
+      padding: 40px;
+      max-width: 1200px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 40px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 24px;
+    }
+
+    .header-info h1 {
+      margin: 0 0 8px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 32px;
+      letter-spacing: -0.02em;
+    }
+
+    .header-info p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle-btn {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .theme-toggle-btn:hover {
+      background-color: var(--bg-tertiary);
+    }
+
+    /* Diagram Section Cards */
+    .diagram-card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+      padding: 32px;
+      margin-bottom: 40px;
+      scroll-margin-top: 40px;
+    }
+
+    .diagram-card h2 {
+      margin: 0 0 8px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 22px;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .diagram-card .desc {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0 0 24px;
+    }
+
+    .badge {
+      background-color: var(--badge-bg);
+      color: var(--badge-text);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 9999px;
+    }
+
+    .mermaid-container {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .mermaid {
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Comparison Table Styling */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 20px;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .comparison-table th {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+      font-weight: 700;
+      text-align: left;
+      padding: 14px 16px;
+      border-bottom: 2px solid var(--border-color);
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .comparison-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+      color: var(--text-secondary);
+    }
+
+    .comparison-table tr:hover {
+      background-color: var(--bg-tertiary);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+      aside {
+        width: 70px;
+      }
+      .brand-title, .nav-label, .nav-item span {
+        display: none;
+      }
+      .brand {
+        justify-content: center;
+        padding: 20px 0;
+      }
+      .nav-menu {
+        padding: 16px 8px;
+      }
+      .nav-item {
+        justify-content: center;
+        padding: 12px 0;
+      }
+      main {
+        margin-left: 70px;
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <aside>
+    <div class="brand">
+      <div class="brand-logo">S</div>
+      <div class="brand-title">Smart Spend</div>
+    </div>
+    <nav class="nav-menu">
+      <div class="nav-label">Workflow Diagrams</div>
+      <a href="#d1" class="nav-item active" id="link-d1"><span>1. End-to-End Master</span></a>
+      <a href="#d2" class="nav-item" id="link-d2"><span>2. NLP Request Parsing</span></a>
+      <a href="#d3" class="nav-item" id="link-d3"><span>3. Budget Routing</span></a>
+      <a href="#d4" class="nav-item" id="link-d4"><span>4. Sourcing &amp; Contracts</span></a>
+      <a href="#d5" class="nav-item" id="link-d5"><span>5. Timeline Abstracting</span></a>
+      <a href="#matrix" class="nav-item" id="link-matrix"><span>6. Comparison Matrix</span></a>
+    </nav>
+  </aside>
+
+  <main>
+    <header>
+      <div class="header-info">
+        <h1>Smart Spend Request Platform</h1>
+        <p>Simplified Workflows &amp; Usability Architecture (decoupled from Odoo 15 P2P)</p>
+      </div>
+      <div class="header-actions">
+        <button class="theme-toggle-btn" id="theme-toggle">
+          <span>Toggle Theme</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Card 1: Master Flow -->
+    <section class="diagram-card" id="d1">
+      <h2>1. End-to-End Master Flow <span class="badge">Core Architecture</span></h2>
+      <p class="desc">
+        This master workflow outlines the complete lifecycle from the user's initial request down to backend ERP payment execution. It highlights the fast-path rate contract bypass and the fallback sourcing cycle.
+      </p>
+      <div class="mermaid-container">
+        <div class="mermaid" id="chart-d1">Loading diagram...</div>
+      </div>
+    </section>
+
+    <!-- Card 2: NLP Request -->
+    <section class="diagram-card" id="d2">
+      <h2>2. NLP-Driven Request Initiation <span class="badge">Usability Innovation</span></h2>
+      <p class="desc">
+        Replaces manual form-filling of company metadata, cost centers, and catalog lookups with an intelligent parsing parser that pre-fills request cards using natural language processing.
+      </p>
+      <div class="mermaid-container">
+        <div class="mermaid" id="chart-d2">Loading diagram...</div>
+      </div>
+    </section>
+
+    <!-- Card 3: Budget Validation -->
+    <section class="diagram-card" id="d3">
+      <h2>3. Intelligent Budget Routing <span class="badge">Financial Control</span></h2>
+      <p class="desc">
+        Instead of immediate blocking or failure, the budget checking system suggests active alternative accounts, triggers parents transfers, or routes requests through emergency workflows.
+      </p>
+      <div class="mermaid-container">
+        <div class="mermaid" id="chart-d3">Loading diagram...</div>
+      </div>
+    </section>
+
+    <!-- Card 4: Sourcing Fallback -->
+    <section class="diagram-card" id="d4">
+      <h2>4. Sourcing &amp; Background Contracts <span class="badge">Procurement Fallback</span></h2>
+      <p class="desc">
+        When no Rate Contract is active, Odoo dynamically assigns SCM buyers based on workload and category expertise, executing bidding or negotiations in the background.
+      </p>
+      <div class="mermaid-container">
+        <div class="mermaid" id="chart-d4">Loading diagram...</div>
+      </div>
+    </section>
+
+    <!-- Card 5: Timeline Abstracting -->
+    <section class="diagram-card" id="d5">
+      <h2>5. Timeline Abstracting (User vs. ERP) <span class="badge">User Experience</span></h2>
+      <p class="desc">
+        Contrasts the clean courier-style milestones visible to the business requester with the dense transaction lines running under the hood in Odoo ERP.
+      </p>
+      <div class="mermaid-container">
+        <div class="mermaid" id="chart-d5">Loading diagram...</div>
+      </div>
+    </section>
+
+    <!-- Section 6: Matrix -->
+    <section class="diagram-card" id="matrix">
+      <h2>6. Comparison Matrix: Odoo 15 P2P vs. Smart Spend</h2>
+      <p class="desc">
+        Detailed breakdown of features and workflow simplifications showing how manual complexity is abstracted.
+      </p>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th style="width: 25%;">Feature</th>
+            <th style="width: 37%;">Existing Odoo 15 P2P Flow</th>
+            <th style="width: 38%;">Proposed Smart Spend Platform</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Requisition Entry</strong></td>
+            <td>Multi-page form requiring complex ERP configuration inputs (Expense Type, Cost Centers, Purchase Plans).</td>
+            <td>A single search-style box. Requester types a description or writes in free text. NLP auto-extracts parameters.</td>
+          </tr>
+          <tr>
+            <td><strong>Rate Contract Check</strong></td>
+            <td>User must manually find valid contract lines or risk creating an uncontracted PR.</td>
+            <td>Automated matching engine. Checks active Rate Contracts in real-time, auto-attaching vendor &amp; prices.</td>
+          </tr>
+          <tr>
+            <td><strong>Budget Enforcement</strong></td>
+            <td>Hard block or silent warning at submit time. If blocked, users must restart.</td>
+            <td>Real-time budget validation. Suggests related accounts or initiates a budget transfer on the fly.</td>
+          </tr>
+          <tr>
+            <td><strong>Manager Approvals</strong></td>
+            <td>Requires logging into the ERP backend and auditing dense requisition tables.</td>
+            <td>Unified Approvals Dashboard. Managers see summary cards with budget status, ETA, and a 1-tap Approve button.</td>
+          </tr>
+          <tr>
+            <td><strong>SCM Sourcing (CR)</strong></td>
+            <td>Manual buyer assignment, external negotiations, and manual comparison of multiple Excel quotes.</td>
+            <td>Auto-assignment based on category and buyer workload. Vendor portal bidding with automatic bid scorecards.</td>
+          </tr>
+          <tr>
+            <td><strong>Tracking Timeline</strong></td>
+            <td>Inquirers must search through emails, check picking lines, or call procurement to get a status update.</td>
+            <td>Courier-style tracking timeline. Pulls live milestones from Odoo (Sourcing -> PO -> GRN -> Paid).</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- Load Mermaid Library -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.2.4/dist/mermaid.min.js"></script>
+  <script>
+    const sources = {
+      'chart-d1': `flowchart TD
+    User([Requester]) -->|1. Submit Request| Portal[Smart Spend Portal]
+    Portal -->|2. NLP Parsing & Extraction| Engine{AI Orchestration}
+    Engine -->|Validate| Budget{Budget Check}
+    
+    Budget -->|Exceeded| Transfer[Budget Alternative / Transfer Suggestion]
+    Budget -->|Available| Matrix{Resolve Approvals}
+    
+    Matrix -->|Manager Approved| Contract{Rate Contract Active?}
+    
+    Contract -->|Yes: Direct Fast Path| PO[Auto-Create & Confirm PO]
+    Contract -->|No: Sourcing Fallback| CR[Create Contract Request]
+    
+    CR -->|Workload Auto-Assign| Buyer[Assign SCM Buyer]
+    Buyer -->|Select Method| Sourcing{Sourcing Method}
+    Sourcing -->|Multi-Vendor| RFQ[Portal RFQ Compare]
+    Sourcing -->|Single-Vendor| Neg[Direct Negotiation]
+    Sourcing -->|Strategic Item| Bid[Reverse Bidding Auction]
+    
+    RFQ -->|Submit Quotes| Quotes[Vendor Quotes]
+    Neg -->|Submit Quotes| Quotes
+    Bid -->|Submit Quotes| Quotes
+    Quotes -->|Auto-Comparison| ApproveContract[Approve Sourcing Contract]
+    ApproveContract -->|Create Rate Contract| PO
+    
+    PO -->|Auto-Trigger| GRN[ERP Goods Receipt]
+    GRN -->|Three-Way Matching| Invoice[Invoice Capture & Audit]
+    Invoice -->|Auto-Schedule| Pay[ERP Final Payment]
+    
+    classDef portal fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px;
+    classDef backend fill:#F1F5F9,stroke:#64748B,stroke-width:1.5px;
+    classDef success fill:#D1FAE5,stroke:#10B981,stroke-width:2px;
+    classDef warning fill:#FEF3C7,stroke:#D97706,stroke-width:2px;
+    
+    class User,Portal,Transfer portal;
+    class Engine,Budget,Matrix,Contract,Sourcing,Quotes warning;
+    class PO,GRN,Invoice,Pay success;
+    class CR,Buyer,RFQ,Neg,Bid,ApproveContract backend;`,
+
+      'chart-d2': `flowchart TD
+    UserInput["User Inputs Raw Text:<br/>'I need 10 Dell Latitude laptops under INR 70k each for the Bangalore office'"] --> NLP[AI NLP Parser]
+    NLP --> Category["Extract Category:<br/>IT Hardware & Laptops"]
+    NLP --> Item["Extract Item details:<br/>Dell Latitude"]
+    NLP --> Qty["Extract Qty:<br/>10 units"]
+    NLP --> Price["Extract Target Price:<br/>INR 70,000 / unit"]
+    NLP --> CostCenter["Extract Cost Center:<br/>Bangalore Branch"]
+    
+    Category --> AutoMatch[System Queries Odoo Database]
+    Item --> AutoMatch
+    Qty --> AutoMatch
+    Price --> AutoMatch
+    CostCenter --> AutoMatch
+    AutoMatch --> MatchCheck{Contract Exist?}
+    MatchCheck -->|Yes| PreFill[Pre-fill PR with Vendor, Price, Contract ID]
+    MatchCheck -->|No| FlagNew[Mark as New Sourcing Category]`,
+
+      'chart-d3': `flowchart TD
+    Start[PR Submitted] --> CostCenter[Identify Department & Cost Center]
+    CostCenter --> FetchBudget[Fetch Budget Balance from Odoo]
+    FetchBudget --> Check{Request Amount <= Available Budget?}
+    
+    Check -->|Yes| Reserve[Reserve Budget & Proceed to Approval]
+    
+    Check -->|No| SuggestAlternatives{Check Alternatives}
+    SuggestAlternatives -->|Alternative Category| AltCat[Suggest Related Budget Head with Surplus]
+    SuggestAlternatives -->|Transfer Needed| AltTrans[Initiate Budget Transfer Request from Parent Department]
+    SuggestAlternatives -->|Emergency Purchase| AltEmerg[Route to CFO for Exception Approval]`,
+
+      'chart-d4': `flowchart TD
+    Start[No Active Contract Detected] --> NeedApprove[Need-for-Contract Approval Workflow]
+    NeedApprove --> CreateCR[Auto-Create Contract Request in Odoo]
+    CreateCR --> WorkloadEngine{Query SCM Buyers Workloads}
+    WorkloadEngine --> AssignBuyer[Assign Buyer with Least Active Tasks]
+    
+    AssignBuyer --> SelectMethod{Select Sourcing Method}
+    SelectMethod -->|Option 1: Multi-RFQ| RFQ[Send RFQs to Preferred Vendors]
+    SelectMethod -->|Option 2: Negotiation| Neg[Direct Price Negotiation with Single Vendor]
+    SelectMethod -->|Option 3: Reverse Bidding| Bid[Open Live Reverse Auction on Vendor Portal]
+    
+    RFQ --> PortalSubmit[Vendors Submit Bids on Portal]
+    Neg --> PortalSubmit
+    Bid --> PortalSubmit
+    PortalSubmit --> AutoCompare[Auto-Comparison Dashboard & Scorecard]
+    AutoCompare --> SelectBest[System Recommends Lowest Bid / Best Vendor]
+    SelectBest --> SCMApprove[SCM Approval & Optional Legal Vetting]
+    SCMApprove --> CreateRC[Create & Sign new Rate Contract]
+    CreateRC --> TriggerPO[Auto-Trigger Purchase Order for Original PR]`,
+
+      'chart-d5': `flowchart TD
+    subgraph PortalView["What the User Sees (Simple UI Timeline)"]
+        U1[Request Submitted] --> U2[Budget & Manager Approved]
+        U2 --> U3[Sourcing In Progress]
+        U3 --> U4[Purchase Order Created]
+        U4 --> U5[Delivered]
+    end
+
+    subgraph BackendView["What Actually Happens (Abstracted ERP Execution)"]
+        B1[NLP Parsing & Budget Head Resolution] --> B2[Hierarchical Amount-Banded Approval Routing]
+        B2 --> B3[Contract Request Created & SCM Buyer Assigned]
+        B3 --> B4[Multi-RFQ Sourcing & Vendor Portal Bid Comparison]
+        B4 --> B5[Legal Vetting & Rate Contract Creation]
+        B5 --> B6[PO Generated, Confirmed, & Sent via EDI/Email]
+        B6 --> B7[Warehouse Goods Receipt (GRN) & 3-Way Invoice Match]
+    end
+
+    U1 -.-> B1
+    U1 -.-> B2
+    U3 -.-> B3
+    U3 -.-> B4
+    U3 -.-> B5
+    U4 -.-> B6
+    U5 -.-> B7`
+    };
+
+    // Load initial source code into DOM
+    for (const [id, src] of Object.entries(sources)) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = src;
+    }
+
+    // Set up rendering configuration
+    function initMermaid(theme) {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: theme,
+        flowchart: { htmlLabels: true, useMaxWidth: true },
+        securityLevel: 'loose'
+      });
+    }
+
+    // Theme switching logic
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    
+    async function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      initMermaid(theme === 'dark' ? 'dark' : 'default');
+      
+      // Reload contents into the DOM element before running
+      for (const [id, src] of Object.entries(sources)) {
+        const el = document.getElementById(id);
+        if (el) {
+          // Empty previous rendered SVG
+          el.removeAttribute('data-processed');
+          el.textContent = src;
+        }
+      }
+      
+      try {
+        await mermaid.run({ querySelector: '.mermaid' });
+      } catch (err) {
+        console.error('Mermaid render error: ', err);
+      }
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(newTheme);
+    });
+
+    // Sidebar navigation highlighting
+    const sections = document.querySelectorAll('.diagram-card');
+    const navItems = document.querySelectorAll('.nav-item');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        if (pageYOffset >= sectionTop - 60) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === `#${current}`) {
+          item.classList.add('active');
+        }
+      });
+    });
+
+    // Initialize page on load with default dark theme
+    applyTheme('dark');
+  </script>
+</body>
+</html>

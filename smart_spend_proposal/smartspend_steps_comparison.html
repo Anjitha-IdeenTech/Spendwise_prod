@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Smart Spend Request Platform — Workflow Blueprint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #1E293B;
+      background-color: #F1F5F9;
+      margin: 0;
+      padding: 0;
+      line-height: 1.4;
+      -webkit-print-color-adjust: exact;
+    }
+    
+    .page {
+      width: 210mm;
+      height: 297mm;
+      box-sizing: border-box;
+      padding: 15mm 20mm 15mm 20mm;
+      page-break-after: always;
+      position: relative;
+      background-color: #FFFFFF;
+      margin: 15px auto;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    @media print {
+      body {
+        background-color: #FFFFFF;
+      }
+      .page {
+        margin: 0;
+        box-shadow: none;
+      }
+    }
+    
+    .header {
+      border-bottom: 2px solid #E2E8F0;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    
+    .header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: #0F172A;
+      margin: 0;
+    }
+    
+    .header .subtitle {
+      font-size: 9px;
+      color: #64748B;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+      margin-bottom: 2px;
+    }
+    
+    .intro {
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 15px;
+    }
+    
+    .diagram-container {
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 15px;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0F172A;
+      margin-top: 12px;
+      margin-bottom: 6px;
+    }
+    
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10.5px;
+      margin-bottom: 12px;
+    }
+    
+    .comparison-table th {
+      background-color: #F1F5F9;
+      color: #0F172A;
+      font-weight: 700;
+      text-align: left;
+      padding: 7px 9px;
+      border-bottom: 2px solid #CBD5E1;
+      font-family: 'Outfit', sans-serif;
+    }
+    
+    .comparison-table td {
+      padding: 7px 9px;
+      border-bottom: 1px solid #E2E8F0;
+      vertical-align: top;
+      color: #334155;
+    }
+    
+    .comparison-table tr:nth-child(even) {
+      background-color: #F8FAFC;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 8px;
+      font-weight: 700;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    
+    .badge-danger {
+      background-color: #FEE2E2;
+      color: #991B1B;
+    }
+    
+    .badge-success {
+      background-color: #D1FAE5;
+      color: #065F46;
+    }
+    
+    .badge-info {
+      background-color: #E0E7FF;
+      color: #4F46E5;
+    }
+
+    .key-points {
+      margin-top: 12px;
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    .key-points h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      margin: 0 0 6px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #4F46E5;
+    }
+
+    .key-points ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 11px;
+      color: #475569;
+    }
+
+    .key-points li {
+      margin-bottom: 4px;
+    }
+    
+    .footer {
+      position: absolute;
+      bottom: 12mm;
+      left: 20mm;
+      right: 20mm;
+      border-top: 1px solid #E2E8F0;
+      padding-top: 10px;
+      font-size: 9px;
+      color: #64748B;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== PAGE 1 ==================== -->
+  <div class="page">
+    <div class="header">
+      <div>
+        <span class="subtitle">Smart Spend Request Platform</span>
+        <h1>Workflow Simplification &amp; Step Reduction</h1>
+      </div>
+      <div>
+        <span class="badge badge-success">Usability Blueprint</span>
+      </div>
+    </div>
+    
+    <p class="intro">
+      This blueprint illustrates how the <strong>Smart Spend Request Platform</strong> condenses the traditional <strong>12-step Odoo ERP Procure-to-Pay (P2P) flow</strong> into <strong>4 intuitive, user-friendly steps</strong>. By inserting an AI Orchestration Layer, we abstract away the complex database relationships, cost center lookups, and manual contract matching.
+    </p>
+
+    <div class="diagram-container">
+      <!-- Side-by-Side SVG Comparison Diagram (Scaled down) -->
+      <svg width="100%" height="340" viewBox="0 0 740 460" style="background-color: #F8FAFC;">
+        <!-- Consolidations Shaded Regions (Background) -->
+        <!-- Group A: 1-5 to Right 1 -->
+        <polygon points="260,40 260,200 460,105 460,40" fill="#EEF2F6" opacity="0.65" />
+        <!-- Group B: 6-7 to Right 2 -->
+        <polygon points="260,210 260,268 460,215 460,150" fill="#EEF2F6" opacity="0.65" />
+        <!-- Group C: 8-11 to Right 3 -->
+        <polygon points="260,278 260,404 460,325 460,260" fill="#EEF2F6" opacity="0.65" />
+        <!-- Group D: 12 to Right 4 -->
+        <polygon points="260,414 260,438 460,435 460,370" fill="#EEF2F6" opacity="0.65" />
+
+        <!-- LEFT COLUMN: ODOO 15 P2P (12 Steps) -->
+        <text x="145" y="25" font-family="'Outfit', sans-serif" font-weight="700" font-size="12" fill="#64748B" text-anchor="middle">CURRENT STATE (ODOO 15 ERP)</text>
+        
+        <g font-family="'Inter'" font-size="9" font-weight="500">
+          <!-- Step 1 -->
+          <rect x="30" y="40" width="230" height="24" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" />
+          <text x="40" y="55" fill="#334155">1. Identify Need &amp; Check Budget</text>
+          
+          <!-- Step 2 -->
+          <rect x="30" y="74" width="230" height="24" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" />
+          <text x="40" y="89" fill="#334155">2. Navigate to Purchase Request Menu</text>
+
+          <!-- Step 3 -->
+          <rect x="30" y="108" width="230" height="24" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" />
+          <text x="40" y="123" fill="#334155">3. Select Company, Dept, CC, Asset Type</text>
+
+          <!-- Step 4 -->
+          <rect x="30" y="142" width="230" height="24" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" />
+          <text x="40" y="157" fill="#334155">4. Manually Check Rate Contracts</text>
+
+          <!-- Step 5 -->
+          <rect x="30" y="176" width="230" height="24" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" />
+          <text x="40" y="191" fill="#334155">5. Input Line Details &amp; Target Vendor</text>
+
+          <!-- Step 6 -->
+          <rect x="30" y="210" width="230" height="24" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" />
+          <text x="40" y="225" fill="#334155">6. Route PR for Multi-Level Manager Approvals</text>
+
+          <!-- Step 7 -->
+          <rect x="30" y="244" width="230" height="24" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" />
+          <text x="40" y="259" fill="#334155">7. Handle RFI &amp; Questions via Chatter</text>
+
+          <!-- Step 8 -->
+          <rect x="30" y="278" width="230" height="24" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" />
+          <text x="40" y="293" fill="#334155">8. Create Contract Request (CR)</text>
+
+          <!-- Step 9 -->
+          <rect x="30" y="312" width="230" height="24" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" />
+          <text x="40" y="327" fill="#334155">9. Issue RFQs &amp; Collect Vendor Bids</text>
+
+          <!-- Step 10 -->
+          <rect x="30" y="346" width="230" height="24" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" />
+          <text x="40" y="361" fill="#334155">10. Compare Quotes &amp; Approve Contract</text>
+
+          <!-- Step 11 -->
+          <rect x="30" y="380" width="230" height="24" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" />
+          <text x="40" y="395" fill="#334155">11. Auto/Manual PO Generation</text>
+
+          <!-- Step 12 -->
+          <rect x="30" y="414" width="230" height="24" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" />
+          <text x="40" y="429" fill="#334155">12. Track Receipts &amp; Invoices manually</text>
+        </g>
+
+        <!-- RIGHT COLUMN: SMART SPEND PORTAL (4 Steps) -->
+        <text x="580" y="25" font-family="'Outfit', sans-serif" font-weight="700" font-size="12" fill="#4F46E5" text-anchor="middle">FUTURE STATE (SMART SPEND)</text>
+
+        <!-- Right Step 1 -->
+        <rect x="460" y="40" width="250" height="65" rx="6" fill="#EEF2F6" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="472" y="58" font-family="'Outfit', sans-serif" font-weight="700" font-size="11" fill="#0F172A">1. Write Simple Request</text>
+        <text x="472" y="74" font-family="'Inter'" font-size="9" fill="#475569">Requester enters raw text. NLP auto-extracts</text>
+        <text x="472" y="87" font-family="'Inter'" font-size="9" fill="#475569">categories, cost centers, and contracts.</text>
+
+        <!-- Right Step 2 -->
+        <rect x="460" y="150" width="250" height="65" rx="6" fill="#EEF2F6" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="472" y="168" font-family="'Outfit', sans-serif" font-weight="700" font-size="11" fill="#0F172A">2. 1-Click Manager Approval</text>
+        <text x="472" y="184" font-family="'Inter'" font-size="9" fill="#475569">Managers receive clean decision cards via</text>
+        <text x="472" y="197" font-family="'Inter'" font-size="9" fill="#475569">mobile/email to approve instantly.</text>
+
+        <!-- Right Step 3 -->
+        <rect x="460" y="260" width="250" height="65" rx="6" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+        <text x="472" y="278" font-family="'Outfit', sans-serif" font-weight="700" font-size="11" fill="#065F46">3. Background PO &amp; Sourcing</text>
+        <text x="472" y="294" font-family="'Inter'" font-size="9" fill="#047857">System auto-matches contracts or triggers Odoo</text>
+        <text x="472" y="307" font-family="'Inter'" font-size="9" fill="#047857">sourcing without disturbing the user.</text>
+
+        <!-- Right Step 4 -->
+        <rect x="460" y="370" width="250" height="65" rx="6" fill="#EEF2F6" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="472" y="388" font-family="'Outfit', sans-serif" font-weight="700" font-size="11" fill="#0F172A">4. Courier-style Tracking</text>
+        <text x="472" y="404" font-family="'Inter'" font-size="9" fill="#475569">Users see a linear, visual timeline of delivery,</text>
+        <text x="472" y="417" font-family="'Inter'" font-size="9" fill="#475569">eliminating check-up emails and calls.</text>
+      </svg>
+    </div>
+
+    <h2 class="section-title">Workflow Phase Analysis &amp; Automation Impact</h2>
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th style="width: 20%;">Process Phase</th>
+          <th style="width: 40%; color: #B91C1C;">Odoo 15 ERP Steps (Manual)</th>
+          <th style="width: 40%; color: #047857;">Smart Spend Steps (Simplified)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Requisition</strong></td>
+          <td>Steps 1-5: Manual menu navigation, budget codes, and active rate contract checks.</td>
+          <td><strong>Step 1: Write Simple Request</strong><br>Requester writes raw text; AI extracts cost allocation and contracts.</td>
+        </tr>
+        <tr>
+          <td><strong>Approvals</strong></td>
+          <td>Steps 6-7: Multi-stage workflows and RFI resolutions in ERP chatter logs.</td>
+          <td><strong>Step 2: 1-Click Manager Approval</strong><br>Summarized decision cards with mobile-friendly approvals.</td>
+        </tr>
+        <tr>
+          <td><strong>Procurement</strong></td>
+          <td>Steps 8-11: SCM assignment, RFQ comparing, and PO confirms in backend.</td>
+          <td><strong>Step 3: Background PO &amp; Sourcing</strong><br>Auto-match contracts for instant PO, or background sourcing fallback.</td>
+        </tr>
+        <tr>
+          <td><strong>Receipt &amp; Pay</strong></td>
+          <td>Step 12: Manual delivery receipt, GRN, invoice comparison, and payment.</td>
+          <td><strong>Step 4: Courier-style Tracking</strong><br>Requesters track their orders live on a linear timeline.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footer">
+      <span>Smart Spend Request Platform</span>
+      <span>Page 1 of 9</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 2 ==================== -->
+  <div class="page">
+    <div class="header">
+      <div>
+        <span class="subtitle">Smart Spend Request Platform</span>
+        <h1>1. End-to-End Smart Request Master Flow</h1>
+      </div>
+      <div>
+        <span class="badge badge-info">Master Workflow</span>
+      </div>
+    </div>
+    
+    <p class="intro">
+      This master workflow outlines the complete lifecycle from the user's initial request down to backend ERP payment execution. It highlights the fast-path rate contract bypass and the fallback sourcing cycle.
+    </p>
+
+    <div class="diagram-container">
+      <!-- Vertically oriented Flowchart TD based on Guide Diagram 1 -->
+      <svg width="100%" height="400" viewBox="0 0 740 480" style="background-color: #F8FAFC;">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B" />
+          </marker>
+        </defs>
+
+        <!-- Node definitions (matching the colors & shapes of the guide) -->
+        <!-- 1. User -> Portal -> Engine -> Budget -->
+        <rect x="20" y="15" width="100" height="26" rx="13" fill="#E0E7FF" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="70" y="31" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#4F46E5" text-anchor="middle">Requester</text>
+
+        <line x1="70" y1="41" x2="70" y2="60" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+
+        <rect x="20" y="60" width="100" height="26" rx="4" fill="#E0E7FF" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="70" y="76" font-family="'Inter'" font-size="8" fill="#4F46E5" text-anchor="middle">Smart Spend Portal</text>
+
+        <line x1="70" y1="86" x2="70" y2="105" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+
+        <rect x="20" y="105" width="100" height="26" rx="4" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+        <text x="70" y="121" font-family="'Inter'" font-size="8" fill="#B45309" text-anchor="middle">AI Orchestration</text>
+
+        <line x1="70" y1="131" x2="70" y2="150" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+
+        <polygon points="70,150 110,165 70,180 30,165" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+        <text x="70" y="168" font-family="'Outfit', sans-serif" font-weight="700" font-size="7.5" fill="#B45309" text-anchor="middle">Budget Check</text>
+
+        <!-- Budget branches -->
+        <line x1="30" y1="165" x2="15" y2="165" stroke="#64748B" stroke-width="1" />
+        <line x1="15" y1="165" x2="15" y2="215" stroke="#64748B" stroke-width="1" />
+        <line x1="15" y1="215" x2="30" y2="215" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+        <text x="18" y="195" font-family="'Inter'" font-size="7" fill="#D97706">Exceeded</text>
+
+        <rect x="30" y="202" width="100" height="26" rx="4" fill="#E0E7FF" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="80" y="217" font-family="'Inter'" font-size="7" fill="#4F46E5" text-anchor="middle">Budget Alt/Transfer</text>
+
+        <line x1="70" y1="180" x2="70" y2="245" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+        <text x="75" y="195" font-family="'Inter'" font-size="7" fill="#10B981">Available</text>
+
+        <polygon points="70,245 110,260 70,275 30,260" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+        <text x="70" y="263" font-family="'Outfit', sans-serif" font-weight="700" font-size="7" fill="#B45309" text-anchor="middle">Resolve Approvals</text>
+
+        <line x1="70" y1="275" x2="70" y2="310" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+
+        <!-- Contract check diamond -->
+        <polygon points="70,310 120,330 70,350 20,330" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+        <text x="70" y="333" font-family="'Outfit', sans-serif" font-weight="700" font-size="6.5" fill="#B45309" text-anchor="middle">Rate Contract Active?</text>
+
+        <!-- YES PATH (Direct Fast Path) -->
+        <line x1="120" y1="330" x2="310" y2="330" stroke="#10B981" stroke-width="1.5" marker-end="url(#arrow)" />
+        <text x="170" y="322" font-family="'Inter'" font-weight="700" font-size="8" fill="#10B981">Yes (Direct Fast Path)</text>
+
+        <!-- NO PATH (Sourcing Fallback) -->
+        <line x1="70" y1="350" x2="70" y2="380" stroke="#F97316" stroke-width="1.5" marker-end="url(#arrow)" />
+        <text x="75" y="367" font-family="'Inter'" font-weight="700" font-size="8" fill="#F97316">No (SCM Fallback)</text>
+
+        <rect x="20" y="380" width="100" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="70" y="396" font-family="'Inter'" font-size="7.5" fill="#334155" text-anchor="middle">Create Contract Req</text>
+
+        <line x1="70" y1="406" x2="70" y2="425" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+
+        <rect x="20" y="425" width="100" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="70" y="441" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Assign SCM Buyer</text>
+
+        <line x1="120" y1="438" x2="160" y2="438" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+
+        <!-- Select Method Diamond -->
+        <polygon points="200,418 240,438 200,458 160,438" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+        <text x="200" y="441" font-family="'Outfit', sans-serif" font-weight="700" font-size="7.5" fill="#B45309" text-anchor="middle">Select Method</text>
+
+        <!-- Sourcing Methods Branches -->
+        <path d="M 240 438 L 290 438 L 290 411 L 310 411" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+        <path d="M 240 438 L 310 438" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+        <path d="M 240 438 L 290 438 L 290 465 L 310 465" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+
+        <rect x="310" y="398" width="100" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="360" y="414" font-family="'Inter'" font-size="7.5" fill="#334155" text-anchor="middle">Portal RFQ Compare</text>
+
+        <rect x="310" y="425" width="100" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="360" y="441" font-family="'Inter'" font-size="7.5" fill="#334155" text-anchor="middle">Direct Negotiation</text>
+
+        <rect x="310" y="452" width="100" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="360" y="468" font-family="'Inter'" font-size="7.5" fill="#334155" text-anchor="middle">Reverse Bidding Auction</text>
+
+        <!-- Connect methods to Quotes -->
+        <path d="M 410 411 L 430 411 L 430 438 L 445 438" fill="none" stroke="#64748B" stroke-width="1" />
+        <path d="M 410 438 L 445 438" fill="none" stroke="#64748B" stroke-width="1" />
+        <path d="M 410 465 L 430 465 L 430 438 L 445 438" fill="none" stroke="#64748B" stroke-width="1" />
+        <line x1="435" y1="438" x2="445" y2="438" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+
+        <rect x="445" y="425" width="90" height="26" rx="4" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+        <text x="490" y="441" font-family="'Inter'" font-size="8" fill="#B45309" text-anchor="middle">Vendor Quotes</text>
+
+        <line x1="490" y1="425" x2="490" y2="395" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+
+        <rect x="440" y="369" width="100" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="490" y="385" font-family="'Inter'" font-size="7" fill="#334155" text-anchor="middle">Approve Sourcing Contract</text>
+
+        <path d="M 490 369 L 490 330 L 420 330" fill="none" stroke="#10B981" stroke-width="1.5" marker-end="url(#arrow)" />
+
+        <!-- PO Block -->
+        <rect x="310" y="315" width="110" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="2" />
+        <text x="365" y="333" font-family="'Outfit', sans-serif" font-weight="700" font-size="7.5" fill="#065F46" text-anchor="middle">Auto-Create &amp; Confirm PO</text>
+
+        <!-- Downstream execution flow moving up the right side -->
+        <line x1="365" y1="315" x2="365" y2="295" stroke="#64748B" stroke-width="1" />
+        <path d="M 365 295 L 590 295 L 590 255" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+
+        <rect x="540" y="225" width="100" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+        <text x="590" y="243" font-family="'Inter'" font-size="8" fill="#065F46" text-anchor="middle">ERP Goods Receipt</text>
+
+        <line x1="590" y1="225" x2="590" y2="185" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+
+        <rect x="535" y="155" width="110" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+        <text x="590" y="173" font-family="'Inter'" font-size="8.5" fill="#065F46" text-anchor="middle">Invoice Capture &amp; Audit</text>
+
+        <line x1="590" y1="155" x2="590" y2="115" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+
+        <rect x="540" y="85" width="100" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="2" />
+        <text x="590" y="103" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#065F46" text-anchor="middle">ERP Final Payment</text>
+      </svg>
+    </div>
+
+    <div class="key-points">
+      <h3>Key Architectural Features</h3>
+      <ul>
+        <li><strong>AI Orchestration Gateway:</strong> Decouples the portal front-end from core database screens, handling language translation into structured ERP metadata.</li>
+        <li><strong>Rate Contract Auto-Match:</strong> The direct "YES" path bypasses procurement entirely, matching existing vendor contracts to confirm orders instantly.</li>
+        <li><strong>SCM Workload Engine:</strong> If no contract exists ("NO" path), Odoo dynamically maps category lines to buyers based on category workloads.</li>
+        <li><strong>Fulfillment &amp; Match:</strong> Coordinates goods receipts, three-way invoice reconciliation, and final payments inside the ERP backend.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <span>Smart Spend Request Platform</span>
+      <span>Page 2 of 9</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 3 ==================== -->
+  <div class="page">
+    <div class="header">
+      <div>
+        <span class="subtitle">Smart Spend Request Platform</span>
+        <h1>2. NLP-Driven Request Initiation (NLP Engine)</h1>
+      </div>
+      <div>
+        <span class="badge badge-info">Usability Innovation</span>
+      </div>
+    </div>
+    
+    <p class="intro">
+      Replaces manual form-filling of company metadata, cost centers, and catalog lookups with an intelligent parsing engine that pre-fills request cards using natural language processing.
+    </p>
+
+    <div class="diagram-container">
+      <!-- Vertically oriented Flowchart TD based on Guide Diagram 2 -->
+      <svg width="100%" height="340" viewBox="0 0 740 340" style="background-color: #F8FAFC;">
+        <defs>
+          <marker id="arrow2" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B" />
+          </marker>
+        </defs>
+
+        <!-- UserInput -->
+        <rect x="120" y="15" width="500" height="35" rx="6" fill="#F8FAFC" stroke="#4F46E5" stroke-width="2" />
+        <text x="370" y="36" font-family="'Outfit', sans-serif" font-weight="700" font-size="9" fill="#4F46E5" text-anchor="middle">User: "I need 10 Dell Latitude laptops under INR 70k each for the Bangalore office"</text>
+
+        <line x1="370" y1="50" x2="370" y2="75" stroke="#64748B" stroke-width="1" marker-end="url(#arrow2)" />
+
+        <!-- NLP Parser -->
+        <rect x="300" y="75" width="140" height="26" rx="4" fill="#EEF2F6" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="370" y="91" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#0F172A" text-anchor="middle">AI NLP Parser</text>
+
+        <!-- Connections to 5 items -->
+        <path d="M 370 101 L 370 130" fill="none" stroke="#64748B" stroke-width="1" />
+        <path d="M 370 115 L 85 115 L 85 130" fill="none" stroke="#64748B" stroke-width="1" />
+        <path d="M 370 115 L 225 115 L 225 130" fill="none" stroke="#64748B" stroke-width="1" />
+        <path d="M 370 115 L 515 115 L 515 130" fill="none" stroke="#64748B" stroke-width="1" />
+        <path d="M 370 115 L 655 115 L 655 130" fill="none" stroke="#64748B" stroke-width="1" />
+
+        <line x1="85" y1="115" x2="85" y2="130" stroke="#64748B" stroke-width="1" marker-end="url(#arrow2)" />
+        <line x1="225" y1="115" x2="225" y2="130" stroke="#64748B" stroke-width="1" marker-end="url(#arrow2)" />
+        <line x1="370" y1="115" x2="370" y2="130" stroke="#64748B" stroke-width="1" marker-end="url(#arrow2)" />
+        <line x1="515" y1="115" x2="515" y2="130" stroke="#64748B" stroke-width="1" marker-end="url(#arrow2)" />
+        <line x1="655" y1="115" x2="655" y2="130" stroke="#64748B" stroke-width="1" marker-end="url(#arrow2)" />
+
+        <!-- 5 Extracted Fields -->
+        <rect x="20" y="130" width="130" height="30" rx="4" fill="#EEF2F6" stroke="#64748B" stroke-width="1" />
+        <text x="85" y="145" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Extract Category: IT Hardware</text>
+
+        <rect x="160" y="130" width="130" height="30" rx="4" fill="#EEF2F6" stroke="#64748B" stroke-width="1" />
+        <text x="225" y="145" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Extract Item: Dell Latitude</text>
+
+        <rect x="300" y="130" width="140" height="30" rx="4" fill="#EEF2F6" stroke="#64748B" stroke-width="1" />
+        <text x="370" y="145" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Extract Qty: 10 units</text>
+
+        <rect x="450" y="130" width="130" height="30" rx="4" fill="#EEF2F6" stroke="#64748B" stroke-width="1" />
+        <text x="515" y="145" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Extract Price: INR 70k</text>
+
+        <rect x="590" y="130" width="130" height="30" rx="4" fill="#EEF2F6" stroke="#64748B" stroke-width="1" />
+        <text x="655" y="145" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Extract CC: Bangalore Branch</text>
+
+        <!-- Combine fields to Query DB -->
+        <path d="M 85 160 L 85 185 L 370 185" fill="none" stroke="#64748B" stroke-width="1" />
+        <path d="M 225 160 L 225 185 L 370 185" fill="none" stroke="#64748B" stroke-width="1" />
+        <path d="M 370 160 L 370 185" fill="none" stroke="#64748B" stroke-width="1" />
+        <path d="M 515 160 L 515 185 L 370 185" fill="none" stroke="#64748B" stroke-width="1" />
+        <path d="M 655 160 L 655 185 L 370 185" fill="none" stroke="#64748B" stroke-width="1" />
+
+        <line x1="370" y1="185" x2="370" y2="200" stroke="#64748B" stroke-width="1" marker-end="url(#arrow2)" />
+
+        <rect x="220" y="200" width="300" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="370" y="216" font-family="'Inter'" font-weight="700" font-size="8.5" fill="#334155" text-anchor="middle">System Queries Odoo Database</text>
+
+        <line x1="370" y1="226" x2="370" y2="245" stroke="#64748B" stroke-width="1" marker-end="url(#arrow2)" />
+
+        <!-- Contract Exist? Diamond -->
+        <polygon points="370,245 420,265 370,285 320,265" fill="#FFEDD5" stroke="#F97316" stroke-width="1.5" />
+        <text x="370" y="268" font-family="'Outfit', sans-serif" font-weight="700" font-size="8" fill="#C2410C" text-anchor="middle">Contract Exist?</text>
+
+        <!-- YES PATH -->
+        <line x1="420" y1="265" x2="475" y2="265" stroke="#10B981" stroke-width="1.2" marker-end="url(#arrow2)" />
+        <text x="445" y="258" font-family="'Inter'" font-weight="700" font-size="7.5" fill="#10B981">Yes</text>
+
+        <rect x="475" y="250" width="245" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+        <text x="597.5" y="268" font-family="'Inter'" font-size="8.5" fill="#065F46" text-anchor="middle">Pre-fill PR with Vendor, Price, Contract ID</text>
+
+        <!-- NO PATH -->
+        <line x1="320" y1="265" x2="265" y2="265" stroke="#EF4444" stroke-width="1.2" marker-end="url(#arrow2)" />
+        <text x="290" y="258" font-family="'Inter'" font-weight="700" font-size="7.5" fill="#EF4444">No</text>
+
+        <rect x="20" y="250" width="245" height="30" rx="4" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.5" />
+        <text x="142.5" y="268" font-family="'Inter'" font-size="8.5" fill="#991B1B" text-anchor="middle">Mark as New Sourcing Category</text>
+      </svg>
+    </div>
+
+    <div class="key-points">
+      <h3>Key Usability Benefits</h3>
+      <ul>
+        <li><strong>Form Elimination:</strong> Replaces dozens of dropdown selections with a single free-text input field.</li>
+        <li><strong>Contextual Parsing:</strong> Evaluates numbers, categories, locations, and pricing limits to map requests directly to standard Odoo dimensions.</li>
+        <li><strong>Automatic Database Matching:</strong> Scans active Odoo rate contracts and auto-attaches metadata, preventing double entry.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <span>Smart Spend Request Platform</span>
+      <span>Page 3 of 9</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 4 ==================== -->
+  <div class="page">
+    <div class="header">
+      <div>
+        <span class="subtitle">Smart Spend Request Platform</span>
+        <h1>3. Smart Budget Validation &amp; Alternative Routing</h1>
+      </div>
+      <div>
+        <span class="badge badge-info">Financial Control</span>
+      </div>
+    </div>
+    
+    <p class="intro">
+      Instead of rejecting a requisition immediately when budget limits are breached, the platform suggests constructive alternative actions to keep the request moving.
+    </p>
+
+    <div class="diagram-container">
+      <!-- Vertically oriented Flowchart TD based on Guide Diagram 3 -->
+      <svg width="100%" height="340" viewBox="0 0 740 340" style="background-color: #F8FAFC;">
+        <defs>
+          <marker id="arrow3" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B" />
+          </marker>
+        </defs>
+
+        <!-- Start -->
+        <rect x="270" y="15" width="200" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="370" y="31" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#334155" text-anchor="middle">PR Submitted</text>
+
+        <line x1="370" y1="41" x2="370" y2="65" stroke="#64748B" stroke-width="1" marker-end="url(#arrow3)" />
+
+        <!-- Cost Center -->
+        <rect x="240" y="65" width="260" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="370" y="81" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Identify Department &amp; Cost Center</text>
+
+        <line x1="370" y1="91" x2="370" y2="115" stroke="#64748B" stroke-width="1" marker-end="url(#arrow3)" />
+
+        <!-- Fetch Budget -->
+        <rect x="240" y="115" width="260" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="370" y="131" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Fetch Budget Balance from Odoo</text>
+
+        <line x1="370" y1="141" x2="370" y2="165" stroke="#64748B" stroke-width="1" marker-end="url(#arrow3)" />
+
+        <!-- Check Diamond -->
+        <polygon points="370,165 480,185 370,205 260,185" fill="#FFEDD5" stroke="#F97316" stroke-width="1.5" />
+        <text x="370" y="188" font-family="'Outfit', sans-serif" font-weight="700" font-size="7.5" fill="#C2410C" text-anchor="middle">Request Amount &lt;= Available Budget?</text>
+
+        <!-- YES PATH -->
+        <line x1="480" y1="185" x2="515" y2="185" stroke="#10B981" stroke-width="1.2" marker-end="url(#arrow3)" />
+        <text x="495" y="178" font-family="'Inter'" font-weight="700" font-size="8" fill="#10B981">Yes</text>
+
+        <rect x="515" y="170" width="210" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+        <text x="620" y="188" font-family="'Inter'" font-size="8" fill="#065F46" text-anchor="middle">Reserve Budget &amp; Proceed to Approval</text>
+
+        <!-- NO PATH -->
+        <line x1="370" y1="205" x2="370" y2="230" stroke="#EF4444" stroke-width="1.2" marker-end="url(#arrow3)" />
+        <text x="375" y="220" font-family="'Inter'" font-weight="700" font-size="8" fill="#EF4444">No</text>
+
+        <!-- Suggest Alternatives Diamond -->
+        <polygon points="370,230 460,250 370,270 280,250" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.5" />
+        <text x="370" y="253" font-family="'Outfit', sans-serif" font-weight="700" font-size="8" fill="#991B1B" text-anchor="middle">Check Alternatives</text>
+
+        <!-- Branches down to Alternatives -->
+        <path d="M 280 250 L 120 250 L 120 290" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow3)" />
+        <path d="M 370 270 L 370 290" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow3)" />
+        <path d="M 460 250 L 620 250 L 620 290" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow3)" />
+
+        <rect x="15" y="290" width="210" height="35" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1" />
+        <text x="120" y="304" font-family="'Inter'" font-size="7.5" fill="#334155" text-anchor="middle">Suggest Related Budget Head</text>
+        <text x="120" y="315" font-family="'Inter'" font-size="7" fill="#64748B" text-anchor="middle">(Category shift with surplus)</text>
+
+        <rect x="245" y="290" width="250" height="35" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1" />
+        <text x="370" y="304" font-family="'Inter'" font-size="7.5" fill="#334155" text-anchor="middle">Initiate Budget Transfer Request</text>
+        <text x="370" y="315" font-family="'Inter'" font-size="7" fill="#64748B" text-anchor="middle">(From Parent Department pool)</text>
+
+        <rect x="515" y="290" width="210" height="35" rx="4" fill="#FEE2E2" stroke="#EF4444" stroke-width="1" />
+        <text x="620" y="304" font-family="'Inter'" font-size="7.5" fill="#991B1B" text-anchor="middle">Route to CFO for Exception</text>
+        <text x="620" y="315" font-family="'Inter'" font-size="7" fill="#991B1B" text-anchor="middle">(Emergency Purchase bypass)</text>
+      </svg>
+    </div>
+
+    <div class="key-points">
+      <h3>Intelligent Control Safeguards</h3>
+      <ul>
+        <li><strong>Proactive Budgeting:</strong> Scans real-time Odoo accounts before a block occurs, mapping costs automatically.</li>
+        <li><strong>Intelligent Alternatives:</strong> Suggests shifting charges to related accounts with active surpluses to prevent workflow deadlocks.</li>
+        <li><strong>Automatic SLA Transfer Escalations:</strong> Initiates quick budget-shift approvals, sending notification tasks to department heads dynamically.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <span>Smart Spend Request Platform</span>
+      <span>Page 4 of 9</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 5 ==================== -->
+  <div class="page">
+    <div class="header">
+      <div>
+        <span class="subtitle">Smart Spend Request Platform</span>
+        <h1>4. Intelligent Approver Routing &amp; Vendor Fetching</h1>
+      </div>
+      <div>
+        <span class="badge badge-info">Intelligent Allocations</span>
+      </div>
+    </div>
+    
+    <p class="intro">
+      The platform automates two critical lookup operations before submission: matching the request to the delegation of authority (DOA) matrix and searching for qualified suppliers based on semantic category matching, proximity, and performance.
+    </p>
+
+    <div class="diagram-container">
+      <svg width="100%" height="240" viewBox="0 0 740 240" style="background-color: #F8FAFC;">
+        <defs>
+          <marker id="arrow-purple5" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#4F46E5" />
+          </marker>
+          <marker id="arrow-green5" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#10B981" />
+          </marker>
+          <marker id="arrow-slate5" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B" />
+          </marker>
+        </defs>
+
+        <!-- LEFT SIDE: APPROVER ROUTING -->
+        <rect x="25" y="15" width="180" height="30" rx="4" fill="#EEF2F6" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="115" y="33" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#4F46E5" text-anchor="middle">PR Value &amp; Dept Received</text>
+
+        <line x1="115" y1="45" x2="115" y2="70" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate5)" />
+
+        <rect x="25" y="70" width="180" height="30" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1" />
+        <text x="115" y="88" font-family="'Inter'" font-size="8.5" fill="#334155" text-anchor="middle">Query Odoo Approval Matrix</text>
+
+        <line x1="115" y1="100" x2="115" y2="125" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate5)" />
+
+        <rect x="25" y="125" width="180" height="30" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1" />
+        <text x="115" y="143" font-family="'Inter'" font-size="8.5" fill="#334155" text-anchor="middle">DOA Threshold Limit Bands</text>
+
+        <line x1="115" y1="155" x2="115" y2="180" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate5)" />
+
+        <!-- Compile Approver Chain -->
+        <rect x="25" y="180" width="180" height="35" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+        <text x="115" y="198" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#065F46" text-anchor="middle">Compile Approver Chain</text>
+        <text x="115" y="209" font-family="'Inter'" font-size="7.5" fill="#047857" text-anchor="middle">(Dept Head &rarr; CFO &rarr; CEO)</text>
+
+        <!-- CENTER: AI GATEWAY ORCHESTRATOR -->
+        <rect x="270" y="90" width="200" height="50" rx="6" fill="#EEF2F6" stroke="#4F46E5" stroke-width="2" />
+        <text x="370" y="112" font-family="'Outfit', sans-serif" font-weight="700" font-size="10.5" fill="#4F46E5" text-anchor="middle">AI Gateway Orchestrator</text>
+        <text x="370" y="127" font-family="'Inter'" font-size="8" fill="#475569" text-anchor="middle">(Parallel Real-time Resolution)</text>
+
+        <path d="M 270 115 L 215 115" fill="none" stroke="#4F46E5" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#arrow-purple5)" />
+        <path d="M 470 115 L 525 115" fill="none" stroke="#4F46E5" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#arrow-purple5)" />
+
+        <!-- RIGHT SIDE: SUPPLIER SEARCH -->
+        <rect x="535" y="15" width="180" height="30" rx="4" fill="#EEF2F6" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="625" y="33" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#4F46E5" text-anchor="middle">Request Item Category</text>
+
+        <line x1="625" y1="45" x2="625" y2="70" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate5)" />
+
+        <rect x="535" y="70" width="180" height="30" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1" />
+        <text x="625" y="88" font-family="'Inter'" font-size="8.5" fill="#334155" text-anchor="middle">Query Odoo Vendor Registry</text>
+
+        <line x1="625" y1="100" x2="625" y2="125" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate5)" />
+
+        <!-- Multi-Criteria Matching Box -->
+        <rect x="520" y="125" width="210" height="35" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1" />
+        <text x="625" y="137" font-family="'Outfit', sans-serif" font-weight="700" font-size="8" fill="#334155" text-anchor="middle">Match Proximity &amp; SLA Scores</text>
+        <text x="625" y="149" font-family="'Inter'" font-size="7.5" fill="#64748B" text-anchor="middle">(Filter: Geo proximity, Lead time, GST Status)</text>
+
+        <line x1="625" y1="160" x2="625" y2="180" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate5)" />
+
+        <!-- Auto-Shortlist Vendors -->
+        <rect x="535" y="180" width="180" height="35" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+        <text x="625" y="198" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#065F46" text-anchor="middle">Auto-Shortlist Vendors</text>
+        <text x="625" y="209" font-family="'Inter'" font-size="7.5" fill="#047857" text-anchor="middle">(Pre-fills Bid invitation list)</text>
+      </svg>
+    </div>
+
+    <div class="key-points">
+      <h3>Intelligent Sourcing Logic</h3>
+      <ul>
+        <li><strong>Approval Chain Compilation:</strong> Resolves Odoo's multi-level matrices (`res.users.line`) by examining the request's branch, department, and expense limit bands, compiling a clear approver chain.</li>
+        <li><strong>Category-Based Vendor Matching:</strong> Querying Odoo's vendor register (`res.partner`) dynamically retrieves all partners registered under the specific product category.</li>
+        <li><strong>Supplier Filtering Criteria:</strong> Automatically filters and ranks fetched vendors using geographic proximity (reducing transit time) and historical performance (SLA & lead-time ratings).</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <span>Smart Spend Request Platform</span>
+      <span>Page 5 of 9</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 6 ==================== -->
+  <div class="page">
+    <div class="header">
+      <div>
+        <span class="subtitle">Smart Spend Request Platform</span>
+        <h1>5. Sourcing Slices &amp; SCM Fallback (No Rate Contract)</h1>
+      </div>
+      <div>
+        <span class="badge badge-info">Procurement Fallback</span>
+      </div>
+    </div>
+    
+    <p class="intro">
+      When no Rate Contract is active, Odoo dynamically assigns SCM buyers based on workload and category expertise, executing bidding or negotiations in the background.
+    </p>
+
+    <div class="diagram-container">
+      <!-- Vertically oriented Flowchart TD based on Guide Diagram 4 -->
+      <svg width="100%" height="340" viewBox="0 0 740 340" style="background-color: #F8FAFC;">
+        <defs>
+          <marker id="arrow4" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B" />
+          </marker>
+        </defs>
+
+        <!-- Row 1: Start -> NeedApprove -> CreateCR -> WorkloadEngine -->
+        <rect x="20" y="15" width="130" height="26" rx="4" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.5" />
+        <text x="85" y="31" font-family="'Outfit', sans-serif" font-weight="700" font-size="8" fill="#991B1B" text-anchor="middle">No Active Contract</text>
+
+        <line x1="150" y1="28" x2="175" y2="28" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+
+        <rect x="175" y="15" width="165" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="257.5" y="31" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Need-for-Contract Approval Flow</text>
+
+        <line x1="340" y1="28" x2="365" y2="28" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+
+        <rect x="365" y="15" width="175" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="452.5" y="31" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Auto-Create CR in Odoo</text>
+
+        <line x1="540" y1="28" x2="565" y2="28" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+
+        <rect x="565" y="15" width="155" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="642.5" y="31" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Query SCM Workloads</text>
+
+        <!-- Down to row 2 -->
+        <line x1="642.5" y1="41" x2="642.5" y2="65" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+
+        <rect x="555" y="65" width="170" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5" />
+        <text x="640" y="81" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Assign Least Active Buyer</text>
+
+        <line x1="555" y1="78" x2="490" y2="78" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+
+        <!-- Select Method Diamond -->
+        <polygon points="420,58 490,78 420,98 350,78" fill="#FFEDD5" stroke="#F97316" stroke-width="1.5" />
+        <text x="420" y="81" font-family="'Outfit', sans-serif" font-weight="700" font-size="7.5" fill="#C2410C" text-anchor="middle">Select Method</text>
+
+        <!-- Sourcing Branches -->
+        <path d="M 420 98 L 420 104 L 125 104 L 125 110" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+        <path d="M 420 98 L 420 110" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+        <path d="M 420 98 L 420 104 L 635 104 L 635 110" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+
+        <rect x="25" y="110" width="200" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1" />
+        <text x="125" y="126" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Option 1: Send RFQs to Vendors</text>
+
+        <rect x="310" y="110" width="220" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1" />
+        <text x="420" y="126" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Option 2: Direct Price Negotiation</text>
+
+        <rect x="545" y="110" width="180" height="26" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1" />
+        <text x="635" y="126" font-family="'Inter'" font-size="8" fill="#334155" text-anchor="middle">Option 3: Reverse Auction</text>
+
+        <!-- Down to vendors submit bids -->
+        <path d="M 125 136 L 125 170 L 370 170" fill="none" stroke="#64748B" stroke-width="1" />
+        <path d="M 420 136 L 420 170" fill="none" stroke="#64748B" stroke-width="1" />
+        <path d="M 635 136 L 635 170 L 370 170" fill="none" stroke="#64748B" stroke-width="1" />
+        <line x1="370" y1="170" x2="370" y2="185" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+
+        <rect x="220" y="185" width="300" height="26" rx="4" fill="#EEF2F6" stroke="#64748B" stroke-width="1.5" />
+        <text x="370" y="201" font-family="'Inter'" font-size="8.5" fill="#334155" text-anchor="middle">Vendors Submit Bids on Portal</text>
+
+        <line x1="370" y1="211" x2="370" y2="235" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+
+        <!-- Auto compare dashboard -->
+        <rect x="220" y="235" width="300" height="26" rx="4" fill="#EEF2F6" stroke="#64748B" stroke-width="1.5" />
+        <text x="370" y="251" font-family="'Inter'" font-size="8.5" fill="#334155" text-anchor="middle">Auto-Comparison Dashboard &amp; Scorecard</text>
+
+        <line x1="370" y1="261" x2="370" y2="285" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+
+        <!-- System Recommends Best -->
+        <rect x="20" y="285" width="220" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+        <text x="130" y="303" font-family="'Inter'" font-size="8" fill="#065F46" text-anchor="middle">System Recommends Best Vendor</text>
+
+        <line x1="240" y1="300" x2="265" y2="300" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+
+        <!-- SCM Approval -->
+        <rect x="265" y="285" width="210" height="30" rx="4" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+        <text x="370" y="303" font-family="'Inter'" font-size="8" fill="#B45309" text-anchor="middle">SCM Approval &amp; Vetting</text>
+
+        <line x1="475" y1="300" x2="500" y2="300" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+
+        <!-- Create RC -->
+        <rect x="500" y="285" width="105" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+        <text x="552.5" y="303" font-family="'Inter'" font-size="8" fill="#065F46" text-anchor="middle">Create Rate Contract</text>
+
+        <line x1="605" y1="300" x2="625" y2="300" stroke="#64748B" stroke-width="1" marker-end="url(#arrow4)" />
+
+        <!-- Trigger PO -->
+        <rect x="625" y="285" width="100" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="2" />
+        <text x="675" y="303" font-family="'Outfit', sans-serif" font-weight="700" font-size="7.5" fill="#065F46" text-anchor="middle">Trigger Purchase Order</text>
+      </svg>
+    </div>
+
+    <div class="key-points">
+      <h3>Sourcing Fallback Operations</h3>
+      <ul>
+        <li><strong>Intelligent Load Balancing:</strong> Buyer assignment is calculated dynamically based on existing buyer caseload in Odoo.</li>
+        <li><strong>Standardized Negotiations:</strong> Automatically launches RFQs or auctions to drive price optimization.</li>
+        <li><strong>Automated PO Creation:</strong> Links approved bids directly back to the original request, executing PO generation automatically.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <span>Smart Spend Request Platform</span>
+      <span>Page 6 of 9</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 7 ==================== -->
+  <div class="page">
+    <div class="header">
+      <div>
+        <span class="subtitle">Smart Spend Request Platform</span>
+        <h1>6. AI-Powered Vendor Portal &amp; Reverse Bidding</h1>
+      </div>
+      <div>
+        <span class="badge badge-info">Background Sourcing Methods</span>
+      </div>
+    </div>
+    
+    <p class="intro">
+      To eliminate manual negotiation calls and emails, the system provides a lightweight, AI-orchestrated vendor portal. Requesters launch auctions where qualified vendors submit descending bids under active competitive pressure.
+    </p>
+
+    <div class="diagram-container">
+      <svg width="100%" height="240" viewBox="0 0 740 240" style="background-color: #F8FAFC;">
+        <defs>
+          <marker id="arrow-purple7" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#4F46E5" />
+          </marker>
+          <marker id="arrow-green7" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#10B981" />
+          </marker>
+          <marker id="arrow-slate7" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B" />
+          </marker>
+        </defs>
+
+        <!-- STEP 1: LAUNCH REVERSE BIDDING -->
+        <rect x="15" y="80" width="170" height="45" rx="6" fill="#EEF2F6" stroke="#4F46E5" stroke-width="2" />
+        <text x="100" y="100" font-family="'Outfit', sans-serif" font-weight="700" font-size="9" fill="#4F46E5" text-anchor="middle">Launch Reverse Auction</text>
+        <text x="100" y="114" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">(Start Price &amp; Timer Set)</text>
+
+        <!-- Arrow to Portal Access -->
+        <path d="M 185 102.5 L 245 55" fill="none" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate7)" />
+        <!-- Arrow to Quote Reader -->
+        <path d="M 185 102.5 L 245 150" fill="none" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate7)" />
+
+        <!-- MIDDLE TOP: PASSWORDLESS ACCESS -->
+        <rect x="245" y="30" width="220" height="40" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1" />
+        <text x="355" y="47" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#334155" text-anchor="middle">Secure Token Link Email</text>
+        <text x="355" y="59" font-family="'Inter'" font-size="7.5" fill="#64748B" text-anchor="middle">(Passwordless 1-click vendor login)</text>
+
+        <!-- MIDDLE BOTTOM: AI PDF QUOTE READER -->
+        <rect x="245" y="130" width="220" height="40" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1" />
+        <text x="355" y="147" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#334155" text-anchor="middle">AI PDF Quote Reader (OCR)</text>
+        <text x="355" y="159" font-family="'Inter'" font-size="7.5" fill="#64748B" text-anchor="middle">(Parses quotes directly into RFQ fields)</text>
+
+        <path d="M 465 50 L 515 80" fill="none" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate7)" />
+        <path d="M 465 150 L 515 120" fill="none" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate7)" />
+
+        <!-- RIGHT: BID SUBMISSION & FEEDBACK LOOP -->
+        <rect x="515" y="80" width="210" height="45" rx="4" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="620" y="99" font-family="'Outfit', sans-serif" font-weight="700" font-size="9" fill="#0F172A" text-anchor="middle">Real-Time Bid Submission</text>
+        <text x="620" y="112" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">(Decreasing bid validation &amp; checks)</text>
+
+        <!-- Dashboard Loop -->
+        <path d="M 725 102.5 L 735 102.5 L 735 185 L 620 185 L 620 125" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow-slate7)" />
+        
+        <rect x="480" y="180" width="220" height="30" rx="4" fill="#FEE2E2" stroke="#EF4444" stroke-width="1" />
+        <text x="590" y="198" font-family="'Inter'" font-size="8" fill="#991B1B" text-anchor="middle">Live Competitive Dashboard (Masked Names)</text>
+
+        <!-- Auto-Select Lowest -->
+        <line x1="620" y1="80" x2="620" y2="45" stroke="#10B981" stroke-width="1.2" marker-end="url(#arrow-green7)" />
+
+        <rect x="535" y="10" width="170" height="35" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+        <text x="620" y="27" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#065F46" text-anchor="middle">Auto-Select Lowest Bid</text>
+        <text x="620" y="38" font-family="'Inter'" font-size="7.5" fill="#047857" text-anchor="middle">(Triggers SCM Contract Award)</text>
+      </svg>
+    </div>
+
+    <div class="key-points">
+      <h3>AI-Powered Vendor Features</h3>
+      <ul>
+        <li><strong>AI Portal Access:</strong> Secure, password-free access links are emailed directly to vendors, bypassing sign-up barriers and enabling instant mobile-friendly bidding.</li>
+        <li><strong>Reverse Bidding Loop:</strong> Real-time ticker displaying the lowest bid (without exposing vendor names) to create healthy competition, encouraging bidders to submit lower price points.</li>
+        <li><strong>AI PDF Quote Reader:</strong> Vendors can upload their standard quotation PDFs; AI automatically extracts products, pricing, and tax structures into standard Odoo comparison fields.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <span>Smart Spend Request Platform</span>
+      <span>Page 7 of 9</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 8 ==================== -->
+  <div class="page">
+    <div class="header">
+      <div>
+        <span class="subtitle">Smart Spend Request Platform</span>
+        <h1>7. Contract Awarding &amp; Selection Optimization</h1>
+      </div>
+      <div>
+        <span class="badge badge-info">Automated Contract Awarding</span>
+      </div>
+    </div>
+    
+    <p class="intro">
+      Awarding contracts requires balancing cost, delivery speed, and vendor reliability. The selection engine automatically applies a composite scoring algorithm to find the optimal vendor, creating the Odoo rate contract.
+    </p>
+
+    <div class="diagram-container">
+      <svg width="100%" height="240" viewBox="0 0 740 240" style="background-color: #F8FAFC;">
+        <defs>
+          <marker id="arrow-orange8" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#D97706" />
+          </marker>
+          <marker id="arrow-green8" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#10B981" />
+          </marker>
+          <marker id="arrow-slate8" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B" />
+          </marker>
+        </defs>
+
+        <!-- THREE INPUTS (Left) -->
+        <rect x="40" y="25" width="200" height="30" rx="4" fill="#EEF2F6" stroke="#64748B" stroke-width="1" />
+        <text x="140" y="43" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Least Product Price (Weight: 60%)</text>
+
+        <rect x="40" y="100" width="200" height="30" rx="4" fill="#EEF2F6" stroke="#64748B" stroke-width="1" />
+        <text x="140" y="118" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Vendor Lead Time (Weight: 20%)</text>
+
+        <rect x="40" y="175" width="200" height="30" rx="4" fill="#EEF2F6" stroke="#64748B" stroke-width="1" />
+        <text x="140" y="193" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Historical SLA Score (Weight: 20%)</text>
+
+        <!-- Arrows connecting to calculation -->
+        <path d="M 240 40 L 320 40 L 320 80" fill="none" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate8)" />
+        <path d="M 240 115 L 290 115" fill="none" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate8)" />
+        <path d="M 240 190 L 320 190 L 320 140" fill="none" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate8)" />
+
+        <!-- CENTER CALCULATION BLOCK -->
+        <rect x="290" y="80" width="180" height="60" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="2" />
+        <text x="380" y="105" font-family="'Outfit', sans-serif" font-weight="700" font-size="10" fill="#B45309" text-anchor="middle">Composite Selection</text>
+        <text x="380" y="122" font-family="'Outfit', sans-serif" font-weight="700" font-size="10" fill="#B45309" text-anchor="middle">Algorithm (Weighted)</text>
+
+        <!-- Arrow to recommendation -->
+        <line x1="470" y1="110" x2="530" y2="110" stroke="#10B981" stroke-width="1.5" marker-end="url(#arrow-green8)" />
+
+        <!-- RIGHT RECOMMENDATION & RATE CONTRACT -->
+        <rect x="530" y="95" width="180" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+        <text x="620" y="113" font-family="'Outfit', sans-serif" font-weight="700" font-size="9" fill="#065F46" text-anchor="middle">Recommend Best Vendor</text>
+
+        <line x1="620" y1="125" x2="620" y2="175" stroke="#10B981" stroke-width="1.5" marker-end="url(#arrow-green8)" />
+
+        <rect x="530" y="175" width="180" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+        <text x="620" y="193" font-family="'Outfit', sans-serif" font-weight="700" font-size="9" fill="#065F46" text-anchor="middle">Create Odoo Rate Contract</text>
+      </svg>
+    </div>
+
+    <div class="key-points">
+      <h3>Multi-Criteria Selection Engine</h3>
+      <ul>
+        <li><strong>Least Product Price (60% Weight):</strong> System prioritizes price points to minimize corporate procurement expenditure.</li>
+        <li><strong>Vendor Lead Time (20% Weight):</strong> Evaluates vendor logistics speed to ensure goods arrive within requested project windows.</li>
+        <li><strong>Historical SLA Score (20% Weight):</strong> Accounts for past order completion rates, item quality, and invoicing accuracy to mitigate supply-chain risk.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <span>Smart Spend Request Platform</span>
+      <span>Page 8 of 9</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 9 ==================== -->
+  <div class="page">
+    <div class="header">
+      <div>
+        <span class="subtitle">Smart Spend Request Platform</span>
+        <h1>8. Simplified User Request Tracking vs. Odoo Backend</h1>
+      </div>
+      <div>
+        <span class="badge badge-info">User Experience</span>
+      </div>
+    </div>
+    
+    <p class="intro">
+      Contrasts the clean courier-style milestones visible to the business requester with the dense transaction lines running under the hood in Odoo ERP.
+    </p>
+
+    <div class="diagram-container">
+      <svg width="100%" height="240" viewBox="0 0 740 280" style="background-color: #F8FAFC;">
+        <!-- Subgraph Background: Portal View -->
+        <rect x="10" y="10" width="720" height="75" rx="6" fill="#EEF2F6" stroke="#4F46E5" stroke-width="1" stroke-dasharray="3 3" />
+        <text x="20" y="24" font-family="'Outfit', sans-serif" font-weight="700" font-size="9.5" fill="#4F46E5">What the User Sees (Simple UI Timeline)</text>
+
+        <!-- Portal Nodes -->
+        <rect x="20" y="40" width="110" height="30" rx="4" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="75" y="58" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Request Submitted</text>
+
+        <line x1="130" y1="55" x2="160" y2="55" stroke="#4F46E5" stroke-width="1.5" />
+
+        <rect x="160" y="40" width="110" height="30" rx="4" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="215" y="58" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Budget/Mgr Approved</text>
+
+        <line x1="270" y1="55" x2="300" y2="55" stroke="#4F46E5" stroke-width="1.5" />
+
+        <rect x="300" y="40" width="110" height="30" rx="4" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="355" y="58" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Sourcing In Progress</text>
+
+        <line x1="410" y1="55" x2="440" y2="55" stroke="#4F46E5" stroke-width="1.5" />
+
+        <rect x="440" y="40" width="110" height="30" rx="4" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5" />
+        <text x="495" y="58" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Purchase Order Created</text>
+
+        <line x1="550" y1="55" x2="580" y2="55" stroke="#4F46E5" stroke-width="1.5" />
+
+        <rect x="580" y="40" width="130" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+        <text x="645" y="58" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#065F46" text-anchor="middle">Delivered</text>
+
+        <!-- Dashed Separator -->
+        <line x1="10" y1="95" x2="730" y2="95" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="5 5" />
+
+        <!-- Subgraph Background: Backend View -->
+        <rect x="10" y="105" width="720" height="165" rx="6" fill="#F8FAFC" stroke="#64748B" stroke-width="1" stroke-dasharray="3 3" />
+        <text x="20" y="118" font-family="'Outfit', sans-serif" font-weight="700" font-size="9.5" fill="#64748B">What Actually Happens (Abstracted ERP Execution)</text>
+
+        <!-- Backend Nodes -->
+        <rect x="20" y="130" width="110" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1" />
+        <text x="75" y="148" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">NLP &amp; Budget Resolution</text>
+
+        <rect x="160" y="130" width="110" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1" />
+        <text x="215" y="148" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">Hierarchical DOA Routing</text>
+
+        <rect x="300" y="130" width="110" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1" />
+        <text x="355" y="148" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">CR &amp; Buyer Assigned</text>
+
+        <rect x="300" y="175" width="110" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1" />
+        <text x="355" y="193" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">RFQ Portal Compare</text>
+
+        <rect x="300" y="220" width="110" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1" />
+        <text x="355" y="238" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">Rate Contract Sign</text>
+
+        <rect x="440" y="130" width="110" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1" />
+        <text x="495" y="148" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">PO confirm &amp; EDI</text>
+
+        <rect x="580" y="130" width="130" height="30" rx="4" fill="#EEF2F6" stroke="#64748B" stroke-width="1" />
+        <text x="645" y="148" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">GRN &amp; 3-Way Invoice Match</text>
+
+        <!-- Connecting lines inside backend -->
+        <line x1="130" y1="145" x2="160" y2="145" stroke="#64748B" stroke-width="1" />
+        <line x1="270" y1="145" x2="300" y2="145" stroke="#64748B" stroke-width="1" />
+        <line x1="355" y1="160" x2="355" y2="175" stroke="#64748B" stroke-width="1" />
+        <line x1="355" y1="205" x2="355" y2="220" stroke="#64748B" stroke-width="1" />
+        <path d="M 355 250 L 495 250 L 495 160" fill="none" stroke="#64748B" stroke-width="1" />
+        <line x1="550" y1="145" x2="580" y2="145" stroke="#64748B" stroke-width="1" />
+
+        <!-- Mapping Dotted Lines (Portal to Backend) -->
+        <path d="M 75 70 L 75 130" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
+        <path d="M 75 70 L 215 130" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
+        <path d="M 355 70 L 355 130" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
+        <path d="M 355 160 L 355 175" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
+        <path d="M 355 205 L 355 220" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
+        <path d="M 495 70 L 495 130" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
+        <path d="M 645 70 L 645 130" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
+      </svg>
+    </div>
+
+    <div class="key-points">
+      <h3>Milestone Simplification Strategy</h3>
+      <ul>
+        <li><strong>Courier-Style Transparency:</strong> Hides dozens of complex ERP state-changes behind five easy-to-read, standard milestones.</li>
+        <li><strong>Live Updates via Event Hooks:</strong> Maps status values on the fly whenever Odoo workflows update their states.</li>
+        <li><strong>Minimized Internal Support Inquiries:</strong> Requesters track active sourcing and deliveries on their own, saving buyer follow-up time.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <span>Smart Spend Request Platform</span>
+      <span>Page 9 of 9</span>
+    </div>
+  </div>
+
+</body>
+</html>

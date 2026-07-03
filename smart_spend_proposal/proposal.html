@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Smart Spend Request Platform – Product Strategy & Implementation Proposal</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+  
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #F1F5F9;
+    color: #334155;
+  }
+  
+  /* Page wrapper */
+  .page {
+    width: 210mm;
+    height: 297mm;
+    background-color: #ffffff;
+    position: relative;
+    page-break-after: always;
+    overflow: hidden;
+    padding: 24mm 20mm 20mm 20mm;
+  }
+  
+  .page:last-child {
+    page-break-after: avoid;
+  }
+  
+  /* Dark Page Variant (Cover & Highlight pages) */
+  .page-dark {
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+    color: #F8FAFC;
+    padding: 24mm 20mm 20mm 20mm;
+  }
+  
+  .page-dark h1 {
+    color: #FFFFFF;
+  }
+  
+  .page-dark h2 {
+    color: #E2E8F0;
+  }
+  
+  .page-dark p {
+    color: #CBD5E1;
+  }
+  
+  /* Header & Footer */
+  .header {
+    position: absolute;
+    top: 12mm;
+    left: 20mm;
+    right: 20mm;
+    border-bottom: 1.5px solid #F1F5F9;
+    padding-bottom: 2.5mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: #94A3B8;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  
+  .header-dark {
+    border-bottom: 1.5px solid #334155;
+    color: #64748B;
+  }
+  
+  .header .doc-title {
+    color: #4F46E5;
+    font-weight: 700;
+  }
+  
+  .header-dark .doc-title {
+    color: #818CF8;
+  }
+  
+  .footer {
+    position: absolute;
+    bottom: 12mm;
+    left: 20mm;
+    right: 20mm;
+    border-top: 1.5px solid #F1F5F9;
+    padding-top: 2.5mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9px;
+    color: #64748B;
+    font-weight: 500;
+  }
+  
+  .footer-dark {
+    border-top: 1.5px solid #334155;
+    color: #94A3B8;
+  }
+  
+  .footer .tagline {
+    font-style: italic;
+    color: #94A3B8;
+  }
+  
+  .footer-dark .tagline {
+    color: #64748B;
+  }
+  
+  .footer .page-number {
+    font-weight: 700;
+    color: #334155;
+  }
+  
+  .footer-dark .page-number {
+    color: #F8FAFC;
+  }
+  
+  /* Content styles */
+  .content {
+    margin-top: 5mm;
+    height: 230mm;
+    position: relative;
+  }
+  
+  h1 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    color: #0F172A;
+    font-size: 30px;
+    line-height: 1.2;
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+  
+  h2 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    color: #1E293B;
+    font-size: 20px;
+    margin-top: 0;
+    margin-bottom: 15px;
+    border-left: 4px solid #4F46E5;
+    padding-left: 10px;
+  }
+  
+  .page-dark h2 {
+    border-left-color: #818CF8;
+  }
+  
+  h3 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    color: #0F172A;
+    font-size: 15px;
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+  
+  p {
+    font-size: 13.5px;
+    line-height: 1.6;
+    margin-top: 0;
+    margin-bottom: 15px;
+  }
+  
+  p.lead {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #475569;
+  }
+  
+  .page-dark p.lead {
+    color: #E2E8F0;
+  }
+  
+  /* Tables for columns */
+  .layout-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: none;
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .layout-table td {
+    padding: 0;
+    vertical-align: top;
+  }
+  
+  /* Custom components */
+  .card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 15px;
+  }
+  
+  .card h3 {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+  }
+  
+  .card-danger {
+    border-left: 4px solid #EF4444;
+    background: #FFF5F5;
+  }
+  
+  .card-success {
+    border-left: 4px solid #10B981;
+    background: #F0FDF4;
+  }
+  
+  .card-primary {
+    border-left: 4px solid #4F46E5;
+    background: #EEF2F6;
+  }
+  
+  .tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .tag-danger {
+    background-color: #FEE2E2;
+    color: #991B1B;
+  }
+  
+  .tag-success {
+    background-color: #D1FAE5;
+    color: #065F46;
+  }
+  
+  .tag-warning {
+    background-color: #FEF3C7;
+    color: #92400E;
+  }
+  
+  .tag-info {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+  }
+  
+  /* Bullet list styling */
+  ul {
+    margin-top: 0;
+    margin-bottom: 15px;
+    padding-left: 20px;
+  }
+  
+  li {
+    font-size: 13.5px;
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  
+  /* Highlight Text */
+  .highlight-purple {
+    color: #4F46E5;
+    font-weight: 600;
+  }
+  
+  /* cover specific styles */
+  .cover-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .cover-top {
+    margin-top: 15mm;
+  }
+  
+  .cover-badge {
+    background: rgba(79, 70, 229, 0.15);
+    border: 1px solid rgba(129, 140, 248, 0.3);
+    color: #818CF8;
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 25px;
+  }
+  
+  .cover-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.15;
+    color: #FFFFFF;
+    margin-bottom: 15px;
+  }
+  
+  .cover-tagline {
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px;
+    color: #94A3B8;
+    margin-bottom: 35px;
+    font-weight: 500;
+    line-height: 1.4;
+    border-left: 3px solid #818CF8;
+    padding-left: 15px;
+  }
+  
+  .cover-meta {
+    margin-top: 40px;
+    font-size: 13px;
+    color: #94A3B8;
+  }
+  
+  .cover-meta td {
+    padding-bottom: 10px;
+  }
+  
+  .cover-meta .label {
+    font-weight: 600;
+    color: #64748B;
+    width: 140px;
+  }
+  
+  .cover-tech-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 30px;
+  }
+  
+  .tech-grid {
+    width: 100%;
+    margin-top: 10px;
+  }
+  
+  .tech-item {
+    text-align: center;
+    padding: 10px;
+  }
+  
+  .tech-logo {
+    font-size: 20px;
+    font-weight: 800;
+    color: #818CF8;
+    font-family: 'Outfit', sans-serif;
+    margin-bottom: 4px;
+  }
+  
+  .tech-name {
+    font-size: 11px;
+    color: #94A3B8;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  /* Diagram styles */
+  .diagram-container {
+    width: 100%;
+    text-align: center;
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }
+  
+  /* CSS buttons / mock interactive components */
+  .btn {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background-color: #4F46E5;
+    color: white;
+  }
+  .btn-outline {
+    background-color: transparent;
+    border: 1.5px solid #D1D5DB;
+    color: #4B5563;
+  }
+  .btn-danger {
+    background-color: #EF4444;
+    color: white;
+  }
+  
+  /* Mock UI Form fields */
+  .form-group {
+    margin-bottom: 15px;
+  }
+  .form-label {
+    display: block;
+    font-weight: 600;
+    font-size: 12px;
+    color: #475569;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #CBD5E1;
+    border-radius: 6px;
+    background-color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #334155;
+  }
+  
+  /* Stepper items */
+  .step-row {
+    display: flex;
+    margin-bottom: 18px;
+    position: relative;
+  }
+  .step-indicator {
+    width: 24px;
+    height: 24px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 11px;
+    margin-right: 15px;
+    z-index: 2;
+    flex-shrink: 0;
+  }
+  .step-indicator-success {
+    background-color: #10B981;
+    color: white;
+  }
+  .step-indicator-pending {
+    background-color: #FEF3C7;
+    border: 2px solid #F59E0B;
+    color: #B45309;
+  }
+  .step-indicator-neutral {
+    background-color: #E2E8F0;
+    color: #64748B;
+  }
+  .step-content {
+    flex-grow: 1;
+  }
+  .step-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 2px;
+    color: #1E293B;
+  }
+  .step-desc {
+    font-size: 11.5px;
+    color: #64748B;
+  }
+  
+  /* Menu Layout cards for Page 4 */
+  .menu-box {
+    border: 1.5px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 15px;
+    background: #F8FAFC;
+    height: 180px;
+  }
+  .menu-box-header {
+    font-size: 12px;
+    font-weight: 700;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #E2E8F0;
+    padding-bottom: 6px;
+  }
+  .menu-item-simple {
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 6px;
+  }
+  .menu-item-complex {
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #94A3B8;
+    margin-bottom: 4px;
+    border-left: 2px solid #CBD5E1;
+  }
+  .menu-item-complex.highlight {
+    color: #EF4444;
+    border-left-color: #EF4444;
+    background-color: #FFF5F5;
+  }
+  .menu-item-active {
+    background-color: #4F46E5;
+    color: white !important;
+    font-weight: 600;
+  }
+  
+  /* Workflow comparison table */
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    font-size: 11px;
+    border: 1px solid #E2E8F0;
+    background-color: #FFFFFF;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .comparison-table th {
+    background-color: #F8FAFC;
+    color: #1E293B;
+    text-align: left;
+    padding: 6px 10px;
+    font-weight: 700;
+    border-bottom: 2px solid #E2E8F0;
+    font-family: 'Outfit', sans-serif;
+  }
+  .comparison-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #E2E8F0;
+    vertical-align: top;
+    color: #475569;
+    line-height: 1.4;
+  }
+  .comparison-table tr:hover {
+    background-color: #F8FAFC;
+  }
+  .comparison-table .stage-name {
+    font-weight: 700;
+    color: #0F172A;
+    background-color: #F8FAFC;
+    border-right: 1px solid #E2E8F0;
+    width: 18%;
+  }
+  .comparison-table .flow-path {
+    width: 41%;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ==================== PAGE 1 ==================== -->
+  <div class="page page-dark">
+    <div class="header header-dark">
+      <span>Product Proposal</span>
+      <span class="doc-title">CONFIDENTIAL</span>
+    </div>
+    
+    <div class="cover-container" style="height: 100%;">
+      <div class="cover-top">
+        <span class="cover-badge">Product Strategy &amp; Vision</span>
+        <div class="cover-title">Smart Spend<br>Request Platform</div>
+        <div class="cover-tagline">"Request Anything. Track Everything.<br>Understand Nothing About Procurement."</div>
+        
+        <p class="lead" style="margin-top: 30px; max-width: 580px;">
+          A strategic proposal to transform internal procurement workflows into a consumer-grade request portal, hiding backend complexity and Odoo ERP governance under a seamless, automated user experience.
+        </p>
+      </div>
+      
+      <div>
+        <div class="cover-tech-box">
+          <span style="font-size: 11px; font-weight: 700; color: #818CF8; letter-spacing: 0.05em; text-transform: uppercase;">Core Technology Stack</span>
+          <table class="tech-grid">
+            <tr>
+              <td class="tech-item" style="width: 25%;">
+                <div class="tech-logo">NEXT.JS</div>
+                <div class="tech-name">Frontend Portal</div>
+              </td>
+              <td class="tech-item" style="width: 25%;">
+                <div class="tech-logo">DJANGO</div>
+                <div class="tech-name">Business APIs</div>
+              </td>
+              <td class="tech-item" style="width: 25%;">
+                <div class="tech-logo">ODOO API</div>
+                <div class="tech-name">ERP Layer</div>
+              </td>
+              <td class="tech-item" style="width: 25%;">
+                <div class="tech-logo">POSTGRES</div>
+                <div class="tech-name">Database</div>
+              </td>
+            </tr>
+          </table>
+        </div>
+        
+        <table class="cover-meta" style="width: 100%;">
+          <tr>
+            <td class="label">Prepared For:</td>
+            <td style="color: #FFFFFF; font-weight: 600;">Management Team</td>
+            <td class="label" style="text-align: right;">Date:</td>
+            <td style="color: #FFFFFF; font-weight: 600; text-align: right;">June 2026</td>
+          </tr>
+          <tr>
+            <td class="label">Prepared By:</td>
+            <td style="color: #FFFFFF; font-weight: 600;">Anjitha V</td>
+            <td class="label" style="text-align: right;">Status:</td>
+            <td style="color: #FFFFFF; font-weight: 600; text-align: right; letter-spacing: 0.05em;">PROPOSAL</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    
+    <div class="footer footer-dark">
+      <span class="tagline">Smart Spend Request Platform Proposal</span>
+      <span class="page-number">01</span>
+    </div>
+  </div>
+
+
+  <!-- ==================== PAGE 2 ==================== -->
+  <div class="page">
+    <div class="header">
+      <span>Section 01: Current State Analysis</span>
+      <span class="doc-title">Smart Spend Request</span>
+    </div>
+    
+    <div class="content">
+      <h2>The Procure-to-Pay Workflow</h2>
+      <p class="lead">
+        Today's procurement system exposes employees to a highly complex, 12-step transactional workflow, requiring deep knowledge of procurement jargon, rules, and manual approvals.
+      </p>
+      
+      <div class="diagram-container">
+        <!-- SVG diagram for the 12-step workflow -->
+        <svg width="100%" height="230" viewBox="0 0 740 230" style="background-color: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0; padding: 10px;">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#94A3B8" />
+            </marker>
+            <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#EF4444" />
+            </marker>
+          </defs>
+          
+          <!-- Row 1: Sourcing (Orange/Red) -->
+          <rect x="15" y="15" width="100" height="42" rx="6" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.5" />
+          <text x="65" y="34" font-family="'Outfit', sans-serif" font-size="10" font-weight="700" fill="#991B1B" text-anchor="middle">1. PR Creation</text>
+          <text x="65" y="47" font-family="'Inter'" font-size="7.5" fill="#EF4444" text-anchor="middle">Purchase Request</text>
+
+          <line x1="115" y1="36" x2="140" y2="36" stroke="#EF4444" stroke-width="1.5" marker-end="url(#arrow-red)" />
+          
+          <rect x="140" y="15" width="100" height="42" rx="6" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.5" />
+          <text x="190" y="34" font-family="'Outfit', sans-serif" font-size="10" font-weight="700" fill="#991B1B" text-anchor="middle">2. Need Contract</text>
+          <text x="190" y="47" font-family="'Inter'" font-size="7.5" fill="#EF4444" text-anchor="middle">Contract Checking</text>
+
+          <line x1="240" y1="36" x2="265" y2="36" stroke="#EF4444" stroke-width="1.5" marker-end="url(#arrow-red)" />
+
+          <rect x="265" y="15" width="105" height="42" rx="6" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.5" />
+          <text x="317" y="34" font-family="'Outfit', sans-serif" font-size="9.5" font-weight="700" fill="#991B1B" text-anchor="middle">3. Contract Req</text>
+          <text x="317" y="47" font-family="'Inter'" font-size="7.5" fill="#EF4444" text-anchor="middle">Create Contract Request</text>
+
+          <line x1="370" y1="36" x2="395" y2="36" stroke="#EF4444" stroke-width="1.5" marker-end="url(#arrow-red)" />
+
+          <rect x="395" y="15" width="100" height="42" rx="6" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.5" />
+          <text x="445" y="34" font-family="'Outfit', sans-serif" font-size="10" font-weight="700" fill="#991B1B" text-anchor="middle">4. RFQ</text>
+          <text x="445" y="47" font-family="'Inter'" font-size="7.5" fill="#EF4444" text-anchor="middle">Request Quotations</text>
+
+          <!-- Connector Down Right -->
+          <path d="M 495 36 L 525 36 L 525 105 L 500 105" fill="none" stroke="#EF4444" stroke-width="1.5" marker-end="url(#arrow-red)" />
+
+          <!-- Row 2: Negotiations (Orange/Red) -->
+          <rect x="395" y="84" width="105" height="42" rx="6" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.5" />
+          <text x="447" y="103" font-family="'Outfit', sans-serif" font-size="10" font-weight="700" fill="#991B1B" text-anchor="middle">5. Negotiation</text>
+          <text x="447" y="116" font-family="'Inter'" font-size="7.5" fill="#EF4444" text-anchor="middle">Price Negotiation</text>
+
+          <line x1="395" y1="105" x2="370" y2="105" stroke="#EF4444" stroke-width="1.5" marker-end="url(#arrow-red)" />
+
+          <rect x="265" y="84" width="105" height="42" rx="6" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.5" />
+          <text x="317" y="103" font-family="'Outfit', sans-serif" font-size="10" font-weight="700" fill="#991B1B" text-anchor="middle">6. Bidding</text>
+          <text x="317" y="116" font-family="'Inter'" font-size="7.5" fill="#EF4444" text-anchor="middle">Vendor Selection</text>
+
+          <line x1="265" y1="105" x2="240" y2="105" stroke="#EF4444" stroke-width="1.5" marker-end="url(#arrow-red)" />
+
+          <rect x="140" y="84" width="100" height="42" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+          <text x="190" y="103" font-family="'Outfit', sans-serif" font-size="9.5" font-weight="700" fill="#92400E" text-anchor="middle">7. Contract Appr</text>
+          <text x="190" y="116" font-family="'Inter'" font-size="7.5" fill="#D97706" text-anchor="middle">Management Review</text>
+
+          <line x1="140" y1="105" x2="115" y2="105" stroke="#D97706" stroke-width="1.5" marker-end="url(#arrow)" />
+
+          <rect x="15" y="84" width="100" height="42" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+          <text x="65" y="103" font-family="'Outfit', sans-serif" font-size="9.5" font-weight="700" fill="#92400E" text-anchor="middle">8. Rate Contract</text>
+          <text x="65" y="116" font-family="'Inter'" font-size="7.5" fill="#D97706" text-anchor="middle">Approved Sourcing</text>
+
+          <!-- Connector Down Left -->
+          <path d="M 15 105 L -10 105 L -10 174 L 15 174" fill="none" stroke="#D97706" stroke-width="1.5" marker-end="url(#arrow)" />
+
+          <!-- Row 3: Transaction execution (Slate/Green) -->
+          <rect x="15" y="153" width="100" height="42" rx="6" fill="#E2E8F0" stroke="#64748B" stroke-width="1.5" />
+          <text x="65" y="172" font-family="'Outfit', sans-serif" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">9. PO Creation</text>
+          <text x="65" y="185" font-family="'Inter'" font-size="7.5" fill="#64748B" text-anchor="middle">Order to Vendor</text>
+
+          <line x1="115" y1="174" x2="140" y2="174" stroke="#64748B" stroke-width="1.5" marker-end="url(#arrow)" />
+
+          <rect x="140" y="153" width="100" height="42" rx="6" fill="#E2E8F0" stroke="#64748B" stroke-width="1.5" />
+          <text x="190" y="172" font-family="'Outfit', sans-serif" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">10. GRN</text>
+          <text x="190" y="185" font-family="'Inter'" font-size="7.5" fill="#64748B" text-anchor="middle">Goods Receipt Note</text>
+
+          <line x1="240" y1="174" x2="265" y2="174" stroke="#64748B" stroke-width="1.5" marker-end="url(#arrow)" />
+
+          <rect x="265" y="153" width="105" height="42" rx="6" fill="#E2E8F0" stroke="#64748B" stroke-width="1.5" />
+          <text x="317" y="172" font-family="'Outfit', sans-serif" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">11. Invoice</text>
+          <text x="317" y="185" font-family="'Inter'" font-size="7.5" fill="#64748B" text-anchor="middle">Vendor Billing</text>
+
+          <line x1="370" y1="174" x2="395" y2="174" stroke="#64748B" stroke-width="1.5" marker-end="url(#arrow)" />
+
+          <rect x="395" y="153" width="100" height="42" rx="6" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+          <text x="445" y="172" font-family="'Outfit', sans-serif" font-size="10" font-weight="700" fill="#065F46" text-anchor="middle">12. Payment</text>
+          <text x="445" y="185" font-family="'Inter'" font-size="7.5" fill="#10B981" text-anchor="middle">Accounts Payable</text>
+
+          <!-- Annotations -->
+          <rect x="525" y="15" width="200" height="180" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1" />
+          <text x="535" y="32" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="700" fill="#0F172A">Legend / Analysis</text>
+          
+          <rect x="535" y="47" width="10" height="10" rx="2" fill="#FEE2E2" stroke="#EF4444" stroke-width="1" />
+          <text x="550" y="55" font-family="'Inter'" font-size="9" fill="#475569">Severe friction, user pain</text>
+          
+          <rect x="535" y="67" width="10" height="10" rx="2" fill="#FEF3C7" stroke="#D97706" stroke-width="1" />
+          <text x="550" y="75" font-family="'Inter'" font-size="9" fill="#475569">Middle governance delay</text>
+
+          <rect x="535" y="87" width="10" height="10" rx="2" fill="#E2E8F0" stroke="#64748B" stroke-width="1" />
+          <text x="550" y="95" font-family="'Inter'" font-size="9" fill="#475569">System transactional processes</text>
+          
+          <line x1="535" y1="120" x2="715" y2="120" stroke="#E2E8F0" stroke-width="1.5" />
+          
+          <text x="535" y="138" font-family="'Outfit', sans-serif" font-size="9.5" font-weight="700" fill="#EF4444">Pain Points Identified:</text>
+          <text x="535" y="153" font-family="'Inter'" font-size="8.5" fill="#475569">• Employees forced to select contracts</text>
+          <text x="535" y="166" font-family="'Inter'" font-size="8.5" fill="#475569">• Exposure to RFI and RFQ screens</text>
+          <text x="535" y="179" font-family="'Inter'" font-size="8.5" fill="#475569">• Zero clarity on status after PR submit</text>
+          <text x="535" y="192" font-family="'Inter'" font-size="8.5" fill="#475569">• Requires training and ERP licenses</text>
+        </svg>
+      </div>
+
+      <table class="layout-table">
+        <tr>
+          <td style="width: 48%; padding-right: 4%;">
+            <div class="card card-danger">
+              <h3>
+                <span style="font-size: 16px; margin-right: 8px;">🛑</span> Too Many Manual Steps
+              </h3>
+              <p style="margin-bottom: 0; font-size: 12.5px;">
+                The average employee spends <strong>22 minutes</strong> trying to initiate a simple request, navigating across multiple nested menus in Odoo to check existing contracts and select buyers.
+              </p>
+            </div>
+          </td>
+          <td style="width: 48%;">
+            <div class="card card-danger">
+              <h3>
+                <span style="font-size: 16px; margin-right: 8px;">🤔</span> Jargon &amp; Complexity
+              </h3>
+              <p style="margin-bottom: 0; font-size: 12.5px;">
+                Terms like <i>"RFQ"</i>, <i>"Bidding Lines"</i>, <i>"Rate Contracts"</i>, and <i>"GRN"</i> are clear to a trained buyer, but confuse typical business users, leading to high data entry error rates.
+              </p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-right: 4%;">
+            <div class="card card-danger">
+              <h3>
+                <span style="font-size: 16px; margin-right: 8px;">📱</span> Complex Navigation
+              </h3>
+              <p style="margin-bottom: 0; font-size: 12.5px;">
+                Users must switch between the Purchase module, Vendor Management, and Inventory screens. There is no simple, unified web or mobile-friendly portal.
+              </p>
+            </div>
+          </td>
+          <td>
+            <div class="card card-danger">
+              <h3>
+                <span style="font-size: 16px; margin-right: 8px;">👁️</span> Poor Visibility
+              </h3>
+              <p style="margin-bottom: 0; font-size: 12.5px;">
+                Once a Purchase Request is submitted, it goes into a "black box". Requesters flood the procurement team with calls and emails asking, <i>"Where is my laptop?"</i>.
+              </p>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    
+    <div class="footer">
+      <span class="tagline">Request Anything. Track Everything. Understand Nothing.</span>
+      <span class="page-number">02</span>
+    </div>
+  </div>
+
+
+  <!-- ==================== PAGE 3 ==================== -->
+  <div class="page">
+    <div class="header">
+      <span>Section 02: Product Philosophy</span>
+      <span class="doc-title">Smart Spend Request</span>
+    </div>
+    
+    <div class="content">
+      <h2>A Paradigm Shift in Philosophy</h2>
+      <p class="lead">
+        We are changing the fundamental operational philosophy. Instead of forcing users to understand backend procurement systems, we build a layer that does the thinking for them.
+      </p>
+
+      <table class="layout-table" style="margin-top: 30px;">
+        <tr>
+          <td style="width: 48%; padding-right: 4%;">
+            <div class="card" style="border: 2px solid #E2E8F0; background-color: #F8FAFC; text-align: center; padding: 25px 20px;">
+              <span style="font-size: 11px; font-weight: 700; color: #EF4444; letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 15px;">Current Philosophy</span>
+              <div style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; color: #1E293B; margin-bottom: 20px;">
+                "Users must understand procurement"
+              </div>
+              
+              <!-- SVG Illustration: Confused User -->
+              <svg width="100" height="100" viewBox="0 0 100 100" style="margin: 10px auto;">
+                <circle cx="50" cy="45" r="25" fill="#FEE2E2" stroke="#EF4444" stroke-width="2" />
+                <!-- Eyes -->
+                <circle cx="42" cy="42" r="2.5" fill="#991B1B" />
+                <circle cx="58" cy="42" r="2.5" fill="#991B1B" />
+                <!-- Mouth (Confused) -->
+                <path d="M 43 55 Q 50 51 57 55" fill="none" stroke="#991B1B" stroke-width="2" stroke-linecap="round" />
+                <!-- Confused bubbles -->
+                <text x="20" y="25" font-family="'Outfit'" font-size="9" font-weight="700" fill="#EF4444">RFQ?</text>
+                <text x="75" y="25" font-family="'Outfit'" font-size="9" font-weight="700" fill="#EF4444">GRN?</text>
+                <text x="15" y="75" font-family="'Outfit'" font-size="9" font-weight="700" fill="#EF4444">Vendor ID?</text>
+                <text x="68" y="75" font-family="'Outfit'" font-size="9" font-weight="700" fill="#EF4444">PO Line?</text>
+              </svg>
+              
+              <p style="font-size: 12.5px; color: #64748B; margin-top: 15px;">
+                Employees undergo hours of ERP training, navigate hundreds of database screens, and learn procurement rules just to order basic office hardware.
+              </p>
+            </div>
+          </td>
+          <td style="width: 48%;">
+            <div class="card" style="border: 2px solid #818CF8; background-color: #EEF2F6; text-align: center; padding: 25px 20px;">
+              <span style="font-size: 11px; font-weight: 700; color: #4F46E5; letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 15px;">Proposed Philosophy</span>
+              <div style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; color: #0F172A; margin-bottom: 20px;">
+                "Users should not need to understand procurement"
+              </div>
+              
+              <!-- SVG Illustration: Happy User -->
+              <svg width="100" height="100" viewBox="0 0 100 100" style="margin: 10px auto;">
+                <circle cx="50" cy="45" r="25" fill="#D1FAE5" stroke="#10B981" stroke-width="2" />
+                <!-- Eyes -->
+                <circle cx="42" cy="42" r="2.5" fill="#065F46" />
+                <circle cx="58" cy="42" r="2.5" fill="#065F46" />
+                <!-- Mouth (Smiling) -->
+                <path d="M 42 52 Q 50 60 58 52" fill="none" stroke="#065F46" stroke-width="2" stroke-linecap="round" />
+                <!-- Speech bubble -->
+                <path d="M 68 25 L 80 18 L 78 28 A 12 12 0 1 0 68 25 Z" fill="#4F46E5" />
+                <text x="63" y="19" font-family="'Inter'" font-size="8" font-weight="700" fill="#FFFFFF" text-anchor="middle">Laptop</text>
+              </svg>
+              
+              <p style="font-size: 12.5px; color: #475569; margin-top: 15px;">
+                Employees request what they need in natural language. An intelligent, automated backend handles budget tracking, contract matching, and Odoo routing.
+              </p>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <div class="card card-primary" style="margin-top: 15px;">
+        <h3 style="color: #4F46E5;">Key Shift: The "Consumer-Like" Experience</h3>
+        <p style="margin-bottom: 0; font-size: 12.5px;">
+          By introducing the <strong>Smart Spend Request Platform</strong>, we decouple the <strong>transacting user</strong> from the <strong>governing workflow</strong>. The end-user experiences a simple portal akin to requesting an item on Amazon, while the procurement team retains absolute control, audit logs, and ERP compliance via Django and Odoo behind the scenes.
+        </p>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <span class="tagline">Request Anything. Track Everything. Understand Nothing.</span>
+      <span class="page-number">03</span>
+    </div>
+  </div>
+
+
+  <!-- ==================== PAGE 4 ==================== -->
+  <div class="page">
+    <div class="header">
+      <span>Section 03: User Experience Transformation</span>
+      <span class="doc-title">Smart Spend Request</span>
+    </div>
+    
+    <div class="content">
+      <h2>UI Menu &amp; Layout Reduction</h2>
+      <p class="lead">
+        We are replacing a cluttered, transaction-heavy ERP menu bar with a streamlined, action-oriented, four-tab interface.
+      </p>
+
+      <table class="layout-table" style="margin-top: 30px;">
+        <tr>
+          <!-- Current UI Menu Column -->
+          <td style="width: 48%; padding-right: 4%;">
+            <div style="font-size: 12px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">
+              Current Odoo/ERP Menu (Confusing Navigation)
+            </div>
+            
+            <div class="menu-box">
+              <div class="menu-box-header"> Odoo ERP Modules </div>
+              
+              <table style="width: 100%;">
+                <tr>
+                  <td>
+                    <div class="menu-item-complex highlight">📂 Purchase Request</div>
+                    <div class="menu-item-complex">📂 Sourcing Contracts</div>
+                    <div class="menu-item-complex">📂 Request for Quotation (RFQ)</div>
+                  </td>
+                  <td>
+                    <div class="menu-item-complex">📂 Rate Contracts</div>
+                    <div class="menu-item-complex">📂 Vendor Portal</div>
+                    <div class="menu-item-complex">📂 Purchase Orders</div>
+                  </td>
+                </tr>
+              </table>
+              
+              <div style="text-align: center; color: #EF4444; font-size: 10.5px; font-weight: 700; margin-top: 15px;">
+                ⚠️ 6 Complex Modules • High Training Cost • Exposed Internal Data
+              </div>
+            </div>
+          </td>
+          
+          <!-- Proposed UI Menu Column -->
+          <td style="width: 48%;">
+            <div style="font-size: 12px; font-weight: 700; color: #4F46E5; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">
+              Proposed Smart Spend Menu (Simplified Intent)
+            </div>
+            
+            <div class="menu-box" style="border-color: #818CF8; background-color: #F5F3FF;">
+              <div class="menu-box-header" style="color: #4F46E5; border-bottom-color: #DDD6FE;"> Smart Spend Portal </div>
+              
+              <table style="width: 100%;">
+                <tr>
+                  <td style="padding-right: 5px;">
+                    <div class="menu-item-simple menu-item-active" style="text-align: center;">⚡ Need Something</div>
+                    <div class="menu-item-simple" style="background: white; border: 1px solid #DDD6FE; text-align: center;">📋 My Requests</div>
+                  </td>
+                  <td style="padding-left: 5px;">
+                    <div class="menu-item-simple" style="background: white; border: 1px solid #DDD6FE; text-align: center;">🚚 My Deliveries</div>
+                    <div class="menu-item-simple" style="background: white; border: 1px solid #DDD6FE; text-align: center;">🔑 My Approvals</div>
+                  </td>
+                </tr>
+              </table>
+              
+              <div style="text-align: center; color: #10B981; font-size: 10.5px; font-weight: 700; margin-top: 15px;">
+                ✓ 4 Clear Actions • Consumer UX • Zero Training Required
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- SVG graphic showing visual reduction transition -->
+      <div class="diagram-container" style="margin-top: 25px;">
+        <svg width="100%" height="160" viewBox="0 0 680 160" style="background-color: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0;">
+          <!-- Arrows going from old to new -->
+          <g stroke="#94A3B8" stroke-width="1.5" fill="none">
+            <path d="M 120 40 C 250 40, 250 80, 420 80" marker-end="url(#arrow)" />
+            <path d="M 120 70 C 250 70, 250 80, 420 80" marker-end="url(#arrow)" />
+            <path d="M 120 100 C 250 100, 250 80, 420 80" marker-end="url(#arrow)" />
+            <path d="M 120 130 C 250 130, 250 80, 420 80" marker-end="url(#arrow)" />
+          </g>
+          
+          <!-- Left items representation -->
+          <rect x="20" y="25" width="130" height="24" rx="4" fill="#E2E8F0" stroke="#CBD5E1" />
+          <text x="30" y="40" font-family="'Inter'" font-size="9.5" fill="#475569">Purchase Request</text>
+          
+          <rect x="20" y="55" width="130" height="24" rx="4" fill="#E2E8F0" stroke="#CBD5E1" />
+          <text x="30" y="70" font-family="'Inter'" font-size="9.5" fill="#475569">RFQ/Quoting</text>
+          
+          <rect x="20" y="85" width="130" height="24" rx="4" fill="#E2E8F0" stroke="#CBD5E1" />
+          <text x="30" y="100" font-family="'Inter'" font-size="9.5" fill="#475569">Contracts &amp; Sourcing</text>
+          
+          <rect x="20" y="115" width="130" height="24" rx="4" fill="#E2E8F0" stroke="#CBD5E1" />
+          <text x="30" y="130" font-family="'Inter'" font-size="9.5" fill="#475569">Purchase Orders</text>
+
+          <!-- Middle indicator -->
+          <circle cx="280" cy="80" r="18" fill="#4F46E5" />
+          <text x="280" y="84" font-family="'Outfit'" font-weight="700" font-size="11" fill="#FFFFFF" text-anchor="middle">70%</text>
+          <text x="280" y="112" font-family="'Outfit'" font-weight="700" font-size="8.5" fill="#4F46E5" text-anchor="middle">MENU REDUCTION</text>
+
+          <!-- Right items representation -->
+          <rect x="420" y="45" width="220" height="70" rx="8" fill="#EEF2F6" stroke="#4F46E5" stroke-width="2" />
+          <text x="440" y="70" font-family="'Outfit'" font-weight="700" font-size="14" fill="#4F46E5">"Need Something?"</text>
+          <text x="440" y="90" font-family="'Inter'" font-size="10.5" fill="#64748B">A single interface to request anything,</text>
+          <text x="440" y="103" font-family="'Inter'" font-size="10.5" fill="#64748B">backed by AI routing engines.</text>
+        </svg>
+      </div>
+      
+      <div style="font-size: 12px; color: #64748B; margin-top: 15px; text-align: center; font-style: italic;">
+        By eliminating Odoo ERP menu overload, we reduce administrative friction and prevent users from getting lost in system workflows.
+      </div>
+    </div>
+    
+    <div class="footer">
+      <span class="tagline">Request Anything. Track Everything. Understand Nothing.</span>
+      <span class="page-number">04</span>
+    </div>
+  </div>
+
+
+  <!-- ==================== PAGE 5 ==================== -->
+  <div class="page">
+    <div class="header">
+      <span>Section 04: User Experience Wireframe</span>
+      <span class="doc-title">Smart Spend Request</span>
+    </div>
+    
+    <div class="content">
+      <h2>The "Need Something" Wireframe</h2>
+      <p class="lead">
+        A clean, distraction-free portal interface. The user specifies what they need, while the engine automatically checks budget, detects contracts, and configures Odoo backend workflows.
+      </p>
+
+      <table class="layout-table" style="margin-top: 15px;">
+        <tr>
+          <!-- Wireframe Mockup (Left) -->
+          <td style="width: 55%; padding-right: 4%;">
+            <div style="border: 2px solid #CBD5E1; border-radius: 12px; background-color: #FFFFFF; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #F1F5F9; padding-bottom: 10px; margin-bottom: 15px;">
+                <span style="font-family: 'Outfit'; font-weight: 700; font-size: 15px; color: #0F172A;">⚡ New Request</span>
+                <span class="tag tag-info">Need Something</span>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">What do you need?</label>
+                <div class="form-input" style="font-weight: 500; border-color: #818CF8; background-color: #F8FAFC;">
+                  Laptop (Dell Latitude 5440)
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Why do you need it?</label>
+                <div class="form-input" style="color: #64748B;">
+                  New senior developer joining the team next week.
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">When do you need it?</label>
+                <div class="form-input" style="font-weight: 500;">
+                  Within 7 Days
+                </div>
+              </div>
+              
+              <div style="margin-top: 20px; text-align: right;">
+                <span class="btn btn-outline" style="margin-right: 8px;">Cancel</span>
+                <span class="btn btn-primary" style="background-color: #4F46E5;">Submit Request</span>
+              </div>
+            </div>
+          </td>
+          
+          <!-- Automated Processing (Right) -->
+          <td style="width: 42%;">
+            <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">
+              Automated Backend Checks
+            </div>
+            
+            <div class="card card-primary" style="padding: 14px; margin-bottom: 10px;">
+              <div style="font-weight: 700; font-size: 12.5px; color: #4F46E5; margin-bottom: 4px;">1. Budget Validation</div>
+              <div style="font-size: 11px; color: #475569;">
+                System checks department budget for "Developer Hardware". <span class="tag tag-success" style="font-size: 8px; padding: 1px 4px;">Available</span>
+              </div>
+            </div>
+            
+            <div class="card card-primary" style="padding: 14px; margin-bottom: 10px;">
+              <div style="font-weight: 700; font-size: 12.5px; color: #4F46E5; margin-bottom: 4px;">2. Contract Detection</div>
+              <div style="font-size: 11px; color: #475569;">
+                Looks up active Odoo contracts. preferred: <strong>Dell India Contract (RC-2026-09)</strong>.
+              </div>
+            </div>
+            
+            <div class="card card-primary" style="padding: 14px; margin-bottom: 10px;">
+              <div style="font-weight: 700; font-size: 12.5px; color: #4F46E5; margin-bottom: 4px;">3. Approval Routing</div>
+              <div style="font-size: 11px; color: #475569;">
+                Identifies manager (Engineering Director) and routes approval notification automatically.
+              </div>
+            </div>
+            
+            <div class="card card-primary" style="padding: 14px; margin-bottom: 0;">
+              <div style="font-weight: 700; font-size: 12.5px; color: #4F46E5; margin-bottom: 4px;">4. PO Generation Queue</div>
+              <div style="font-size: 11px; color: #475569;">
+                Pre-compiles the Odoo Purchase Order draft. Ready to send to Dell on manager's approval.
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+      
+      <div style="border-top: 1px dashed #E2E8F0; padding-top: 15px; margin-top: 20px; font-size: 12px; color: #64748B;">
+        <strong>Strategic Insight:</strong> The requester fills in just three simple, intuitive fields. The backend engine resolves standard configurations like vendors, items, and cost allocation using ERP integration, saving hours of manual data alignment.
+      </div>
+    </div>
+    
+    <div class="footer">
+      <span class="tagline">Request Anything. Track Everything. Understand Nothing.</span>
+      <span class="page-number">05</span>
+    </div>
+  </div>
+
+
+  <!-- ==================== PAGE 6 ==================== -->
+  <div class="page">
+    <div class="header">
+      <span>Section 05: Backend Architecture</span>
+      <span class="doc-title">Smart Spend Request</span>
+    </div>
+    
+    <div class="content">
+      <h2>Backend Workflow &amp; Governance</h2>
+      <p class="lead">
+        Behind the simplified user portal, our business logic engine maintains strict corporate governance. If contracts exist, POs are created automatically; if not, sourcing begins.
+      </p>
+
+      <div class="diagram-container">
+        <!-- SVG diagram for the comprehensive End-to-End Master Flow -->
+        <svg width="100%" height="240" viewBox="0 0 740 240" style="background-color: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0; padding: 10px;">
+          <defs>
+            <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#4F46E5" />
+            </marker>
+            <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#10B981" />
+            </marker>
+            <marker id="arrow-orange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#D97706" />
+            </marker>
+            <marker id="arrow-slate" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B" />
+            </marker>
+          </defs>
+
+          <!-- COLUMN 1: INITIATION & APPROVALS (Purple/Blue) -->
+          <!-- Portal Request -->
+          <rect x="15" y="15" width="105" height="28" rx="4" fill="#EEF2F6" stroke="#4F46E5" stroke-width="1.5" />
+          <text x="67.5" y="32" font-family="'Outfit', sans-serif" font-weight="700" font-size="9" fill="#4F46E5" text-anchor="middle">Portal Request</text>
+          
+          <line x1="67.5" y1="43" x2="67.5" y2="60" stroke="#4F46E5" stroke-width="1.2" marker-end="url(#arrow-blue)" />
+
+          <!-- AI NLP Engine -->
+          <rect x="15" y="60" width="105" height="28" rx="4" fill="#EEF2F6" stroke="#4F46E5" stroke-width="1.5" />
+          <text x="67.5" y="77" font-family="'Outfit', sans-serif" font-weight="700" font-size="9" fill="#0F172A" text-anchor="middle">AI NLP Engine</text>
+
+          <line x1="67.5" y1="88" x2="67.5" y2="105" stroke="#4F46E5" stroke-width="1.2" marker-end="url(#arrow-blue)" />
+
+          <!-- Budget Check -->
+          <rect x="15" y="105" width="105" height="28" rx="4" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+          <text x="67.5" y="122" font-family="'Outfit', sans-serif" font-weight="700" font-size="9" fill="#B45309" text-anchor="middle">Budget Check</text>
+
+          <line x1="67.5" y1="133" x2="67.5" y2="150" stroke="#D97706" stroke-width="1.2" marker-end="url(#arrow-orange)" />
+
+          <!-- Manager Approval -->
+          <rect x="15" y="150" width="105" height="28" rx="4" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+          <text x="67.5" y="167" font-family="'Outfit', sans-serif" font-weight="700" font-size="9" fill="#B45309" text-anchor="middle">Manager Approval</text>
+
+          <!-- Connect Manager Approval to Decision Diamond -->
+          <path d="M 120 164 L 180 164 L 180 140" fill="none" stroke="#D97706" stroke-width="1.2" marker-end="url(#arrow-orange)" />
+
+          <!-- DECISION DIAMOND: Contract Available? -->
+          <polygon points="180,95 245,115 180,135 115,115" fill="#FFEDD5" stroke="#F97316" stroke-width="1.5" />
+          <text x="180" y="118" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#C2410C" text-anchor="middle">Contract Active?</text>
+
+          <!-- YES PATH (Goes up to Auto-Create PO) -->
+          <path d="M 245 115 L 290 115 L 290 30 L 320 30" fill="none" stroke="#10B981" stroke-width="1.5" marker-end="url(#arrow-green)" />
+          <text x="260" y="108" font-family="'Inter'" font-weight="700" font-size="8.5" fill="#10B981">YES</text>
+
+          <!-- NO PATH (Goes right to Sourcing) -->
+          <line x1="245" y1="115" x2="320" y2="115" stroke="#F97316" stroke-width="1.5" marker-end="url(#arrow-orange)" />
+          <text x="260" y="127" font-family="'Inter'" font-weight="700" font-size="8.5" fill="#F97316">NO</text>
+
+          <!-- COLUMN 3: DIRECT AUTO PO (Green) -->
+          <!-- Auto-Create PO -->
+          <rect x="320" y="15" width="115" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+          <text x="377.5" y="33" font-family="'Outfit', sans-serif" font-weight="700" font-size="9" fill="#065F46" text-anchor="middle">Auto PO Generation</text>
+
+          <!-- COLUMN 4: SOURCING FALLBACK (Grey/Red) -->
+          <!-- Create Contract Request -->
+          <rect x="320" y="100" width="115" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1.5" />
+          <text x="377.5" y="118" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#334155" text-anchor="middle">Create Contract Req</text>
+
+          <line x1="435" y1="115" x2="455" y2="115" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate)" />
+
+          <!-- Workload Assignment -->
+          <rect x="455" y="100" width="115" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1.5" />
+          <text x="512.5" y="118" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#334155" text-anchor="middle">Auto Assign Buyer</text>
+
+          <line x1="570" y1="115" x2="590" y2="115" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate)" />
+
+          <!-- Sourcing Methods (Multi-RFQ, Negotiation, Bidding) -->
+          <rect x="590" y="70" width="135" height="75" rx="6" fill="#F3F4F6" stroke="#64748B" stroke-width="1" />
+          <text x="657.5" y="85" font-family="'Outfit', sans-serif" font-weight="700" font-size="9" fill="#1F2937" text-anchor="middle">SCM Sourcing Methods</text>
+          <text x="600" y="102" font-family="'Inter'" font-size="8" fill="#475569">• Multi-RFQ Comparison</text>
+          <text x="600" y="116" font-family="'Inter'" font-size="8" fill="#475569">• Direct Price Negotiation</text>
+          <text x="600" y="130" font-family="'Inter'" font-size="8" fill="#475569">• Live Reverse Bidding</text>
+
+          <path d="M 657.5 145 L 657.5 165 L 570 165" fill="none" stroke="#64748B" stroke-width="1.2" marker-end="url(#arrow-slate)" />
+
+          <!-- Approve Contract -->
+          <rect x="455" y="150" width="115" height="30" rx="4" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+          <text x="512.5" y="168" font-family="'Outfit', sans-serif" font-weight="700" font-size="8.5" fill="#B45309" text-anchor="middle">Approve Sourcing Contract</text>
+
+          <!-- Connect Contract Approval back to Auto PO -->
+          <path d="M 455 165 L 377.5 165 L 377.5 45" fill="none" stroke="#10B981" stroke-width="1.5" marker-end="url(#arrow-green)" />
+
+          <!-- COLUMN 5: DOWNSTREAM ERP EXECUTION -->
+          <!-- GRN & Invoice -->
+          <rect x="590" y="15" width="135" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+          <text x="657.5" y="33" font-family="'Outfit', sans-serif" font-weight="700" font-size="9" fill="#065F46" text-anchor="middle">Odoo GRN &amp; Invoice Match</text>
+
+          <line x1="435" y1="30" x2="590" y2="30" stroke="#10B981" stroke-width="1.2" marker-end="url(#arrow-green)" />
+
+          <!-- Final Payment -->
+          <rect x="455" y="15" width="115" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+          <text x="512.5" y="33" font-family="'Outfit', sans-serif" font-weight="700" font-size="9" fill="#065F46" text-anchor="middle">Final ERP Payment</text>
+
+          <line x1="590" y1="30" x2="570" y2="30" stroke="#10B981" stroke-width="1.2" />
+          <line x1="570" y1="30" x2="570" y2="30" stroke="#10B981" stroke-width="1.2" marker-end="url(#arrow-green)" />
+        </svg>
+      </div>
+
+      <!-- Comparative End-to-End Workflow Table -->
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th class="stage-name">Process Stage</th>
+            <th class="flow-path" style="border-right: 1px solid #CBD5E1; color: #4F46E5;">Flow A: Rate Contract Active (Fast Path)</th>
+            <th class="flow-path" style="color: #D97706;">Flow B: No Contract Active (Sourcing &amp; CR Path)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="stage-name">1. PR Initiation</td>
+            <td style="border-right: 1px solid #E2E8F0;">Portal auto-matches active Rate Contract; pre-fills contracted prices, vendor, and terms.</td>
+            <td>Portal detects no active contract. Marks request as "New Sourcing" for buyer action.</td>
+          </tr>
+          <tr>
+            <td class="stage-name">2. PR Approval</td>
+            <td style="border-right: 1px solid #E2E8F0;">Routes immediately through standard amount-banded approvals (Workflow: <code>pr</code>).</td>
+            <td>Triggers and routes background "Need for Contract" approvals (Workflow: <code>need_cr</code>).</td>
+          </tr>
+          <tr>
+            <td class="stage-name">3. Sourcing (CR)</td>
+            <td style="border-right: 1px solid #E2E8F0;"><strong>Bypassed.</strong> Directly proceeds to order generation without manual buyer intervention.</td>
+            <td>Creates **Contract Request (CR)**. Purchase Head assigns Buyer to run RFQ, Bidding, or Negotiation.</td>
+          </tr>
+          <tr>
+            <td class="stage-name">4. Contract &amp; PO</td>
+            <td style="border-right: 1px solid #E2E8F0;">Final approval auto-creates, groups, and confirms Purchase Order(s) in Odoo.</td>
+            <td>Bids compared; contract approved &amp; signed. Portal auto-triggers Odoo PO from contract.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div class="card card-success" style="margin-top: 10px; padding: 12px;">
+        <h3 style="color: #10B981; font-size: 13px; margin-bottom: 2px;">Reassurance for Management: Governance is Maintained</h3>
+        <p style="margin-bottom: 0; font-size: 11px; color: #1F2937; line-height: 1.4;">
+          This workflow proves that the platform does not bypass rules. If a contract is available, the backend speeds execution by automating the PO. If no contract exists, it automatically falls back to full procurement sourcing (RFQ, bidding, negotiation) in Odoo, ensuring that budget rules, compliance, and buyer assignment remain robust.
+        </p>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <span class="tagline">Request Anything. Track Everything. Understand Nothing.</span>
+      <span class="page-number">06</span>
+    </div>
+  </div>
+
+
+  <!-- ==================== PAGE 7 ==================== -->
+  <div class="page">
+    <div class="header">
+      <span>Section 06: Request Tracking &amp; Visibility</span>
+      <span class="doc-title">Smart Spend Request</span>
+    </div>
+    
+    <div class="content">
+      <h2>Real-time Request Tracking &amp; Visibility</h2>
+      <p class="lead">
+        The primary differentiator of our platform. Users track their orders via a linear, visual timeline, completely eliminating the need for status inquiry calls or emails.
+      </p>
+
+      <table class="layout-table" style="margin-top: 25px;">
+        <tr>
+          <!-- Tracking UI Mockup (Left) -->
+          <td style="width: 58%; padding-right: 4%;">
+            <div style="border: 2px solid #E2E8F0; border-radius: 12px; background-color: #FFFFFF; padding: 22px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #F1F5F9; padding-bottom: 10px; margin-bottom: 20px;">
+                <div>
+                  <div style="font-family: 'Outfit'; font-weight: 700; font-size: 16px; color: #0F172A;">Laptop Request</div>
+                  <div style="font-size: 11px; color: #64748B;">Request ID: #REQ-2026-894</div>
+                </div>
+                <span class="tag tag-info" style="font-size: 9.5px;">Active</span>
+              </div>
+              
+              <!-- Timeline Steps -->
+              <div class="step-row">
+                <div class="step-indicator step-indicator-success">✓</div>
+                <div class="step-content">
+                  <div class="step-title">Submitted</div>
+                  <div class="step-desc">24-Jun-2026 10:00 AM • Requested by John Doe</div>
+                </div>
+              </div>
+              
+              <div class="step-row">
+                <div class="step-indicator step-indicator-success">✓</div>
+                <div class="step-content">
+                  <div class="step-title">Approved by Manager</div>
+                  <div class="step-desc">24-Jun-2026 11:30 AM • Approved by engineering Director</div>
+                </div>
+              </div>
+              
+              <div class="step-row">
+                <div class="step-indicator step-indicator-success">✓</div>
+                <div class="step-content">
+                  <div class="step-title">Procurement Review</div>
+                  <div class="step-desc">24-Jun-2026 02:00 PM • Auto-matched with Dell contract</div>
+                </div>
+              </div>
+              
+              <div class="step-row">
+                <div class="step-indicator step-indicator-success">✓</div>
+                <div class="step-content">
+                  <div class="step-title">PO Created in Odoo</div>
+                  <div class="step-desc">24-Jun-2026 02:05 PM • PO-2026-083 sent to Dell India</div>
+                </div>
+              </div>
+              
+              <div class="step-row" style="margin-bottom: 0;">
+                <div class="step-indicator step-indicator-pending">⏳</div>
+                <div class="step-content">
+                  <div class="step-title" style="color: #D97706; font-weight: 700;">Delivery Pending</div>
+                  <div class="step-desc">Expected Delivery Date: <strong class="highlight-purple" style="font-size: 12px; color: #4F46E5;">12-Aug-2026</strong></div>
+                </div>
+              </div>
+            </div>
+          </td>
+          
+          <!-- Key details (Right) -->
+          <td style="width: 38%; vertical-align: middle;">
+            <div class="card card-primary" style="padding: 18px; margin-bottom: 15px;">
+              <h3 style="color: #4F46E5;">✓ No More Black Holes</h3>
+              <p style="font-size: 12px; margin-bottom: 0; color: #475569;">
+                Historically, users had to search through email chains to find status updates. Now, the status is pulled live from Odoo PO receipt pipelines, offering instant transparency.
+              </p>
+            </div>
+            
+            <div class="card card-primary" style="padding: 18px; margin-bottom: 0;">
+              <h3 style="color: #4F46E5;">🚚 ERP Status Sync</h3>
+              <p style="font-size: 12px; margin-bottom: 0; color: #475569;">
+                When the warehouse processes the delivery receipt in Odoo, the timeline automatically transitions to <strong>"Delivered"</strong>.
+              </p>
+            </div>
+          </td>
+        </tr>
+      </table>
+      
+      <div style="margin-top: 25px; background-color: #EEF2F6; padding: 15px; border-radius: 8px; border: 1.5px dashed #CBD5E1; font-size: 12.5px; text-align: center;">
+        "Users no longer need emails, messages, or calls to find out where their request stands. <strong>Everything is visible at a glance.</strong>"
+      </div>
+    </div>
+    
+    <div class="footer">
+      <span class="tagline">Request Anything. Track Everything. Understand Nothing.</span>
+      <span class="page-number">07</span>
+    </div>
+  </div>
+
+
+  <!-- ==================== PAGE 8 ==================== -->
+  <div class="page">
+    <div class="header">
+      <span>Section 07: Unified Approval Experience</span>
+      <span class="doc-title">Smart Spend Request</span>
+    </div>
+    
+    <div class="content">
+      <h2>One-Click Unified Approvals</h2>
+      <p class="lead">
+        Managers review and approve requests through a simplified, mobile-first dashboard showing crucial spend and budget allocation details.
+      </p>
+
+      <table class="layout-table" style="margin-top: 20px;">
+        <tr>
+          <!-- Manager Dashboard Mock (Left) -->
+          <td style="width: 55%; padding-right: 4%;">
+            <div style="border: 2px solid #E2E8F0; border-radius: 12px; background-color: #FFFFFF; padding: 22px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #F1F5F9; padding-bottom: 10px; margin-bottom: 18px;">
+                <span style="font-family: 'Outfit'; font-weight: 700; font-size: 15px; color: #0F172A;">🔑 Pending Approvals</span>
+                <span class="tag tag-danger" style="font-size: 9px; font-weight: 700;">1 Action Required</span>
+              </div>
+              
+              <div class="card" style="border: 1px solid #DDD6FE; background-color: #FBFBFF; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                  <div>
+                    <div style="font-weight: 700; font-size: 14px; color: #0F172A;">Laptop Request (Dell Latitude)</div>
+                    <div style="font-size: 11px; color: #64748B;">Requested by: John Doe (Engineering)</div>
+                  </div>
+                  <div style="font-family: 'Outfit'; font-weight: 800; font-size: 18px; color: #4F46E5;">₹85,000</div>
+                </div>
+                
+                <div style="background-color: #D1FAE5; border-radius: 6px; padding: 8px 12px; margin-bottom: 15px; display: flex; align-items: center;">
+                  <span style="font-size: 14px; margin-right: 8px;">✓</span>
+                  <span style="font-size: 11.5px; font-weight: 600; color: #065F46;">Budget Available in "Hardware FY26"</span>
+                </div>
+                
+                <div style="display: flex; justify-content: flex-end;">
+                  <span class="btn btn-outline" style="margin-right: 8px; font-size: 11.5px; padding: 6px 12px;">Reject</span>
+                  <span class="btn btn-primary" style="background-color: #10B981; font-size: 11.5px; padding: 6px 12px;">Approve Request</span>
+                </div>
+              </div>
+            </div>
+          </td>
+          
+          <!-- Key Features (Right) -->
+          <td style="width: 42%; vertical-align: middle;">
+            <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">
+              Approval Platform Highlights
+            </div>
+            
+            <div class="card card-primary" style="padding: 15px; margin-bottom: 12px;">
+              <h3 style="font-size: 13.5px; color: #4F46E5;">📱 Mobile-First Design</h3>
+              <p style="font-size: 11.5px; margin-bottom: 0; color: #475569;">
+                Managers receive instant WhatsApp or email notifications with a magic link to approve in one tap directly from their mobile browser.
+              </p>
+            </div>
+            
+            <div class="card card-primary" style="padding: 15px; margin-bottom: 12px;">
+              <h3 style="font-size: 13.5px; color: #4F46E5;">⚡ One-Click Actions</h3>
+              <p style="font-size: 11.5px; margin-bottom: 0; color: #475569;">
+                No complicated logins or ERP navigation. The interface focuses purely on context: Who, What, Cost, and Budget.
+              </p>
+            </div>
+            
+            <div class="card card-primary" style="padding: 15px; margin-bottom: 0;">
+              <h3 style="font-size: 13.5px; color: #4F46E5;">📊 Unified Inbox</h3>
+              <p style="font-size: 11.5px; margin-bottom: 0; color: #475569;">
+                Consolidates multiple ERP approvals (POs, PRs, contracts) into a single, clean workspace.
+              </p>
+            </div>
+          </td>
+        </tr>
+      </table>
+      
+      <div style="margin-top: 20px; font-size: 12.5px; line-height: 1.5; color: #475569; border-left: 3px solid #818CF8; padding-left: 15px;">
+        <strong>Manager Value:</strong> Decisions are backed by budget metrics. Instead of wondering, <i>"Do we have budget for this?"</i>, the system validates funding automatically, reducing manager review time from days to minutes.
+      </div>
+    </div>
+    
+    <div class="footer">
+      <span class="tagline">Request Anything. Track Everything. Understand Nothing.</span>
+      <span class="page-number">08</span>
+    </div>
+  </div>
+
+
+  <!-- ==================== PAGE 9 ==================== -->
+  <div class="page">
+    <div class="header">
+      <span>Section 08: Contract Request Transparency</span>
+      <span class="doc-title">Smart Spend Request</span>
+    </div>
+    
+    <div class="content">
+      <h2>Transparency in Sourcing &amp; Contracts</h2>
+      <p class="lead">
+        When requests require contract sourcing, users track procurement progress in real-time, removing the typical lack of visibility during vendor bidding.
+      </p>
+
+      <table class="layout-table" style="margin-top: 25px;">
+        <tr>
+          <!-- Bidding Status Mockup (Left) -->
+          <td style="width: 58%; padding-right: 4%;">
+            <div style="border: 2px solid #E2E8F0; border-radius: 12px; background-color: #FFFFFF; padding: 22px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #F1F5F9; padding-bottom: 10px; margin-bottom: 15px;">
+                <div>
+                  <div style="font-family: 'Outfit'; font-weight: 700; font-size: 15px; color: #0F172A;">Developer Workstations</div>
+                  <div style="font-size: 11px; color: #64748B;">Sourcing Contract Request</div>
+                </div>
+                <span class="tag tag-warning" style="font-size: 9px; font-weight: 700;">Vendor Sourcing</span>
+              </div>
+              
+              <div style="background-color: #FEF3C7; border-radius: 6px; padding: 10px 14px; margin-bottom: 18px;">
+                <div style="font-weight: 700; font-size: 12.5px; color: #92400E; margin-bottom: 2px;">Sourcing In Progress</div>
+                <div style="font-size: 11px; color: #B45309;">The procurement team is currently collecting quotes for this item category.</div>
+              </div>
+              
+              <table style="width: 100%; font-size: 12px; margin-bottom: 15px;">
+                <tr>
+                  <td style="padding: 6px 0; color: #64748B; font-weight: 600; width: 150px;">Assigned Buyer:</td>
+                  <td style="padding: 6px 0; color: #1E293B; font-weight: 700;">Arun Kumar (Senior Buyer)</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #64748B; font-weight: 600;">Active Sourcing:</td>
+                  <td style="padding: 6px 0; color: #1E293B; font-weight: 700;">RFQ sent to 3 preferred vendors</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #64748B; font-weight: 600;">Bids Received:</td>
+                  <td style="padding: 6px 0; color: #10B981; font-weight: 700;">2 Bids Submitted (Dell, HP)</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #64748B; font-weight: 600;">Expected Completion:</td>
+                  <td style="padding: 6px 0; color: #4F46E5; font-weight: 700;">2 Days (Target: 26-Jun-2026)</td>
+                </tr>
+              </table>
+              
+              <!-- Progress indicator bar -->
+              <div style="width: 100%; height: 6px; background-color: #E2E8F0; border-radius: 10px; overflow: hidden; margin-top: 15px;">
+                <div style="width: 66%; height: 100%; background-color: #F59E0B; border-radius: 10px;"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 9.5px; color: #64748B; margin-top: 6px;">
+                <span>RFQ Sent</span>
+                <span>Bids Opened</span>
+                <span>Contract Signed</span>
+              </div>
+            </div>
+          </td>
+          
+          <!-- Explanation (Right) -->
+          <td style="width: 38%; vertical-align: middle;">
+            <div class="card card-primary" style="padding: 18px; margin-bottom: 0;">
+              <h3 style="color: #4F46E5;">🏢 Sourcing Visibility</h3>
+              <p style="font-size: 12px; line-height: 1.5; margin-bottom: 0; color: #475569;">
+                In typical ERP systems, users don't know what happens after a PR is created if a contract is missing. This dashboard exposes backend Odoo RFQ activities, allowing users to track progress without access to backend modules.
+              </p>
+            </div>
+          </td>
+        </tr>
+      </table>
+      
+      <div style="margin-top: 25px; border-left: 4px solid #F59E0B; padding-left: 15px; font-size: 12.5px; color: #475569;">
+        <strong>Strategic Value:</strong> Empowers users with information, dramatically reducing administrative overhead and inbound status questions to the procurement helpdesk.
+      </div>
+    </div>
+    
+    <div class="footer">
+      <span class="tagline">Request Anything. Track Everything. Understand Nothing.</span>
+      <span class="page-number">09</span>
+    </div>
+  </div>
+
+
+  <!-- ==================== PAGE 10 ==================== -->
+  <div class="page">
+    <div class="header">
+      <span>Section 09: Technology Architecture</span>
+      <span class="doc-title">Smart Spend Request</span>
+    </div>
+    
+    <div class="content">
+      <h2>Technology Architecture</h2>
+      <p class="lead">
+        Our multi-tier architecture links a modern Next.js client interface with a Django orchestrator, using Odoo's native XML-RPC APIs to manage compliance and data sync.
+      </p>
+
+      <div class="diagram-container" style="margin-top: 15px; margin-bottom: 15px;">
+        <!-- SVG diagram for Technology Architecture Stack -->
+        <svg width="100%" height="320" viewBox="0 0 700 320" style="background-color: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0; padding: 10px;">
+          <!-- 1. Frontend Client Layer -->
+          <rect x="200" y="10" width="300" height="45" rx="8" fill="#0F172A" stroke="#334155" stroke-width="2" />
+          <text x="350" y="32" font-family="'Outfit', sans-serif" font-weight="700" font-size="12" fill="#FFFFFF" text-anchor="middle">USER PORTAL LAYER (Next.js)</text>
+          <text x="350" y="44" font-family="'Inter'" font-size="8.5" fill="#94A3B8" text-anchor="middle">Modern Web Interface • Mobile Responsive • One-Click Approvals</text>
+
+          <!-- Down Arrow 1 -->
+          <path d="M 350 55 L 350 80" stroke="#4F46E5" stroke-width="2" fill="none" marker-end="url(#flow-arrow)" />
+
+          <!-- 2. Django API & Orchestrator Layer -->
+          <rect x="150" y="80" width="400" height="90" rx="8" fill="#EEF2F6" stroke="#4F46E5" stroke-width="2" />
+          <text x="350" y="100" font-family="'Outfit', sans-serif" font-weight="700" font-size="13" fill="#4F46E5" text-anchor="middle">BUSINESS LOGIC GATEWAY (Django)</text>
+          
+          <!-- Inner engines (nested cards) -->
+          <rect x="165" y="112" width="110" height="45" rx="4" fill="#FFFFFF" stroke="#CBD5E1" />
+          <text x="220" y="128" font-family="'Outfit'" font-weight="700" font-size="8.5" fill="#334155" text-anchor="middle">Workflow Engine</text>
+          <text x="220" y="142" font-family="'Inter'" font-size="7" fill="#64748B" text-anchor="middle">P2P Step Routing</text>
+
+          <rect x="295" y="112" width="110" height="45" rx="4" fill="#FFFFFF" stroke="#CBD5E1" />
+          <text x="350" y="128" font-family="'Outfit'" font-weight="700" font-size="8.5" fill="#334155" text-anchor="middle">Approval Router</text>
+          <text x="350" y="142" font-family="'Inter'" font-size="7" fill="#64748B" text-anchor="middle">Budget &amp; Org Checks</text>
+
+          <rect x="425" y="112" width="110" height="45" rx="4" fill="#FFFFFF" stroke="#CBD5E1" />
+          <text x="480" y="128" font-family="'Outfit'" font-weight="700" font-size="8.5" fill="#334155" text-anchor="middle">Alerts Service</text>
+          <text x="480" y="142" font-family="'Inter'" font-size="7" fill="#64748B" text-anchor="middle">WhatsApp / Mail Alerts</text>
+
+          <!-- Down Arrow 2 -->
+          <path d="M 350 170 L 350 195" stroke="#4F46E5" stroke-width="2" fill="none" marker-end="url(#flow-arrow)" />
+
+          <!-- 3. Integration API Layer -->
+          <rect x="220" y="195" width="260" height="35" rx="6" fill="#F8FAFC" stroke="#94A3B8" stroke-dasharray="4,4" />
+          <text x="350" y="216" font-family="'Outfit', sans-serif" font-weight="700" font-size="10.5" fill="#64748B" text-anchor="middle">Odoo Integration Layer (XML-RPC / JSON-RPC)</text>
+
+          <!-- Down Arrow 3 -->
+          <path d="M 350 230 L 350 250" stroke="#64748B" stroke-width="1.5" fill="none" marker-end="url(#flow-arrow)" />
+
+          <!-- 4. ERP Database Layer (Odoo backend) -->
+          <rect x="100" y="250" width="500" height="55" rx="8" fill="#F5F3FF" stroke="#818CF8" stroke-width="2" />
+          <text x="350" y="270" font-family="'Outfit', sans-serif" font-weight="700" font-size="12" fill="#4F46E5" text-anchor="middle">ENTERPRISE ERP CORE (Odoo ERP)</text>
+          
+          <text x="180" y="292" font-family="'Inter'" font-size="8.5" font-weight="600" fill="#64748B" text-anchor="middle">📦 Purchase</text>
+          <text x="290" y="292" font-family="'Inter'" font-size="8.5" font-weight="600" fill="#64748B" text-anchor="middle">🚚 Inventory</text>
+          <text x="400" y="292" font-family="'Inter'" font-size="8.5" font-weight="600" fill="#64748B" text-anchor="middle">💳 Accounting</text>
+          <text x="510" y="292" font-family="'Inter'" font-size="8.5" font-weight="600" fill="#64748B" text-anchor="middle">👥 Vendors</text>
+        </svg>
+      </div>
+      
+      <table class="layout-table" style="margin-top: 10px;">
+        <tr>
+          <td style="width: 48%; padding-right: 4%;">
+            <div style="font-size: 11.5px; line-height: 1.5; color: #475569;">
+              <strong>Seamless Frontend:</strong> Next.js delivers a responsive client dashboard. It manages active states, renders interactive forms, and enables instant page transitions.
+            </div>
+          </td>
+          <td style="width: 48%;">
+            <div style="font-size: 11.5px; line-height: 1.5; color: #475569;">
+              <strong>ERP Integrity:</strong> All data resides securely in the Odoo database. The Django engine triggers standard Odoo processes via XML-RPC APIs, ensuring data consistency and security.
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    
+    <div class="footer">
+      <span class="tagline">Request Anything. Track Everything. Understand Nothing.</span>
+      <span class="page-number">10</span>
+    </div>
+  </div>
+
+
+  <!-- ==================== PAGE 11 ==================== -->
+  <div class="page">
+    <div class="header">
+      <span>Section 10: Product Roadmap</span>
+      <span class="doc-title">Smart Spend Request</span>
+    </div>
+    
+    <div class="content">
+      <h2>AI-Accelerated Product Roadmap</h2>
+      <p class="lead">
+        A highly compressed 3-month implementation timeline made possible by using modern AI tools for rapid prototyping, code generation, and direct API integration.
+      </p>
+
+      <table class="layout-table" style="margin-top: 25px;">
+        <tr>
+          <!-- Phase 1 Card -->
+          <td style="width: 31%; padding-right: 3%;">
+            <div class="card card-primary" style="height: 340px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+              <div>
+                <span class="tag tag-info" style="margin-bottom: 10px; display: inline-block;">Phase 1</span>
+                <h3 style="font-size: 14.5px; margin-top: 5px; color: #4F46E5; margin-bottom: 4px;">Portal Foundation</h3>
+                <div style="font-size: 11px; font-weight: 700; color: #64748B; margin-bottom: 12px;">Month 1 (Weeks 1-4)</div>
+                
+                <ul style="padding-left: 15px; margin-bottom: 0;">
+                  <li style="font-size: 11px; margin-bottom: 6px;">Next.js "Need Something" Portal</li>
+                  <li style="font-size: 11px; margin-bottom: 6px;">Real-time timeline tracking</li>
+                  <li style="font-size: 11px; margin-bottom: 6px;">Budget-check automation</li>
+                  <li style="font-size: 11px; margin-bottom: 6px;">Unified manager approvals</li>
+                  <li style="font-size: 11px; margin-bottom: 6px;">WhatsApp/Email status alerts</li>
+                </ul>
+              </div>
+              
+              <div style="font-size: 9px; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: -0.01em;">
+                🎯 Objective: Core Flow MVP
+              </div>
+            </div>
+          </td>
+          
+          <!-- Phase 2 Card -->
+          <td style="width: 31%; padding-right: 3%;">
+            <div class="card" style="height: 340px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; border-color: #818CF8; background-color: #EEF2F6;">
+              <div>
+                <span class="tag tag-success" style="margin-bottom: 10px; display: inline-block;">Phase 2</span>
+                <h3 style="font-size: 14.5px; margin-top: 5px; color: #0F172A; margin-bottom: 4px;">Copilot Integration</h3>
+                <div style="font-size: 11px; font-weight: 700; color: #64748B; margin-bottom: 12px;">Month 2 (Weeks 5-8)</div>
+                
+                <ul style="padding-left: 15px; margin-bottom: 0;">
+                  <li style="font-size: 11px; margin-bottom: 6px;">NLP Request Sourcing API</li>
+                  <li style="font-size: 11px; margin-bottom: 6px;">AI vendor suggestion engine</li>
+                  <li style="font-size: 11px; margin-bottom: 6px;">Interactive Spend Analytics</li>
+                  <li style="font-size: 11px; margin-bottom: 6px;">Automatic duplicate request check</li>
+                  <li style="font-size: 11px; margin-bottom: 6px;">Contract renewal alerts</li>
+                </ul>
+              </div>
+              
+              <div style="font-size: 9px; color: #4F46E5; font-weight: 700; text-transform: uppercase; letter-spacing: -0.01em;">
+                🚀 Objective: Intelligence Layer
+              </div>
+            </div>
+          </td>
+          
+          <!-- Phase 3 Card -->
+          <td style="width: 31%;">
+            <div class="card" style="height: 340px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; border-color: #CBD5E1;">
+              <div>
+                <span class="tag tag-warning" style="margin-bottom: 10px; display: inline-block;">Phase 3</span>
+                <h3 style="font-size: 14.5px; margin-top: 5px; color: #0F172A; margin-bottom: 4px;">Predictive Spend</h3>
+                <div style="font-size: 11px; font-weight: 700; color: #64748B; margin-bottom: 12px;">Month 3 (Weeks 9-12)</div>
+                
+                <ul style="padding-left: 15px; margin-bottom: 0;">
+                  <li style="font-size: 11px; margin-bottom: 6px;">Predictive demand forecasting</li>
+                  <li style="font-size: 11px; margin-bottom: 6px;">Vendor risk profiling &amp; metrics</li>
+                  <li style="font-size: 11px; margin-bottom: 6px;">Auto compliance audits</li>
+                  <li style="font-size: 11px; margin-bottom: 6px;">Multi-branch spend consolidation</li>
+                  <li style="font-size: 11px; margin-bottom: 6px;">SaaS subscription auto-audit</li>
+                </ul>
+              </div>
+              
+              <div style="font-size: 9px; color: #92400E; font-weight: 700; text-transform: uppercase; letter-spacing: -0.01em;">
+                🌐 Objective: Scale &amp; Audit
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+      
+      <div style="border-top: 1.5px solid #F1F5F9; padding-top: 15px; margin-top: 20px; font-size: 12px; color: #475569; text-align: center; line-height: 1.5;">
+        <strong>Development Strategy:</strong> This timeline assumes product development using AI tools (LLM assistants for codebase scaffolding, API mappings, and boilerplate generation), compressing traditional delivery cycles by over 50%.
+      </div>
+    </div>
+    
+    <div class="footer">
+      <span class="tagline">Request Anything. Track Everything. Understand Nothing.</span>
+      <span class="page-number">11</span>
+    </div>
+  </div>
+
+
+  <!-- ==================== PAGE 12 ==================== -->
+  <div class="page page-dark">
+    <div class="header header-dark">
+      <span>Section 11: Business Benefits</span>
+      <span class="doc-title">Smart Spend Request</span>
+    </div>
+    
+    <div class="content" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+      <div>
+        <h2 style="color: #FFFFFF; border-left-color: #818CF8; margin-bottom: 25px;">Business Benefits &amp; Impact</h2>
+        
+        <table class="layout-table" style="width: 100%; border-collapse: separate; border-spacing: 12px; margin-top: -12px; margin-left: -12px;">
+          <tr>
+            <td style="width: 50%;">
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 15px;">
+                <span style="font-size: 18px; display: block; margin-bottom: 8px;">⚡ 70% Clicks Reduction</span>
+                <span style="font-size: 11.5px; color: #94A3B8;">Decoupling the requisition form from dense ERP pages lowers data inputs, saving employee time.</span>
+              </div>
+            </td>
+            <td style="width: 50%;">
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 15px;">
+                <span style="font-size: 18px; display: block; margin-bottom: 8px;">🚀 Faster Approvals</span>
+                <span style="font-size: 11.5px; color: #94A3B8;">One-tap approvals with automated budget checks reduce request-to-PO delays from days to minutes.</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 15px;">
+                <span style="font-size: 18px; display: block; margin-bottom: 8px;">📈 High User Adoption</span>
+                <span style="font-size: 11.5px; color: #94A3B8;">A clean interface resembling modern web stores guarantees high adoption rates.</span>
+              </div>
+            </td>
+            <td>
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 15px;">
+                <span style="font-size: 18px; display: block; margin-bottom: 8px;">🎓 Zero Training Cost</span>
+                <span style="font-size: 11.5px; color: #94A3B8;">Eliminating ERP training programs saves money, resources, and IT support workloads.</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 15px;">
+                <span style="font-size: 18px; display: block; margin-bottom: 8px;">👁️ Complete Visibility</span>
+                <span style="font-size: 11.5px; color: #94A3B8;">End-to-end request pipelines and delivery tracking eliminate black holes, saving support time.</span>
+              </div>
+            </td>
+            <td>
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 15px;">
+                <span style="font-size: 18px; display: block; margin-bottom: 8px;">🌐 Mobile-First Ready</span>
+                <span style="font-size: 11.5px; color: #94A3B8;">Accessible anywhere, anytime, allowing managers and users to act on the go.</span>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      
+      <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px; text-align: center;">
+        <span style="font-family: 'Outfit'; font-size: 22px; font-weight: 700; color: #818CF8; display: block; margin-bottom: 5px;">
+          "Request Anything. Track Everything. Understand Nothing."
+        </span>
+        <span style="font-size: 12px; color: #64748B; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;">
+          Smart Spend Request Platform • 2026 Strategy Proposal
+        </span>
+      </div>
+    </div>
+    
+    <div class="footer footer-dark">
+      <span class="tagline">Smart Spend Request Platform Proposal</span>
+      <span class="page-number">12</span>
+    </div>
+  </div>
+
+</body>
+</html>
