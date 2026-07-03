@@ -1,0 +1,198 @@
+# Smart Spend Request Platform: Usability & Workflow Guide
+
+This document presents a detailed breakdown of the proposed **Smart Spend Request Platform**, highlighting how it simplifies, automates, and abstracts the complex Procure-to-Pay (P2P) workflows currently running in the Odoo 15 ERP. It serves as a manager-ready guide to explain the project's value proposition, user-centered design, and backend governance.
+
+---
+
+## 1. Executive Summary: The Usability Vision
+
+Traditional ERP platforms force employees to navigate dense menus, select obscure cost center codes, and manually cross-reference rate contracts. The **Smart Spend Request Platform** is built on a simple philosophy: **"Request Anything. Track Everything. Understand Nothing [of the ERP complexity]."**
+
+By decoupling the user interface from Odoo 15 and inserting an **AI-driven Orchestration Layer**, we deliver a consumer-like purchasing experience for corporate requesters while maintaining strict ERP backend compliance and procurement governance.
+
+---
+
+## 2. Current Odoo 15 P2P Pain Points
+
+In the existing Odoo 15 customization:
+1. **Form Complexity**: Initiators must select Company, Bill-To, Ship-To, Department, Expense Type (CapEx/OpEx), Category, Purchase Plan, and Purchase Type, before entering product details.
+2. **Contract Ambiguity**: Requesters do not know if a product has an active Rate Contract (`product.tender.line`), leading to confusion on pricing and suppliers.
+3. **Manual Sourcing Operations**: If no contract exists, a manual "Need for Contract" approval is raised. Buyers must be assigned manually, and quote comparison is handled externally or via dense forms.
+4. **Approval Delays**: Managers are forced to review complex product request pages containing ERP-centric fields rather than clean decision summaries.
+5. **Tracking Black Hole**: Requesters have no visibility into sourcing, legal vetting, or PO confirmation stages, generating high administrative follow-up overhead.
+
+---
+
+## 3. The 3-Swimlane Process Architecture
+
+The table below outlines how the Smart Spend Request Platform distributes complexity across the user portal, the AI orchestration gateway, and the Odoo ERP backend.
+
+| User Interface (Next.js) | AI Orchestration Layer (Django API) | Odoo ERP Backend (Core Compliance) |
+| :--- | :--- | :--- |
+| **Simple Raw Text Input**: User enters what they need in natural language. | **NLP Extraction**: Parses text to resolve product category, quantity, target price, and department. | **Master Data Check**: Validates user permissions, active vendors, and products. |
+| **1-Click Actions**: Requesters approve budget alternatives or respond to RFIs. | **Smart Routing**: Identifies budget availability, active contracts, and approval rules. | **Budget Reservation**: Deducts `amount_used` on request, and releases on rejection/cancellation. |
+| **Timeline Tracker**: Displays simple, courier-style milestones (e.g., "Sourcing"). | **Event Aggregator**: Syncs and maps complex ERP transitions to user-friendly states. | **Sourcing Slices**: Houses the actual RFQ, bidding, and contract signing workflows. |
+| **Manager Dashboard**: Displays summarized decision cards (Yes/No approvals). | **Hierarchy Resolution**: Compiles the approval chain based on delegation of authority (DOA). | **Auto-PO & Accounting**: Automates PO generation, GRN matching, and accounting audits. |
+
+---
+
+## 4. Workflow Diagrams (Mermaid)
+
+### Diagram 1: End-to-End Smart Request Master Flow
+This master chart outlines the entire lifecycle, showing the decision path when an active Rate Contract exists versus when the system automatically falls back to Odoo contract sourcing.
+
+```mermaid
+flowchart TD
+    User([Requester]) -->|1. Submit Request| Portal[Smart Spend Portal]
+    Portal -->|2. NLP Parsing and Extraction| Engine{AI Orchestration}
+    Engine -->|Validate| Budget{Budget Check}
+    
+    Budget -->|Exceeded| Transfer["Budget Alternative / Transfer Suggestion"]
+    Budget -->|Available| Matrix{Resolve Approvals}
+    
+    Matrix -->|Manager Approved| Contract{Rate Contract Active?}
+    
+    Contract -->|Yes: Direct Fast Path| PO["Auto-Create & Confirm PO"]
+    Contract -->|No: Sourcing Fallback| CR[Create Contract Request]
+    
+    CR -->|Workload Auto-Assign| Buyer[Assign SCM Buyer]
+    Buyer -->|Select Method| Sourcing{Sourcing Method}
+    Sourcing -->|Multi-Vendor| RFQ[Portal RFQ Compare]
+    Sourcing -->|Single-Vendor| Neg[Direct Negotiation]
+    Sourcing -->|Strategic Item| Bid[Reverse Bidding Auction]
+    
+    RFQ -->|Submit Quotes| Quotes[Vendor Quotes]
+    Neg -->|Submit Quotes| Quotes
+    Bid -->|Submit Quotes| Quotes
+    Quotes -->|Auto-Comparison| ApproveContract[Approve Sourcing Contract]
+    ApproveContract -->|Create Rate Contract| PO
+    
+    PO -->|Auto-Trigger| GRN[ERP Goods Receipt]
+    GRN -->|Three-Way Matching| Invoice[Invoice Capture & Audit]
+    Invoice -->|Auto-Schedule| Pay[ERP Final Payment]
+    
+    classDef portal fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px;
+    classDef backend fill:#F1F5F9,stroke:#64748B,stroke-width:1.5px;
+    classDef success fill:#D1FAE5,stroke:#10B981,stroke-width:2px;
+    classDef warning fill:#FEF3C7,stroke:#D97706,stroke-width:2px;
+    
+    class User,Portal,Transfer portal;
+    class Engine,Budget,Matrix,Contract,Sourcing,Quotes warning;
+    class PO,GRN,Invoice,Pay success;
+    class CR,Buyer,RFQ,Neg,Bid,ApproveContract backend;
+```
+
+---
+
+### Diagram 2: Intelligent Request Initiation (NLP Engine)
+This workflow details how the system interprets free-form text input to construct structured purchase requests behind the scenes.
+
+```mermaid
+flowchart TD
+    UserInput["User Inputs Raw Text:<br/>'I need 10 Dell Latitude laptops under INR 70k each for the Bangalore office'"] --> NLP[AI NLP Parser]
+    NLP --> Category["Extract Category:<br/>IT Hardware & Laptops"]
+    NLP --> Item["Extract Item details:<br/>Dell Latitude"]
+    NLP --> Qty["Extract Qty:<br/>10 units"]
+    NLP --> Price["Extract Target Price:<br/>INR 70,000 / unit"]
+    NLP --> CostCenter["Extract Cost Center:<br/>Bangalore Branch"]
+    
+    Category --> AutoMatch[System Queries Odoo Database]
+    Item --> AutoMatch
+    Qty --> AutoMatch
+    Price --> AutoMatch
+    CostCenter --> AutoMatch
+    AutoMatch --> MatchCheck{Contract Exist?}
+    MatchCheck -->|Yes| PreFill[Pre-fill PR with Vendor, Price, Contract ID]
+    MatchCheck -->|No| FlagNew[Mark as New Sourcing Category]
+```
+
+---
+
+### Diagram 3: Smart Budget Validation & Alternative Routing
+Instead of rejecting a requisition immediately when budget limits are breached, the platform suggests constructive alternative actions to keep the request moving.
+
+```mermaid
+flowchart TD
+    Start[PR Submitted] --> CostCenter["Identify Department & Cost Center"]
+    CostCenter --> FetchBudget[Fetch Budget Balance from Odoo]
+    FetchBudget --> Check{"Request Amount <= Available Budget?"}
+    
+    Check -->|Yes| Reserve[Reserve Budget & Proceed to Approval]
+    
+    Check -->|No| SuggestAlternatives{Check Alternatives}
+    SuggestAlternatives -->|Alternative Category| AltCat[Suggest Related Budget Head with Surplus]
+    SuggestAlternatives -->|Transfer Needed| AltTrans[Initiate Budget Transfer Request from Parent Department]
+    SuggestAlternatives -->|Emergency Purchase| AltEmerg[Route to CFO for Exception Approval]
+```
+
+---
+
+### Diagram 4: Sourcing Slices & SCM Fallback (No Rate Contract)
+When no contract is active, the request triggers Odoo contract sourcing. This workflow outlines buyer workload assignment, bidding methods, and Rate Contract creation.
+
+```mermaid
+flowchart TD
+    Start[No Active Contract Detected] --> NeedApprove[Need-for-Contract Approval Workflow]
+    NeedApprove --> CreateCR[Auto-Create Contract Request in Odoo]
+    CreateCR --> WorkloadEngine{Query SCM Buyers Workloads}
+    WorkloadEngine --> AssignBuyer[Assign Buyer with Least Active Tasks]
+    
+    AssignBuyer --> SelectMethod{Select Sourcing Method}
+    SelectMethod -->|Option 1: Multi-RFQ| RFQ[Send RFQs to Preferred Vendors]
+    SelectMethod -->|Option 2: Negotiation| Neg[Direct Price Negotiation with Single Vendor]
+    SelectMethod -->|Option 3: Reverse Bidding| Bid[Open Live Reverse Auction on Vendor Portal]
+    
+    RFQ --> PortalSubmit[Vendors Submit Bids on Portal]
+    Neg --> PortalSubmit
+    Bid --> PortalSubmit
+    PortalSubmit --> AutoCompare["Auto-Comparison Dashboard & Scorecard"]
+    AutoCompare --> SelectBest[System Recommends Lowest Bid / Best Vendor]
+    SelectBest --> SCMApprove["SCM Approval & Optional Legal Vetting"]
+    SCMApprove --> CreateRC["Create & Sign new Rate Contract"]
+    CreateRC --> TriggerPO[Auto-Trigger Purchase Order for Original PR]
+```
+
+---
+
+### Diagram 5: Simplified User Request Tracking vs. Odoo Backend
+This chart contrasts the user's high-level courier-style tracking view with the dense, multi-stage transaction workflows happening in the background.
+
+```mermaid
+flowchart TD
+    subgraph PortalView["What the User Sees (Simple UI Timeline)"]
+        U1[Request Submitted] --> U2["Budget & Manager Approved"]
+        U2 --> U3[Sourcing In Progress]
+        U3 --> U4[Purchase Order Created]
+        U4 --> U5[Delivered]
+    end
+
+    subgraph BackendView["What Actually Happens (Abstracted ERP Execution)"]
+        B1["NLP Parsing & Budget Head Resolution"] --> B2[Hierarchical Amount-Banded Approval Routing]
+        B2 --> B3["Contract Request Created & SCM Buyer Assigned"]
+        B3 --> B4["Multi-RFQ Sourcing & Vendor Portal Bid Comparison"]
+        B4 --> B5["Legal Vetting & Rate Contract Creation"]
+        B5 --> B6["PO Generated, Confirmed, & Sent via EDI/Email"]
+        B6 --> B7["Warehouse Goods Receipt (GRN) & 3-Way Invoice Match"]
+    end
+
+    U1 -.-> B1
+    U1 -.-> B2
+    U3 -.-> B3
+    U3 -.-> B4
+    U3 -.-> B5
+    U4 -.-> B6
+    U5 -.-> B7
+```
+
+---
+
+## 5. Feature-by-Feature Comparison Matrix
+
+| Feature | Existing Odoo 15 P2P Flow | Proposed Smart Spend Request Platform |
+| :--- | :--- | :--- |
+| **Requisition Entry** | Multi-page form requiring complex ERP configuration inputs (Expense Type, Cost Centers, Purchase Plans). | A single search-style box. Requester types a description or writes in free text. NLP auto-extracts parameters. |
+| **Rate Contract Check** | User must manually find valid contract lines or risk creating an uncontracted PR. | Automated matching engine. Checks active Rate Contracts in real-time, auto-attaching vendor & prices. |
+| **Budget Enforcement** | Hard block or silent warning at submit time. If blocked, users must restart. | Real-time budget validation. Suggests related accounts or initiates a budget transfer on the fly. |
+| **Manager Approvals** | Requires logging into the ERP backend and auditing dense requisition tables. | Unified Approvals Dashboard. Managers see summary cards with budget status, ETA, and a 1-tap Approve button. |
+| **SCM Sourcing (CR)** | Manual buyer assignment, external negotiations, and manual comparison of multiple Excel quotes. | Auto-assignment based on category and buyer workload. Vendor portal bidding with automatic bid scorecards. |
+| **Tracking Timeline** | Inquirers must search through emails, check picking lines, or call procurement to get a status update. | Courier-style tracking timeline. Pulls live milestones from Odoo (Sourcing -> PO -> GRN -> Paid). |
