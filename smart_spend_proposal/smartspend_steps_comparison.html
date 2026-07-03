@@ -1122,80 +1122,111 @@
     </p>
 
     <div class="diagram-container">
-      <svg width="100%" height="240" viewBox="0 0 740 280" style="background-color: #F8FAFC;">
-        <!-- Subgraph Background: Portal View -->
-        <rect x="10" y="10" width="720" height="75" rx="6" fill="#EEF2F6" stroke="#4F46E5" stroke-width="1" stroke-dasharray="3 3" />
-        <text x="20" y="24" font-family="'Outfit', sans-serif" font-weight="700" font-size="9.5" fill="#4F46E5">What the User Sees (Simple UI Timeline)</text>
-
-        <!-- Portal Nodes -->
-        <rect x="20" y="40" width="110" height="30" rx="4" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5" />
-        <text x="75" y="58" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Request Submitted</text>
-
-        <line x1="130" y1="55" x2="160" y2="55" stroke="#4F46E5" stroke-width="1.5" />
-
-        <rect x="160" y="40" width="110" height="30" rx="4" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5" />
-        <text x="215" y="58" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Budget/Mgr Approved</text>
-
-        <line x1="270" y1="55" x2="300" y2="55" stroke="#4F46E5" stroke-width="1.5" />
-
-        <rect x="300" y="40" width="110" height="30" rx="4" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5" />
-        <text x="355" y="58" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Sourcing In Progress</text>
-
-        <line x1="410" y1="55" x2="440" y2="55" stroke="#4F46E5" stroke-width="1.5" />
-
-        <rect x="440" y="40" width="110" height="30" rx="4" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5" />
-        <text x="495" y="58" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Purchase Order Created</text>
-
-        <line x1="550" y1="55" x2="580" y2="55" stroke="#4F46E5" stroke-width="1.5" />
-
-        <rect x="580" y="40" width="130" height="30" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
-        <text x="645" y="58" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#065F46" text-anchor="middle">Delivered</text>
-
-        <!-- Dashed Separator -->
-        <line x1="10" y1="95" x2="730" y2="95" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="5 5" />
-
-        <!-- Subgraph Background: Backend View -->
-        <rect x="10" y="105" width="720" height="165" rx="6" fill="#F8FAFC" stroke="#64748B" stroke-width="1" stroke-dasharray="3 3" />
-        <text x="20" y="118" font-family="'Outfit', sans-serif" font-weight="700" font-size="9.5" fill="#64748B">What Actually Happens (Abstracted ERP Execution)</text>
+      <svg width="100%" height="450" viewBox="0 0 740 450" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px;">
+        <!-- Left Side: Backend View (Odoo ERP) -->
+        <rect x="15" y="15" width="345" height="420" rx="8" fill="#FFFFFF" stroke="#64748B" stroke-width="1" stroke-dasharray="3 3" />
+        <text x="25" y="30" font-family="'Outfit', sans-serif" font-weight="700" font-size="9.5" fill="#64748B">What Actually Happens (Abstracted ERP Execution)</text>
 
         <!-- Backend Nodes -->
-        <rect x="20" y="130" width="110" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1" />
-        <text x="75" y="148" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">NLP &amp; Budget Resolution</text>
+        <g transform="translate(30, 45)">
+          <rect x="0" y="0" width="315" height="35" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1.2" />
+          <text x="157" y="21" font-family="'Inter'" font-size="8" font-weight="700" fill="#334155" text-anchor="middle">NLP Parsing and Budget Head Resolution</text>
+        </g>
+        
+        <g transform="translate(30, 95)">
+          <rect x="0" y="0" width="315" height="35" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1.2" />
+          <text x="157" y="21" font-family="'Inter'" font-size="8" font-weight="700" fill="#334155" text-anchor="middle">Hierarchical Amount-Banded Approval Routing</text>
+        </g>
 
-        <rect x="160" y="130" width="110" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1" />
-        <text x="215" y="148" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">Hierarchical DOA Routing</text>
+        <g transform="translate(30, 145)">
+          <rect x="0" y="0" width="315" height="35" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1.2" />
+          <text x="157" y="21" font-family="'Inter'" font-size="8" font-weight="700" fill="#334155" text-anchor="middle">Contract Request Created and SCM Buyer Assigned</text>
+        </g>
 
-        <rect x="300" y="130" width="110" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1" />
-        <text x="355" y="148" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">CR &amp; Buyer Assigned</text>
+        <g transform="translate(30, 195)">
+          <rect x="0" y="0" width="315" height="35" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1.2" />
+          <text x="157" y="21" font-family="'Inter'" font-size="8" font-weight="700" fill="#334155" text-anchor="middle">Multi-RFQ Sourcing and Vendor Portal Bid Comparison</text>
+        </g>
 
-        <rect x="300" y="175" width="110" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1" />
-        <text x="355" y="193" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">RFQ Portal Compare</text>
+        <g transform="translate(30, 245)">
+          <rect x="0" y="0" width="315" height="35" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1.2" />
+          <text x="157" y="21" font-family="'Inter'" font-size="8" font-weight="700" fill="#334155" text-anchor="middle">Legal Vetting and Rate Contract Creation</text>
+        </g>
 
-        <rect x="300" y="220" width="110" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1" />
-        <text x="355" y="238" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">Rate Contract Sign</text>
+        <g transform="translate(30, 295)">
+          <rect x="0" y="0" width="315" height="35" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1.2" />
+          <text x="157" y="21" font-family="'Inter'" font-size="8" font-weight="700" fill="#334155" text-anchor="middle">PO Generated, Confirmed, and Sent via EDI/Email</text>
+        </g>
 
-        <rect x="440" y="130" width="110" height="30" rx="4" fill="#F3F4F6" stroke="#64748B" stroke-width="1" />
-        <text x="495" y="148" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">PO confirm &amp; EDI</text>
+        <g transform="translate(30, 345)">
+          <rect x="0" y="0" width="315" height="35" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1.2" />
+          <text x="157" y="21" font-family="'Inter'" font-size="8" font-weight="700" fill="#334155" text-anchor="middle">Warehouse Goods Receipt (GRN) and 3-Way Invoice Match</text>
+        </g>
 
-        <rect x="580" y="130" width="130" height="30" rx="4" fill="#EEF2F6" stroke="#64748B" stroke-width="1" />
-        <text x="645" y="148" font-family="'Inter'" font-size="7.5" fill="#475569" text-anchor="middle">GRN &amp; 3-Way Invoice Match</text>
+        <!-- Right Side: Portal View -->
+        <rect x="380" y="15" width="345" height="420" rx="8" fill="#EEF2F6" stroke="#4F46E5" stroke-width="1" stroke-dasharray="3 3" />
+        <text x="390" y="30" font-family="'Outfit', sans-serif" font-weight="700" font-size="9.5" fill="#4F46E5">What the User Sees (Simple UI Timeline)</text>
 
-        <!-- Connecting lines inside backend -->
-        <line x1="130" y1="145" x2="160" y2="145" stroke="#64748B" stroke-width="1" />
-        <line x1="270" y1="145" x2="300" y2="145" stroke="#64748B" stroke-width="1" />
-        <line x1="355" y1="160" x2="355" y2="175" stroke="#64748B" stroke-width="1" />
-        <line x1="355" y1="205" x2="355" y2="220" stroke="#64748B" stroke-width="1" />
-        <path d="M 355 250 L 495 250 L 495 160" fill="none" stroke="#64748B" stroke-width="1" />
-        <line x1="550" y1="145" x2="580" y2="145" stroke="#64748B" stroke-width="1" />
+        <!-- Portal Nodes -->
+        <g transform="translate(395, 45)">
+          <rect x="0" y="0" width="315" height="35" rx="4" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5" />
+          <text x="157" y="21" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Request Submitted</text>
+        </g>
 
-        <!-- Mapping Dotted Lines (Portal to Backend) -->
-        <path d="M 75 70 L 75 130" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
-        <path d="M 75 70 L 215 130" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
-        <path d="M 355 70 L 355 130" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
-        <path d="M 355 160 L 355 175" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
-        <path d="M 355 205 L 355 220" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
-        <path d="M 495 70 L 495 130" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
-        <path d="M 645 70 L 645 130" fill="none" stroke="#64748B" stroke-dasharray="2 2" stroke-width="1.2" />
+        <g transform="translate(395, 115)">
+          <rect x="0" y="0" width="315" height="35" rx="4" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5" />
+          <text x="157" y="21" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Budget and Manager Approved</text>
+        </g>
+
+        <g transform="translate(395, 195)">
+          <rect x="0" y="0" width="315" height="35" rx="4" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5" />
+          <text x="157" y="21" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Sourcing In Progress</text>
+        </g>
+
+        <g transform="translate(395, 295)">
+          <rect x="0" y="0" width="315" height="35" rx="4" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5" />
+          <text x="157" y="21" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#334155" text-anchor="middle">Purchase Order Created</text>
+        </g>
+
+        <g transform="translate(395, 365)">
+          <rect x="0" y="0" width="315" height="35" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" />
+          <text x="157" y="21" font-family="'Inter'" font-size="8.5" font-weight="700" fill="#065F46" text-anchor="middle">Delivered</text>
+        </g>
+
+        <!-- Definitions for Arrowheads -->
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#64748B" />
+          </marker>
+          <marker id="arrow-portal" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#4F46E5" />
+          </marker>
+        </defs>
+
+        <!-- Connector Lines inside Backend -->
+        <path d="M 187.5 80 L 187.5 95" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+        <path d="M 187.5 130 L 187.5 145" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+        <path d="M 187.5 180 L 187.5 195" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+        <path d="M 187.5 230 L 187.5 245" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+        <path d="M 187.5 280 L 187.5 295" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+        <path d="M 187.5 330 L 187.5 345" fill="none" stroke="#64748B" stroke-width="1" marker-end="url(#arrow)" />
+
+        <!-- Connector Lines inside Portal -->
+        <path d="M 552.5 80 L 552.5 115" fill="none" stroke="#4F46E5" stroke-width="1.2" marker-end="url(#arrow-portal)" />
+        <path d="M 552.5 150 L 552.5 195" fill="none" stroke="#4F46E5" stroke-width="1.2" marker-end="url(#arrow-portal)" />
+        <path d="M 552.5 230 L 552.5 295" fill="none" stroke="#4F46E5" stroke-width="1.2" marker-end="url(#arrow-portal)" />
+        <path d="M 552.5 330 L 552.5 365" fill="none" stroke="#4F46E5" stroke-width="1.2" marker-end="url(#arrow-portal)" />
+
+        <!-- Dotted Connector Lines between Portal and Backend -->
+        <path d="M 395 62.5 Q 370 62.5 345 62.5" fill="none" stroke="#64748B" stroke-dasharray="3 3" stroke-width="1" marker-end="url(#arrow)" />
+        <path d="M 395 62.5 Q 370 75 345 112.5" fill="none" stroke="#64748B" stroke-dasharray="3 3" stroke-width="1" marker-end="url(#arrow)" />
+        
+        <path d="M 395 212.5 Q 370 200 345 162.5" fill="none" stroke="#64748B" stroke-dasharray="3 3" stroke-width="1" marker-end="url(#arrow)" />
+        <path d="M 395 212.5 Q 370 212.5 345 212.5" fill="none" stroke="#64748B" stroke-dasharray="3 3" stroke-width="1" marker-end="url(#arrow)" />
+        <path d="M 395 212.5 Q 370 225 345 262.5" fill="none" stroke="#64748B" stroke-dasharray="3 3" stroke-width="1" marker-end="url(#arrow)" />
+        
+        <path d="M 395 312.5 Q 370 312.5 345 312.5" fill="none" stroke="#64748B" stroke-dasharray="3 3" stroke-width="1" marker-end="url(#arrow)" />
+        <path d="M 395 382.5 Q 370 382.5 345 362.5" fill="none" stroke="#64748B" stroke-dasharray="3 3" stroke-width="1" marker-end="url(#arrow)" />
       </svg>
     </div>
 
