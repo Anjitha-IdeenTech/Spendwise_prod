@@ -94,7 +94,7 @@ flowchart TD
     NLP --> Item["Extract Item details:<br/>Dell Latitude"]
     NLP --> Qty["Extract Qty:<br/>10 units"]
     NLP --> Price["Extract Target Price:<br/>INR 70,000 / unit"]
-    NLP --> CostCenter["Extract Cost Center:<br/>Bangalore Branch"]
+    NLP --> CostCenter["Resolve Branches:<br/>Bill To &amp; Ship To (Bangalore)"]
     
     Category --> AutoMatch[System Queries Odoo Database]
     Item --> AutoMatch
