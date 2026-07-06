@@ -27,7 +27,7 @@ In the existing Odoo 15 customization:
 
 The table below outlines how the Smart Spend Request Platform distributes complexity across the user portal, the AI orchestration gateway, and the Odoo ERP backend.
 
-| User Interface (Next.js) | AI Orchestration Layer (Django API) | Odoo ERP Backend (Core Compliance) |
+| User Interface (Next.js Portal) | AI Integration Layer (Odoo Web Controllers / Next.js) | Odoo ERP Backend (Core Compliance & Database) |
 | :--- | :--- | :--- |
 | **Simple Raw Text Input**: User enters what they need in natural language. | **NLP Extraction**: Parses text to resolve product category, quantity, target price, and department. | **Master Data Check**: Validates user permissions, active vendors, and products. |
 | **1-Click Actions**: Requesters approve budget alternatives or respond to RFIs. | **Smart Routing**: Identifies budget availability, active contracts, and approval rules. | **Budget Reservation**: Deducts `amount_used` on request, and releases on rejection/cancellation. |
@@ -196,3 +196,56 @@ flowchart TD
 | **Manager Approvals** | Requires logging into the ERP backend and auditing dense requisition tables. | Unified Approvals Dashboard. Managers see summary cards with budget status, ETA, and a 1-tap Approve button. |
 | **SCM Sourcing (CR)** | Manual buyer assignment, external negotiations, and manual comparison of multiple Excel quotes. | Auto-assignment based on category and buyer workload. Vendor portal bidding with automatic bid scorecards. |
 | **Tracking Timeline** | Inquirers must search through emails, check picking lines, or call procurement to get a status update. | Courier-style tracking timeline. Pulls live milestones from Odoo (Sourcing -> PO -> GRN -> Paid). |
+| **Pending Actions / Tasks** | Tracked via the custom Odoo `pending.actions` model. Users must navigate dense Odoo forms or read daily email digests with links pointing back to Odoo ERP views. | Fully mapped and unified. The Next.js API layer queries Odoo's `pending.actions` database in real-time. Approvers see outstanding tasks as simple cards on the "My Approvals" tab, while requesters track pending details in "My Requests". |
+| **Vendor Onboarding & Sourcing** | Requester manually searches for vendors. If unregistered, the buyer must launch a manual onboarding process (`vendor.intake`) requiring multi-level approvals and manual credentials setup before quotes can be collected. | Automated AI Fetching & Onboarding. The system dynamically queries Odoo's registry. If no match is found, AI fetches external supplier leads, automatically registers a draft vendor profile, and sends a passwordless quote submission link (onboarded on the fly). |
+
+---
+
+## 6. Transition & Management of Legacy Pending Actions
+
+When transitioning from the existing Odoo 15 setup to the new **Smart Spend Request Platform**, managing ongoing approvals and open tasks ("Pending Actions") is critical to avoid business interruption. Because the new platform connects directly to Odoo as its backend, the transition is seamless:
+
+1. **No Data Migration Required (Shared Single Source of Truth)**
+   - The Odoo 15 ERP remains the master transactional database. All existing `pending.actions` records reside securely in Odoo.
+   - The Next.js portal communicates directly with the Odoo API. Therefore, **all active, historical, and draft pending actions from the legacy system are automatically visible** in the new interface on day one without any data migration scripts.
+
+2. **Unified Action Dashboard for Approvers (Odoo Controller & API Integration)**
+   - The system queries the Odoo `pending.actions` model where `status = 'open'` and maps the `approve_users` or `assigned_to` fields to the logged-in user.
+   - These tasks are compiled into a user-friendly card layout in the Next.js UI (**"My Approvals"** dashboard). Approvers perform 1-tap actions directly from the portal, which updates the Odoo record state via direct JSON-RPC/XML-RPC API calls.
+
+3. **Courier-Style Timeline for Requesters**
+   - The platform queries Odoo's status logs and related records to construct the simple tracking timeline (e.g., displaying which manager or SCM buyer currently holds the request).
+   - This hides technical Odoo status codes behind simple milestones.
+
+4. **SLA Notification & Email Routing Alignment**
+   - The existing Odoo daily crons (`send_pending_actions_email` and `_send_pending_actions_email_initiator`) remain active to ensure continuity.
+   - Email templates are updated to point action links directly to the new Next.js portal pages rather than Odoo ERP backend URLs.
+   - We can expand this to support instant WhatsApp/SMS notifications using Odoo webhook endpoints whenever a new `pending.actions` row is created.
+
+---
+
+## 7. AI-Powered Vendor Fetching & Frictionless Onboarding
+
+To maximize user convenience and eliminate the friction of manually searching, inviting, and onboarding new vendors, the platform replaces the legacy, complex Odoo `vendor.intake` workflow with an **AI-Driven Vendor Fetching & On-The-Fly Onboarding** model:
+
+1. **Semantic Category Parsing**
+   - When a requester inputs free text (e.g., *"I need 10 conference room chairs"*), the AI extraction engine identifies the category (e.g., *Office Furniture*).
+   
+2. **AI Vendor Recommendation**
+   - The system first queries Odoo's internal vendor registry (`res.partner`) for existing suppliers with matches under that category, ranking them by geographic proximity, historical SLA performance, and lead times.
+   - If no suitable contract or internal supplier is found, the **AI Sourcing Engine** queries external B2B directories and catalogs (via secure API search integrations) to fetch and score the best external vendor candidates.
+
+3. **Auto-Creation of Draft Partner (On-The-Fly Onboarding)**
+   - When the user selects a recommended external vendor, the system automatically creates a **Draft Partner** in Odoo (`res.partner`) using basic contact details, tax numbers, and email addresses fetched by the AI.
+   - This completely bypasses the legacy manual `vendor.intake` form and its multi-stage prerequisite approval loops.
+
+4. **Passwordless Magic Quote Invitation**
+   - The system auto-generates a secure, token-based link and emails it to the vendor.
+   - The vendor clicks the link to access a lightweight upload page (no registration or passwords required) where they drag-and-drop their quote PDF.
+   
+5. **AI PDF Quote Reader**
+   - The portal's AI reader parses the uploaded quote PDF, automatically extracting item descriptions, quantities, unit prices, tax percentages, and terms.
+   - It populates the corresponding Odoo RFQ lines and runs the composite scorecard comparison against other vendors.
+   
+6. **Promotion to Approved Vendor**
+   - Once the best bid is recommended by the algorithm and the final purchase request is approved, Odoo automatically elevates the Draft Partner to an **Approved Vendor**, finalizing the procurement contract in one seamless flow.

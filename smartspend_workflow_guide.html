@@ -322,6 +322,8 @@
       <a href="#d4" class="nav-item" id="link-d4"><span>4. Sourcing &amp; Contracts</span></a>
       <a href="#d5" class="nav-item" id="link-d5"><span>5. Timeline Abstracting</span></a>
       <a href="#matrix" class="nav-item" id="link-matrix"><span>6. Comparison Matrix</span></a>
+      <a href="#pending-actions" class="nav-item" id="link-pending-actions"><span>7. Legacy Pending Actions</span></a>
+      <a href="#vendor-fetching" class="nav-item" id="link-vendor-fetching"><span>8. AI Vendor Fetching</span></a>
     </nav>
   </aside>
 
@@ -438,8 +440,80 @@
             <td>Inquirers must search through emails, check picking lines, or call procurement to get a status update.</td>
             <td>Courier-style tracking timeline. Pulls live milestones from Odoo (Sourcing -> PO -> GRN -> Paid).</td>
           </tr>
+          <tr>
+            <td><strong>Pending Actions / Tasks</strong></td>
+            <td>Tracked via the custom Odoo <code>pending.actions</code> model. Users must navigate dense Odoo forms or read daily email digests with links pointing back to Odoo ERP views.</td>
+            <td>Fully mapped and unified. The Next.js API layer queries Odoo's <code>pending.actions</code> database in real-time. Approvers see outstanding tasks as simple cards on the "My Approvals" tab, while requesters track pending details in "My Requests".</td>
+          </tr>
+          <tr>
+            <td><strong>Vendor Onboarding &amp; Sourcing</strong></td>
+            <td>Requester manually searches for vendors. If unregistered, the buyer must launch a manual onboarding process (<code>vendor.intake</code>) requiring multi-level approvals and manual credentials setup before quotes can be collected.</td>
+            <td>Automated AI Fetching &amp; Onboarding. The system dynamically queries Odoo's registry. If no match is found, AI fetches external supplier leads, automatically registers a draft vendor profile, and sends a passwordless quote submission link (onboarded on the fly).</td>
+          </tr>
         </tbody>
       </table>
+    </section>
+
+    <!-- Card 7: Pending Actions -->
+    <section class="diagram-card" id="pending-actions">
+      <h2>7. Legacy Pending Actions Transition <span class="badge">Migration Strategy</span></h2>
+      <p class="desc">
+        How active approvals and tasks are seamlessly carried forward into the new user-convenient product.
+      </p>
+      
+      <div style="font-size: 14px; line-height: 1.6; color: var(--text-secondary);">
+        <p>When transitioning from the existing Odoo 15 setup to the new <strong>Smart Spend Request Platform</strong>, managing ongoing approvals and open tasks ("Pending Actions") is critical to avoid business interruption. Because the new platform connects directly to Odoo as its backend, the transition is seamless:</p>
+        
+        <ol style="margin-top: 15px; padding-left: 20px;">
+          <li style="margin-bottom: 12px;">
+            <strong>No Data Migration Required (Shared Single Source of Truth)</strong><br>
+            The Odoo 15 ERP remains the master database. All existing <code>pending.actions</code> records (tracking pending steps for PRs, Tenders, Auto-POs, and Invoice approvals) reside securely in Odoo. The Next.js portal reads/writes directly from/to this database. Existing active tasks are visible on the new UI on day one.
+          </li>
+          <li style="margin-bottom: 12px;">
+            <strong>Unified Action Dashboard for Approvers</strong><br>
+            The Next.js API queries Odoo's <code>pending.actions</code> where <code>status = 'open'</code> and maps them to the logged-in user. Approvers see clean task cards on their dashboard where they can approve/decline in 1-tap, instantly updating Odoo.
+          </li>
+          <li style="margin-bottom: 12px;">
+            <strong>Courier-Style Timeline for Requesters</strong><br>
+            Requesters track their items using a linear timeline mapped directly from Odoo status logs and pending actions, keeping them informed without confusing ERP jargon.
+          </li>
+          <li style="margin-bottom: 12px;">
+            <strong>SLA &amp; Notification Delivery</strong><br>
+            Daily email digest cron jobs remain active, but email templates are updated to point to the new Next.js portal instead of legacy Odoo URLs. The platform can also support instant notification channels (e.g. WhatsApp, Slack, Teams) using Odoo webhooks.
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Card 8: AI Vendor Fetching & Onboarding -->
+    <section class="diagram-card" id="vendor-fetching">
+      <h2>8. AI-Powered Vendor Fetching &amp; Onboarding <span class="badge">Frictionless Sourcing</span></h2>
+      <p class="desc">
+        How the system eliminates manual onboarding and invites external suppliers automatically.
+      </p>
+      
+      <div style="font-size: 14px; line-height: 1.6; color: var(--text-secondary);">
+        <p>To eliminate the high-friction, manual vendor onboarding workflow (<code>vendor.intake</code>), the platform integrates intelligent search and frictionless auto-onboarding:</p>
+        
+        <ol style="margin-top: 15px; padding-left: 20px;">
+          <li style="margin-bottom: 12px;">
+            <strong>AI Sourcing Queries</strong><br>
+            The system uses NLP to match a request's items to categories. If no matching supplier exists internally in Odoo (<code>res.partner</code>), the AI searches external B2B registries and catalogs to fetch recommended supplier contact details.
+          </li>
+          <li style="margin-bottom: 12px;">
+            <strong>Frictionless Auto-Onboarding</strong><br>
+            When a recommended external vendor is chosen, the system creates a <strong>Draft Partner</strong> in Odoo automatically, extracting tax, name, and email details without requiring a manual registration process.
+          </li>
+          <li style="margin-bottom: 12px;">
+            <strong>Passwordless Magic Quote Link</strong><br>
+            A tokenized quote invitation link is emailed to the supplier. Clicking this link grants password-free, mobile-friendly access to a simple file upload page.
+          </li>
+          <li style="margin-bottom: 12px;">
+            <strong>AI OCR Quote Parser</strong><br>
+            The vendor drops their quote PDF into the portal. The AI quote reader automatically extracts lines, prices, and taxes, instantly populating the Odoo RFQ and updating the bid comparison matrix.
+          </li>
+        </ol>
+      </div>
     </section>
   </main>
 
