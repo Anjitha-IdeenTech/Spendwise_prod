@@ -483,6 +483,9 @@
           </li>
         </ol>
       </div>
+      <div class="mermaid-container" style="margin-top: 20px;">
+        <div class="mermaid" id="chart-d6">Loading diagram...</div>
+      </div>
     </section>
 
     <!-- Card 8: AI Vendor Fetching & Onboarding -->
@@ -632,7 +635,42 @@
     U3 -.-> B4
     U3 -.-> B5
     U4 -.-> B6
-    U5 -.-> B7`
+    U5 -.-> B7`,
+
+      'chart-d6': `flowchart TD
+    subgraph Odoo ["Odoo ERP Backend (Single Source of Truth)"]
+        DB[(Odoo Database)]
+        LegacyPA["Legacy pending.actions<br/>(Open approvals and tasks)"]
+        DB === LegacyPA
+        Cron["SLA Cron Jobs<br/>(Daily Reminder)"]
+        Cron -->|Update links to Portal| Notification["Email / SMS / WhatsApp"]
+    end
+
+    subgraph Portal ["Smart Spend Portal (Next.js UI)"]
+        API[Direct RPC API Layer]
+        Dashboard["'My Approvals' Dashboard<br/>(Approver Card View)"]
+    end
+
+    subgraph Approver ["Approver Action Loop"]
+        Action{"1-Tap Action"}
+    end
+
+    %% Sync and Actions
+    LegacyPA -->|1. Real-Time Query| API
+    API -->|2. Populate Dashboard| Dashboard
+    Dashboard -->|3. View Actionable Tasks| Action
+    Action -->|4. Approve / Reject| API
+    API -->|5. Write Back (Real-time update)| LegacyPA
+    
+    Notification -->|6. Link redirects to portal| Dashboard
+
+    classDef portal fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px;
+    classDef backend fill:#F1F5F9,stroke:#64748B,stroke-width:1.5px;
+    classDef success fill:#D1FAE5,stroke:#10B981,stroke-width:2px;
+    
+    class API,Dashboard portal;
+    class DB,LegacyPA,Cron,Notification backend;
+    class Action success;`
     };
 
     // Load initial source code into DOM

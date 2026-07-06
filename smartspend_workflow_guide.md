@@ -222,6 +222,46 @@ When transitioning from the existing Odoo 15 setup to the new **Smart Spend Requ
    - Email templates are updated to point action links directly to the new Next.js portal pages rather than Odoo ERP backend URLs.
    - We can expand this to support instant WhatsApp/SMS notifications using Odoo webhook endpoints whenever a new `pending.actions` row is created.
 
+### Diagram 6: Legacy Pending Actions Sync and Management Workflow
+This diagram illustrates how legacy approvals are synced in real-time, how action links redirect to the portal, and how Odoo processes write-backs.
+
+```mermaid
+flowchart TD
+    subgraph Odoo ["Odoo ERP Backend (Single Source of Truth)"]
+        DB[(Odoo Database)]
+        LegacyPA["Legacy pending.actions<br/>(Open approvals and tasks)"]
+        DB === LegacyPA
+        Cron["SLA Cron Jobs<br/>(Daily Reminder)"]
+        Cron -->|Update links to Portal| Notification["Email / SMS / WhatsApp"]
+    end
+
+    subgraph Portal ["Smart Spend Portal (Next.js UI)"]
+        API[Direct RPC API Layer]
+        Dashboard["'My Approvals' Dashboard<br/>(Approver Card View)"]
+    end
+
+    subgraph Approver ["Approver Action Loop"]
+        Action{"1-Tap Action"}
+    end
+
+    %% Sync and Actions
+    LegacyPA -->|1. Real-Time Query| API
+    API -->|2. Populate Dashboard| Dashboard
+    Dashboard -->|3. View Actionable Tasks| Action
+    Action -->|4. Approve / Reject| API
+    API -->|5. Write Back (Real-time update)| LegacyPA
+    
+    Notification -->|6. Link redirects to portal| Dashboard
+
+    classDef portal fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px;
+    classDef backend fill:#F1F5F9,stroke:#64748B,stroke-width:1.5px;
+    classDef success fill:#D1FAE5,stroke:#10B981,stroke-width:2px;
+    
+    class API,Dashboard portal;
+    class DB,LegacyPA,Cron,Notification backend;
+    class Action success;
+```
+
 ---
 
 ## 7. AI-Powered Vendor Fetching & Frictionless Onboarding
