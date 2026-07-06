@@ -249,7 +249,7 @@ flowchart TD
     API -->|2. Populate Dashboard| Dashboard
     Dashboard -->|3. View Actionable Tasks| Action
     Action -->|4. Approve / Reject| API
-    API -->|5. Write Back (Real-time update)| LegacyPA
+    API -->|5. Write Back - Real-time update| LegacyPA
     
     Notification -->|6. Link redirects to portal| Dashboard
 
