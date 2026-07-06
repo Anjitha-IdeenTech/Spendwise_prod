@@ -52,7 +52,7 @@ flowchart TD
     
     Matrix -->|Manager Approved| Contract{Rate Contract Active?}
     
-    Contract -->|Yes: Direct Fast Path| PO["Auto-Create & Confirm PO"]
+    Contract -->|Yes: Direct Fast Path| PO["Auto-Create and Confirm PO"]
     Contract -->|No: Sourcing Fallback| CR[Create Contract Request]
     
     CR -->|Workload Auto-Assign| Buyer[Assign SCM Buyer]
@@ -68,7 +68,7 @@ flowchart TD
     ApproveContract -->|Create Rate Contract| PO
     
     PO -->|Auto-Trigger| GRN[ERP Goods Receipt]
-    GRN -->|Three-Way Matching| Invoice[Invoice Capture & Audit]
+    GRN -->|Three-Way Matching| Invoice[Invoice Capture and Audit]
     Invoice -->|Auto-Schedule| Pay[ERP Final Payment]
     
     classDef portal fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px;
@@ -90,11 +90,11 @@ This workflow details how the system interprets free-form text input to construc
 ```mermaid
 flowchart TD
     UserInput["User Inputs Raw Text:<br/>'I need 10 Dell Latitude laptops under INR 70k each for the Bangalore office'"] --> NLP[AI NLP Parser]
-    NLP --> Category["Extract Category:<br/>IT Hardware & Laptops"]
+    NLP --> Category["Extract Category:<br/>IT Hardware and Laptops"]
     NLP --> Item["Extract Item details:<br/>Dell Latitude"]
     NLP --> Qty["Extract Qty:<br/>10 units"]
     NLP --> Price["Extract Target Price:<br/>INR 70,000 / unit"]
-    NLP --> CostCenter["Resolve Branches:<br/>Bill To &amp; Ship To (Bangalore)"]
+    NLP --> CostCenter["Resolve Branches:<br/>Bill To and Ship To (Bangalore)"]
     
     Category --> AutoMatch[System Queries Odoo Database]
     Item --> AutoMatch
