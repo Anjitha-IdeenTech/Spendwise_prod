@@ -228,6 +228,34 @@ export default function App() {
       setVoiceState('done');
     }, 1500);
   };
+  const parseSpeechText = (text: string) => {
+    const lower = text.toLowerCase();
+    let name = "Dell Latitude 5440 Laptops";
+    let qty = 20;
+    let price = 70000;
+    let loc = "Bangalore Office";
+    let cat = "IT Hardware & Laptops";
+
+    if (lower.includes("chair") || lower.includes("furniture") || lower.includes("chairs")) {
+      name = "Ergonomic Office Chairs";
+      qty = 10;
+      price = 8000;
+      loc = "Kochi Head Office";
+      cat = "Office Furniture";
+    } else if (lower.includes("server") || lower.includes("rack") || lower.includes("racks")) {
+      name = "19-Inch Data Server Racks";
+      qty = 2;
+      price = 120000;
+      loc = "Mumbai Office";
+      cat = "Datacenter Equipment";
+    }
+    
+    setEditProductName(name);
+    setEditProductQty(qty);
+    setEditTargetPrice(price);
+    setEditLocation(loc);
+    setEditExpenseCategory(cat);
+  };
 
   const handleSsoLogin = (role: string) => {
     setUserRole(role);
@@ -246,39 +274,11 @@ export default function App() {
     }
   };
 
-  // Conversational submission
   const handleChatSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!chatInputText.trim()) return;
 
-    // Simulate AI NLP parsing of the message
-    const text = chatInputText.toLowerCase();
-    let name = "Dell Latitude Laptops";
-    let qty = 20;
-    let price = 70000;
-    let loc = "Bangalore Office";
-    let cat = "IT Hardware & Laptops";
-
-    if (text.includes("chairs") || text.includes("chair")) {
-      name = "Ergonomic Office Chairs";
-      qty = 10;
-      price = 8000;
-      loc = "Kochi Head Office";
-      cat = "Office Furniture";
-    } else if (text.includes("server") || text.includes("rack")) {
-      name = "19-Inch Data Server Racks";
-      qty = 2;
-      price = 120000;
-      loc = "Mumbai Office";
-      cat = "Datacenter Equipment";
-    }
-
-    setEditProductName(name);
-    setEditProductQty(qty);
-    setEditTargetPrice(price);
-    setEditLocation(loc);
-    setEditExpenseCategory(cat);
-
+    parseSpeechText(chatInputText);
     setChatInputText("");
     setActiveScene(4); // Go to extraction form
   };
@@ -1210,7 +1210,10 @@ export default function App() {
                               Record Again
                             </button>
                             <button 
-                              onClick={() => setActiveScene(4)}
+                              onClick={() => {
+                                parseSpeechText(speechText);
+                                setActiveScene(4);
+                              }}
                               className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1"
                             >
                               <span>Continue</span>
