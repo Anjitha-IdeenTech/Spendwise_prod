@@ -56,6 +56,30 @@ interface RequestItem {
   attachments: string[];
 }
 
+const getContractPrice = (name: string) => {
+  const lower = name.toLowerCase();
+  if (lower.includes("laptop") || lower.includes("dell")) return 70000;
+  if (lower.includes("chair") || lower.includes("furniture")) return 8000;
+  if (lower.includes("server") || lower.includes("rack")) return 120000;
+  return 50000;
+};
+
+const getNegotiationBaselinePrice = (name: string) => {
+  const lower = name.toLowerCase();
+  if (lower.includes("laptop") || lower.includes("dell")) return 72000;
+  if (lower.includes("chair") || lower.includes("furniture")) return 9000;
+  if (lower.includes("server") || lower.includes("rack")) return 130000;
+  return 60000;
+};
+
+const getNegotiatedTargetPrice = (name: string) => {
+  const lower = name.toLowerCase();
+  if (lower.includes("laptop") || lower.includes("dell")) return 67000;
+  if (lower.includes("chair") || lower.includes("furniture")) return 7800;
+  if (lower.includes("server") || lower.includes("rack")) return 115000;
+  return 55000;
+};
+
 export default function App() {
   // Global States
   const [activeScene, setActiveScene] = useState<number>(1);
@@ -242,7 +266,7 @@ export default function App() {
 
   const simulateProcessing = () => {
     setTimeout(() => {
-      setSpeechText("I need twenty Dell Latitude laptops under seventy thousand rupees each for the Bangalore office.");
+      setSpeechText("I need twenty Dell Latitude laptops for the Bangalore office.");
       setVoiceState('done');
     }, 1500);
   };
@@ -250,20 +274,20 @@ export default function App() {
     const lower = text.toLowerCase();
     let name = "Dell Latitude 5440 Laptops";
     let qty = 20;
-    let price = 70000;
+    let price = 0;
     let loc = "Bangalore Office";
     let cat = "IT Hardware & Laptops";
 
     if (lower.includes("chair") || lower.includes("furniture") || lower.includes("chairs")) {
       name = "Ergonomic Office Chairs";
       qty = 10;
-      price = 8000;
+      price = 0;
       loc = "Kochi Head Office";
       cat = "Office Furniture";
     } else if (lower.includes("server") || lower.includes("rack") || lower.includes("racks")) {
       name = "19-Inch Data Server Racks";
       qty = 2;
-      price = 120000;
+      price = 0;
       loc = "Mumbai Office";
       cat = "Datacenter Equipment";
     }
@@ -314,8 +338,8 @@ export default function App() {
       id: newId,
       productName: editProductName,
       productQty: editProductQty,
-      targetPrice: editTargetPrice,
-      totalCost: editProductQty * editTargetPrice,
+      targetPrice: 0,
+      totalCost: 0,
       location: editLocation,
       expenseCategory: editExpenseCategory,
       status: budgetBreach ? "Needs Clarification" : "Pending Approval",
@@ -467,26 +491,29 @@ export default function App() {
   // AI Negotiation Simulation Step-by-Step
   const triggerNextNegotiationStep = () => {
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const baseline = getNegotiationBaselinePrice(currentRequest.productName);
+    const negotiated = getNegotiatedTargetPrice(currentRequest.productName);
+    const midPoint = Math.round((baseline + negotiated) / 2);
     
     if (negotiationStep === 0) {
       setChatLog([
-        { sender: 'ai', text: `Hello Primus Sales Bot. We are looking to place an immediate order for ${currentRequest.productQty} units of ${currentRequest.productName}. Your bid is listed at ₹${(currentRequest.targetPrice + 2000).toLocaleString()}. Under our standard volume discount agreement, we request a final target rate of ₹${(currentRequest.targetPrice - 5000).toLocaleString()} with Net-30 payment terms.`, timestamp }
+        { sender: 'ai', text: `Hello Primus Sales Bot. We are looking to place an immediate order for ${currentRequest.productQty} units of ${currentRequest.productName}. Your bid is listed at ₹${baseline.toLocaleString()}. Under our standard volume discount agreement, we request a final target rate of ₹${negotiated.toLocaleString()} with Net-30 payment terms.`, timestamp }
       ]);
       setNegotiationStep(1);
     } else if (negotiationStep === 1) {
       setChatLog(prev => [
         ...prev,
-        { sender: 'vendor', text: `Thank you for reaching out. We appreciate the volume request. However, due to recent supply chain margins, our bottom-line rate is ₹${(currentRequest.targetPrice - 2000).toLocaleString()} for ${currentRequest.productQty} units. Alternatively, we can offer ₹${(currentRequest.targetPrice - 4000).toLocaleString()} if the company clears invoices on Net-7 terms instead.`, timestamp }
+        { sender: 'vendor', text: `Thank you for reaching out. We appreciate the volume request. However, due to recent supply chain margins, our bottom-line rate is ₹${baseline.toLocaleString()} for ${currentRequest.productQty} units. Alternatively, we can offer ₹${midPoint.toLocaleString()} if the company clears invoices on Net-7 terms instead.`, timestamp }
       ]);
       setNegotiationStep(2);
     } else if (negotiationStep === 2) {
       setChatLog(prev => [
         ...prev,
-        { sender: 'ai', text: `Our corporate accounting policy mandates Net-30 payment terms for compliance audit lines. Can we lock in at ₹${(currentRequest.targetPrice - 3000).toLocaleString()} per unit under Net-30 terms, and in return, we will mark Primus as our Primary Supplier for Q3 hardware renewals?`, timestamp }
+        { sender: 'ai', text: `Our corporate accounting policy mandates Net-30 payment terms for compliance audit lines. Can we lock in at ₹${negotiated.toLocaleString()} per unit under Net-30 terms, and in return, we will mark Primus as our Primary Supplier for Q3 hardware renewals?`, timestamp }
       ]);
       setNegotiationStep(3);
     } else if (negotiationStep === 3) {
-      const finalPrice = currentRequest.targetPrice - 3000;
+      const finalPrice = negotiated;
       setChatLog(prev => [
         ...prev,
         { sender: 'vendor', text: `We accept the volume proposal. Final price locked at ₹${finalPrice.toLocaleString()} per unit, Net-30 payment terms, including 3 Years On-Site Support. Registering the Rate Contract in Odoo.`, timestamp }
@@ -501,7 +528,7 @@ export default function App() {
           return {
             ...r,
             vendor: "Primus Technologies",
-            savings: (r.targetPrice - finalPrice) * r.productQty,
+            savings: (baseline - finalPrice) * r.productQty,
             history: [...r.history, { title: "AI Negotiated", date: "Now", desc: `Final Price: ₹${finalPrice.toLocaleString()} (Net-30)` }]
           };
         }
@@ -513,7 +540,7 @@ export default function App() {
   const resetNegotiation = () => {
     setChatLog([]);
     setNegotiationStep(0);
-    setCurrentOfferPrice(currentRequest.targetPrice);
+    setCurrentOfferPrice(getNegotiationBaselinePrice(currentRequest.productName));
     setNegotiationComplete(false);
   };
 
@@ -946,7 +973,7 @@ export default function App() {
                       {/* Suggested Prompts */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6">
                         <div 
-                          onClick={() => setChatInputText("I need 20 Dell Latitude laptops under 70k each for the Bangalore office")}
+                          onClick={() => setChatInputText("I need 20 Dell Latitude laptops for the Bangalore office")}
                           className="cursor-pointer p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all text-left text-xs space-y-1"
                         >
                           <span className="font-semibold text-slate-200 block">💻 Request IT Hardware</span>
@@ -1285,12 +1312,9 @@ export default function App() {
                         </div>
                         <div>
                           <label className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Target Price (per unit)</label>
-                          <input 
-                            type="number" 
-                            value={editTargetPrice}
-                            onChange={(e) => setEditTargetPrice(Number(e.target.value))}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-indigo-500"
-                          />
+                          <span className="w-full bg-slate-800/50 border border-slate-750 rounded-lg p-2 text-sm text-indigo-400 block font-semibold">
+                            TBD (Determined Post-Contract / Sourcing)
+                          </span>
                         </div>
                         <div>
                           <label className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Category (Mapped)</label>
@@ -1490,12 +1514,29 @@ export default function App() {
                           </div>
                           <div className="space-y-1">
                             <h3 className="font-outfit font-extrabold text-lg text-emerald-400">Active Rate Contract Mapped</h3>
-                            <p className="text-sm text-slate-300">Found active agreement registered in Odoo for this product category.</p>
+                            <p className="text-sm text-slate-300">
+                              Found active agreement registered in Odoo for this product category: 
+                              <strong> ₹{getContractPrice(currentRequest.productName).toLocaleString()} / unit</strong>. 
+                              Total Allocation: 
+                              <strong> ₹{(currentRequest.productQty * getContractPrice(currentRequest.productName)).toLocaleString()}</strong>.
+                            </p>
                           </div>
                         </div>
                         
                         <div className="flex justify-end space-x-3 pt-2">
                           <button onClick={() => {
+                            const contractRate = getContractPrice(currentRequest.productName);
+                            setRequests(prev => prev.map(r => {
+                              if (r.id === selectedRequestId) {
+                                return {
+                                  ...r,
+                                  targetPrice: contractRate,
+                                  totalCost: r.productQty * contractRate,
+                                  vendor: "Primus Technologies"
+                                };
+                              }
+                              return r;
+                            }));
                             setActiveScene(9);
                           }} className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1">
                             <span>Proceed to Budget Verification</span>
@@ -1585,7 +1626,7 @@ export default function App() {
                                 <span className="text-xs px-2.5 py-0.5 rounded bg-purple-550/20 text-purple-400 border border-purple-500/20 font-bold uppercase">SOURCING FALLBACK</span>
                               </div>
                               <h4 className="font-outfit font-extrabold text-lg text-white">{req.productQty}x {req.productName}</h4>
-                              <p className="text-xs text-slate-450">Estimated Value: <strong>₹{req.totalCost.toLocaleString()}</strong> | Mapped to: {req.expenseCategory}</p>
+                              <p className="text-xs text-slate-450">Estimated Value: <strong>{req.totalCost > 0 ? `₹${req.totalCost.toLocaleString()}` : "TBD (Pending Sourcing Bids)"}</strong> | Mapped to: {req.expenseCategory}</p>
                             </div>
 
                             <div className="flex items-center space-x-3">
@@ -1856,8 +1897,8 @@ export default function App() {
                       <tbody className="text-xs text-slate-300">
                         <tr className="border-b border-slate-800/50">
                           <td className="py-3 px-4 font-semibold">Unit Quote Price</td>
-                          <td className="py-3 px-4 bg-indigo-950/15 font-bold text-white">₹{currentRequest.targetPrice.toLocaleString()}</td>
-                          <td className="py-3 px-4">₹{(currentRequest.targetPrice + 3000).toLocaleString()}</td>
+                          <td className="py-3 px-4 bg-indigo-950/15 font-bold text-white">₹{getNegotiationBaselinePrice(currentRequest.productName).toLocaleString()}</td>
+                          <td className="py-3 px-4">₹{(getNegotiationBaselinePrice(currentRequest.productName) + 3000).toLocaleString()}</td>
                         </tr>
                         <tr className="border-b border-slate-800/50">
                           <td className="py-3 px-4 font-semibold">Warranty Terms</td>
@@ -1913,7 +1954,7 @@ export default function App() {
                     
                     <div className="flex items-center space-x-2">
                       <span className="px-3 py-1 bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/25 rounded-full text-xs font-bold">
-                        Savings: ₹{((currentRequest.targetPrice - currentOfferPrice) * currentRequest.productQty).toLocaleString()} (₹{(currentRequest.targetPrice - currentOfferPrice).toLocaleString()}/unit)
+                        Savings: ₹{((getNegotiationBaselinePrice(currentRequest.productName) - currentOfferPrice) * currentRequest.productQty).toLocaleString()} (₹{(getNegotiationBaselinePrice(currentRequest.productName) - currentOfferPrice).toLocaleString()}/unit)
                       </span>
                       <button 
                         onClick={resetNegotiation}
@@ -1985,7 +2026,7 @@ export default function App() {
                         <div className="space-y-3 text-xs">
                           <div className="flex justify-between">
                             <span className="text-slate-500">Original Bid:</span>
-                            <span className="font-semibold text-slate-350">₹{(currentRequest.targetPrice + 2000).toLocaleString()} / unit</span>
+                            <span className="font-semibold text-slate-350">₹{getNegotiationBaselinePrice(currentRequest.productName).toLocaleString()} / unit</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-slate-500">Negotiated Rate:</span>
@@ -1993,7 +2034,7 @@ export default function App() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-slate-500">Savings ({currentRequest.productQty} units):</span>
-                            <span className="font-bold text-emerald-400">₹{((currentRequest.targetPrice + 2000 - currentOfferPrice) * currentRequest.productQty).toLocaleString()}</span>
+                            <span className="font-bold text-emerald-400">₹{((getNegotiationBaselinePrice(currentRequest.productName) - currentOfferPrice) * currentRequest.productQty).toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
