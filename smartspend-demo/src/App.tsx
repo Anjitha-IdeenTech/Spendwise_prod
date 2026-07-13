@@ -2061,68 +2061,68 @@ export default function App() {
                 <div className="max-w-2xl mx-auto py-8 animate-fadeIn">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 10: Unified Approval Panel</h2>
-                      <p className="text-xs text-slate-400">Simplifying decision metrics for managers. No complex ERP menus.</p>
+                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Scene 10: Unified Approval Panel</h2>
+                      <p className="text-xs text-textSecondary">Simplifying decision metrics for managers. No complex ERP menus.</p>
                     </div>
                     
-                    <span className="px-3 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/25 rounded-full text-xs font-bold">
+                    <span className="px-3 py-1 bg-accent-approvals/10 text-accent-approvals border border-accent-approvals/20 rounded-full text-xs font-bold font-outfit">
                       Pending Approvals: {requests.filter(r => r.status === 'Pending Approval').length}
                     </span>
                   </div>
                   
                   {requests.filter(r => r.status === 'Pending Approval').length === 0 ? (
-                    <div className="p-8 text-center bg-slate-900 border border-slate-800 rounded-2xl text-slate-450">
-                      <CheckCircle2 className="h-8 w-8 mx-auto text-emerald-400 mb-2" />
-                      <p className="text-sm font-semibold">All caught up!</p>
-                      <p className="text-xs mt-1">No requisitions currently require your approval.</p>
+                    <div className="p-8 text-center bg-surface border border-borderTheme rounded-2xl text-textSecondary shadow-sm">
+                      <CheckCircle2 className="h-8 w-8 mx-auto text-accent-savings mb-2" />
+                      <p className="text-sm font-bold text-textPrimary font-outfit">All caught up!</p>
+                      <p className="text-xs mt-1 text-textSecondary">No requisitions currently require your approval.</p>
                     </div>
                   ) : (
                     <div className="space-y-6">
                       {requests.filter(r => r.status === 'Pending Approval').map(req => (
-                        <div key={req.id} className="p-6 rounded-2xl bg-slate-900 border border-indigo-500/30 shadow-2xl space-y-6">
-                          <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
+                        <div key={req.id} className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm space-y-6">
+                          <div className="flex items-center justify-between border-b border-borderTheme pb-4">
                             <div className="flex items-center space-x-3">
-                              <div className="h-10 w-10 rounded-full bg-slate-850 flex items-center justify-center text-slate-350 font-bold text-sm">AV</div>
+                              <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-textSecondary font-bold text-sm">AV</div>
                               <div>
-                                <p className="text-xs text-slate-500 font-semibold uppercase">Requisition Initiator:</p>
-                                <p className="text-sm font-bold text-white">Anjitha V (IT Ops Specialist)</p>
+                                <p className="text-xs text-textSecondary font-semibold uppercase">Requisition Initiator:</p>
+                                <p className="text-sm font-bold text-textPrimary">Anjitha V (IT Ops Specialist)</p>
                               </div>
                             </div>
-                            <span className="text-xs text-slate-500 font-bold">{req.id}</span>
+                            <span className="text-xs text-textSecondary font-bold">{req.id}</span>
                           </div>
                           
                           <div className="space-y-4">
-                            <h3 className="font-outfit font-extrabold text-white text-lg">{req.productQty}x {req.productName}</h3>
+                            <h3 className="font-outfit font-extrabold text-textPrimary text-lg">{req.productQty}x {req.productName}</h3>
                             
-                            <div className="grid grid-cols-2 gap-4 text-xs">
+                            <div className="grid grid-cols-2 gap-4 text-xs font-outfit">
                               <div>
-                                <span className="text-slate-500 block">Total cost:</span>
-                                <span className="font-bold text-white">₹{req.totalCost.toLocaleString()}</span>
+                                <span className="text-textSecondary block">Total cost:</span>
+                                <span className="font-bold text-textPrimary">₹{req.totalCost.toLocaleString()}</span>
                               </div>
                               <div>
-                                <span className="text-slate-550 block text-emerald-400">Negotiated Savings:</span>
-                                <span className="font-bold text-emerald-400">₹{req.savings.toLocaleString()} Saved</span>
+                                <span className="text-accent-savings block">Negotiated Savings:</span>
+                                <span className="font-bold text-accent-savings">₹{req.savings.toLocaleString()} Saved</span>
                               </div>
                               <div>
-                                <span className="text-slate-550 block">Budget Mapped:</span>
-                                <span className="font-bold text-slate-300">{req.expenseCategory}</span>
+                                <span className="text-textSecondary block">Budget Mapped:</span>
+                                <span className="font-bold text-textPrimary">{req.expenseCategory}</span>
                               </div>
                               <div>
-                                <span className="text-slate-550 block">Vendor Assigned:</span>
-                                <span className="font-bold text-slate-300">{req.vendor}</span>
+                                <span className="text-textSecondary block">Vendor Assigned:</span>
+                                <span className="font-bold text-textPrimary">{req.vendor}</span>
                               </div>
                             </div>
 
                             {/* Manager clarification comments history */}
                             {req.clarificationComments.length > 0 && (
-                              <div className="p-4 bg-slate-850 rounded-xl space-y-2 border border-slate-800 text-xs">
-                                <span className="font-bold text-slate-400 block border-b border-slate-800 pb-1">Clarification Thread</span>
+                              <div className="p-4 bg-secondary rounded-xl space-y-2 border border-borderTheme text-xs">
+                                <span className="font-bold text-textSecondary block border-b border-borderTheme pb-1">Clarification Thread</span>
                                 {req.clarificationComments.map((c, cidx) => (
                                   <p key={cidx} className="mt-1 text-[11px] leading-relaxed">
-                                    <strong className={c.role === 'manager' ? 'text-amber-400' : 'text-indigo-400'}>
+                                    <strong className={c.role === 'manager' ? 'text-accent-approvals' : 'text-accent-budget'}>
                                       {c.role === 'manager' ? 'Manager: ' : 'Anjitha: '}
                                     </strong>
-                                    <span className="text-slate-300">"{c.text}"</span>
+                                    <span className="text-textPrimary">"{c.text}"</span>
                                   </p>
                                 ))}
                               </div>
@@ -2130,12 +2130,12 @@ export default function App() {
                           </div>
 
                           {/* Action Buttons group (Approve, Reject, Request Info) */}
-                          <div className="flex flex-wrap justify-end gap-2 border-t border-slate-800 pt-4">
+                          <div className="flex flex-wrap justify-end gap-2 border-t border-borderTheme pt-4">
                             <button 
                               onClick={() => {
                                 setRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "Rejected", history: [...r.history, { title: "Rejected", date: "Now", desc: "Rejected by Manager" }] } : r));
                               }}
-                              className="px-4 py-2 border border-slate-800 hover:bg-rose-950/20 hover:border-rose-500 text-xs font-semibold rounded-lg text-slate-400 hover:text-rose-400 transition-all"
+                              className="px-4 py-2 border border-borderTheme hover:bg-accent-alerts/10 hover:border-accent-alerts text-xs font-semibold rounded-lg text-textSecondary hover:text-accent-alerts transition-all"
                             >
                               Reject
                             </button>
@@ -2146,14 +2146,14 @@ export default function App() {
                                 setSelectedRequestId(req.id);
                                 setShowManagerQueryBox(true);
                               }}
-                              className="px-4 py-2 border border-slate-800 hover:bg-amber-950/20 hover:border-amber-500 text-xs font-semibold rounded-lg text-slate-400 hover:text-amber-400 transition-all"
+                              className="px-4 py-2 border border-borderTheme hover:bg-accent-approvals/10 hover:border-accent-approvals text-xs font-semibold rounded-lg text-textSecondary hover:text-accent-approvals transition-all"
                             >
                               Request Info
                             </button>
 
                             <button 
                               onClick={() => handleManagerApprove(req.id)}
-                              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1"
+                              className="px-5 py-2.5 bg-accent-savings hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
                             >
                               <Check className="h-4.5 w-4.5" />
                               <span>Approve Request</span>
@@ -2162,20 +2162,20 @@ export default function App() {
 
                           {/* Request Info Dialogue Card */}
                           {showManagerQueryBox && selectedRequestId === req.id && (
-                            <div className="p-4 bg-slate-850 rounded-xl border border-amber-500/30 space-y-3 text-xs animate-fadeIn">
-                              <label className="font-bold text-slate-200 block">Ask Initiator for clarification:</label>
+                            <div className="p-4 bg-secondary rounded-xl border border-accent-approvals/20 space-y-3 text-xs animate-fadeIn">
+                              <label className="font-bold text-textPrimary block">Ask Initiator for clarification:</label>
                               <input 
                                 type="text"
                                 value={managerQueryText}
                                 onChange={(e) => setManagerQueryText(e.target.value)}
                                 placeholder="e.g. Please clarify unit requirements and pricing details..."
-                                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none"
+                                className="w-full bg-surface border border-borderTheme rounded-lg p-2.5 text-textPrimary focus:outline-none focus:border-textPrimary"
                               />
                               <div className="flex justify-end space-x-2">
-                                <button onClick={() => setShowManagerQueryBox(false)} className="px-3 py-1.5 text-slate-400 hover:text-white">Cancel</button>
+                                <button onClick={() => setShowManagerQueryBox(false)} className="px-3 py-1.5 text-textSecondary hover:text-textPrimary transition-all">Cancel</button>
                                 <button 
                                   onClick={() => handleRequestInfoSubmit(req.id)} 
-                                  className="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded"
+                                  className="px-4 py-1.5 bg-accent-approvals hover:opacity-90 text-surface font-bold rounded transition-all shadow-sm"
                                 >
                                   Send Request
                                 </button>
@@ -2194,49 +2194,49 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 11: Request Tracking Milestone</h2>
-                      <p className="text-xs text-slate-400">Amazon-style simple progress tracker hiding deep transactional ERP states.</p>
+                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Scene 11: Request Tracking Milestone</h2>
+                      <p className="text-xs text-textSecondary">Amazon-style simple progress tracker hiding deep transactional ERP states.</p>
                     </div>
                   </div>
                   
-                  <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-8">
+                  <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-8 shadow-sm">
                     <div className="relative flex justify-between items-center max-w-2xl mx-auto py-4">
-                      <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-slate-800 z-0" />
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-emerald-500 z-0" style={{ width: '100%' }} />
+                      <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-borderTheme z-0" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-accent-savings z-0" style={{ width: '100%' }} />
                       
                       <div className="flex flex-col items-center z-10 text-center space-y-2">
-                        <div className="h-8 w-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs">
+                        <div className="h-8 w-8 rounded-full bg-accent-savings text-surface flex items-center justify-center font-bold text-xs">
                           <Check className="h-4 w-4" />
                         </div>
-                        <span className="text-[10px] font-bold text-slate-200">Submitted</span>
+                        <span className="text-[10px] font-bold text-textPrimary font-outfit">Submitted</span>
                       </div>
                       
                       <div className="flex flex-col items-center z-10 text-center space-y-2">
-                        <div className="h-8 w-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs">
+                        <div className="h-8 w-8 rounded-full bg-accent-savings text-surface flex items-center justify-center font-bold text-xs">
                           <Check className="h-4 w-4" />
                         </div>
-                        <span className="text-[10px] font-bold text-slate-200">Sourcing</span>
+                        <span className="text-[10px] font-bold text-textPrimary font-outfit">Sourcing</span>
                       </div>
                       
                       <div className="flex flex-col items-center z-10 text-center space-y-2">
-                        <div className="h-8 w-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs">
+                        <div className="h-8 w-8 rounded-full bg-accent-savings text-surface flex items-center justify-center font-bold text-xs">
                           <Check className="h-4 w-4" />
                         </div>
-                        <span className="text-[10px] font-bold text-slate-200">Approved</span>
+                        <span className="text-[10px] font-bold text-textPrimary font-outfit">Approved</span>
                       </div>
                       
                       <div className="flex flex-col items-center z-10 text-center space-y-2">
-                        <div className="h-8 w-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs">
+                        <div className="h-8 w-8 rounded-full bg-accent-savings text-surface flex items-center justify-center font-bold text-xs">
                           <Check className="h-4 w-4" />
                         </div>
-                        <span className="text-[10px] font-bold text-slate-200">PO Sent</span>
+                        <span className="text-[10px] font-bold text-textPrimary font-outfit">PO Sent</span>
                       </div>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t border-slate-800/60">
+                    <div className="flex justify-end pt-4 border-t border-borderTheme">
                       <button 
                         onClick={() => setActiveScene(12)}
-                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1 shadow-lg"
+                        className="px-5 py-2.5 bg-textPrimary hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
                       >
                         <span>Proceed to Product Receiving</span>
                         <ArrowRight className="h-4 w-4" />
@@ -2251,47 +2251,47 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 12: Product Receiving &amp; Goods Receipt Note</h2>
-                      <p className="text-xs text-slate-400">Simulate warehouse operations. Inspect the delivered items and generate the GRN in Odoo.</p>
+                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Scene 12: Product Receiving &amp; Goods Receipt Note</h2>
+                      <p className="text-xs text-textSecondary">Simulate warehouse operations. Inspect the delivered items and generate the GRN in Odoo.</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-2 p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6">
-                      <div className="flex items-center space-x-3 text-indigo-400">
+                    <div className="md:col-span-2 p-6 rounded-2xl bg-surface border border-borderTheme space-y-6 shadow-sm">
+                      <div className="flex items-center space-x-3 text-accent-budget">
                         <Truck className="h-5 w-5" />
-                        <h3 className="font-outfit text-lg font-bold text-slate-200">Goods Receipt Portal</h3>
+                        <h3 className="font-outfit text-lg font-bold text-textPrimary">Goods Receipt Portal</h3>
                       </div>
 
-                      <div className="space-y-4">
+                      <div className="space-y-4 font-outfit">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Source PO</span>
-                            <span className="text-sm font-semibold text-slate-350 bg-slate-800/50 border border-slate-750 rounded-lg p-2 block">PO-2026-003</span>
+                            <span className="text-xs text-textSecondary font-bold uppercase tracking-wider block mb-1">Source PO</span>
+                            <span className="text-sm font-semibold text-textPrimary bg-secondary border border-borderTheme rounded-lg p-2 block">PO-2026-003</span>
                           </div>
                           <div>
-                            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Vendor</span>
-                            <span className="text-sm font-semibold text-slate-350 bg-slate-800/50 border border-slate-750 rounded-lg p-2 block">{currentRequest.vendor || "Primus Technologies"}</span>
+                            <span className="text-xs text-textSecondary font-bold uppercase tracking-wider block mb-1">Vendor</span>
+                            <span className="text-sm font-semibold text-textPrimary bg-secondary border border-borderTheme rounded-lg p-2 block">{currentRequest.vendor || "Primus Technologies"}</span>
                           </div>
                         </div>
 
                         <div>
-                          <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Product Details</span>
-                          <span className="text-sm font-semibold text-slate-350 bg-slate-800/50 border border-slate-750 rounded-lg p-2 block">{currentRequest.productName}</span>
+                          <span className="text-xs text-textSecondary font-bold uppercase tracking-wider block mb-1">Product Details</span>
+                          <span className="text-sm font-semibold text-textPrimary bg-secondary border border-borderTheme rounded-lg p-2 block">{currentRequest.productName}</span>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Ordered Qty</span>
-                            <span className="text-sm font-semibold text-slate-350 bg-slate-800/50 border border-slate-750 rounded-lg p-2 block">{currentRequest.productQty} units</span>
+                            <span className="text-xs text-textSecondary font-bold uppercase tracking-wider block mb-1">Ordered Qty</span>
+                            <span className="text-sm font-semibold text-textPrimary bg-secondary border border-borderTheme rounded-lg p-2 block">{currentRequest.productQty} units</span>
                           </div>
                           <div>
-                            <label className="text-xs text-indigo-400 font-bold uppercase tracking-wider block mb-1">Delivered Qty</label>
+                            <label className="text-xs text-accent-budget font-bold uppercase tracking-wider block mb-1">Delivered Qty</label>
                             <input 
                               type="number" 
                               value={deliveredQty} 
                               onChange={(e) => setDeliveredQty(Number(e.target.value))}
-                              className="w-full bg-slate-800 border border-indigo-500/50 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-semibold"
+                              className="w-full bg-secondary border border-accent-budget/50 rounded-lg p-2 text-sm text-textPrimary focus:outline-none focus:border-textPrimary font-semibold"
                             />
                           </div>
                         </div>
@@ -2302,20 +2302,20 @@ export default function App() {
                               type="checkbox" 
                               checked={qualityPassed}
                               onChange={(e) => setQualityPassed(e.target.checked)}
-                              className="rounded border-slate-755 text-indigo-600 focus:ring-indigo-500 h-4.5 w-4.5 bg-slate-800"
+                              className="rounded border-borderTheme text-accent-savings focus:ring-accent-savings h-4.5 w-4.5 bg-secondary"
                             />
-                            <span className="text-sm text-slate-300 font-medium">Quality Inspection Approved: Items match specs with no defects</span>
+                            <span className="text-sm text-textSecondary font-medium">Quality Inspection Approved: Items match specs with no defects</span>
                           </label>
                         </div>
                       </div>
 
                       {grnGenerated ? (
-                        <div className="p-4 bg-emerald-950/20 border border-emerald-900/40 rounded-xl space-y-3 animate-fadeIn">
-                          <div className="flex items-start space-x-3 text-emerald-400 text-xs">
-                            <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-400" />
+                        <div className="p-4 bg-accent-savings/10 border border-accent-savings/20 rounded-xl space-y-3 animate-fadeIn shadow-sm">
+                          <div className="flex items-start space-x-3 text-accent-savings text-xs">
+                            <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0" />
                             <div>
-                              <p className="font-bold">Goods Receipt Note (GRN-2026-089) Generated</p>
-                              <p className="mt-1 text-slate-350">Successfully posted to Odoo. Stock levels updated at Bangalore Warehouse. Handing off to Accounts Payable.</p>
+                              <p className="font-bold text-textPrimary">Goods Receipt Note (GRN-2026-089) Generated</p>
+                              <p className="mt-1 text-textSecondary">Successfully posted to Odoo. Stock levels updated at Bangalore Warehouse. Handing off to Accounts Payable.</p>
                             </div>
                           </div>
                           <div className="flex justify-end pt-2">
@@ -2332,7 +2332,7 @@ export default function App() {
                                 }));
                                 setActiveScene(13);
                               }}
-                              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1"
+                              className="px-5 py-2 bg-textPrimary hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
                             >
                               <span>Proceed to 3-Way Match Audit</span>
                               <ArrowRight className="h-4 w-4" />
@@ -2349,7 +2349,7 @@ export default function App() {
                               }
                               setGrnGenerated(true);
                             }}
-                            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1"
+                            className="px-5 py-2.5 bg-accent-savings hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
                           >
                             <span>Validate &amp; Generate GRN</span>
                             <Check className="h-4 w-4" />
@@ -2358,23 +2358,23 @@ export default function App() {
                       )}
                     </div>
 
-                    <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 h-fit">
-                      <div className="flex items-center space-x-2 text-indigo-400">
+                    <div className="p-5 rounded-2xl bg-surface border border-borderTheme space-y-4 h-fit shadow-sm">
+                      <div className="flex items-center space-x-2 text-accent-budget">
                         <Package className="h-4.5 w-4.5" />
-                        <h4 className="font-outfit font-extrabold text-sm text-white">Odoo Warehouse Status</h4>
+                        <h4 className="font-outfit font-extrabold text-sm text-textPrimary">Odoo Warehouse Status</h4>
                       </div>
-                      <div className="space-y-3 text-xs">
+                      <div className="space-y-3 text-xs font-outfit">
                         <div className="flex justify-between">
-                          <span className="text-slate-500">Destination:</span>
-                          <span className="font-semibold text-slate-350">Bangalore Warehouse</span>
+                          <span className="text-textSecondary">Destination:</span>
+                          <span className="font-semibold text-textPrimary">Bangalore Warehouse</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-500">Carrier:</span>
-                          <span className="font-semibold text-slate-350">Blue Dart Express</span>
+                          <span className="text-textSecondary">Carrier:</span>
+                          <span className="font-semibold text-textPrimary">Blue Dart Express</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-500">Waybill Ref:</span>
-                          <span className="font-mono text-indigo-400">AWB-77291024</span>
+                          <span className="text-textSecondary">Waybill Ref:</span>
+                          <span className="font-mono text-accent-budget">AWB-77291024</span>
                         </div>
                       </div>
                     </div>
@@ -2387,96 +2387,96 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 13: Automated 3-Way Match Verification</h2>
-                      <p className="text-xs text-slate-400">Audit and reconcile PO details, Goods Receipt note, and Vendor Invoice side-by-side.</p>
+                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Scene 13: Automated 3-Way Match Verification</h2>
+                      <p className="text-xs text-textSecondary">Audit and reconcile PO details, Goods Receipt note, and Vendor Invoice side-by-side.</p>
                     </div>
                   </div>
 
-                  <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6">
-                    <div className="flex items-center space-x-3 text-indigo-400">
+                  <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-6 shadow-sm">
+                    <div className="flex items-center space-x-3 text-accent-budget">
                       <ShieldCheck className="h-5.5 w-5.5" />
-                      <h3 className="font-outfit text-lg font-bold text-slate-200">Reconciliation Matrix</h3>
+                      <h3 className="font-outfit text-lg font-bold text-textPrimary">Reconciliation Matrix</h3>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-outfit">
                       {/* Column 1: PO */}
-                      <div className="p-4 rounded-xl bg-slate-850 border border-slate-750 space-y-3">
+                      <div className="p-4 rounded-xl bg-secondary border border-borderTheme/70 space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-indigo-400 uppercase">1. Purchase Order</span>
-                          <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold text-[9px]">PO-2026-003</span>
+                          <span className="text-xs font-bold text-accent-budget uppercase">1. Purchase Order</span>
+                          <span className="px-2 py-0.5 rounded bg-accent-savings/10 text-accent-savings font-bold text-[9px] border border-accent-savings/20">PO-2026-003</span>
                         </div>
                         <div className="space-y-2 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Qty Ordered:</span>
-                            <span className="font-semibold text-slate-200">{currentRequest.productQty} units</span>
+                            <span className="text-textSecondary">Qty Ordered:</span>
+                            <span className="font-semibold text-textPrimary">{currentRequest.productQty} units</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Rate:</span>
-                            <span className="font-semibold text-slate-200">₹{currentRequest.targetPrice.toLocaleString()}</span>
+                            <span className="text-textSecondary">Rate:</span>
+                            <span className="font-semibold text-textPrimary">₹{currentRequest.targetPrice.toLocaleString()}</span>
                           </div>
-                          <div className="flex justify-between pt-2 border-t border-slate-800">
-                            <span className="text-slate-400">Total amount:</span>
-                            <span className="font-bold text-slate-200">₹{currentRequest.totalCost.toLocaleString()}</span>
+                          <div className="flex justify-between pt-2 border-t border-borderTheme">
+                            <span className="text-textSecondary">Total amount:</span>
+                            <span className="font-bold text-textPrimary">₹{currentRequest.totalCost.toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Column 2: GRN */}
-                      <div className="p-4 rounded-xl bg-slate-850 border border-slate-750 space-y-3">
+                      <div className="p-4 rounded-xl bg-secondary border border-borderTheme/70 space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-indigo-400 uppercase">2. Goods Receipt</span>
-                          <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold text-[9px]">GRN-2026-089</span>
+                          <span className="text-xs font-bold text-accent-budget uppercase">2. Goods Receipt</span>
+                          <span className="px-2 py-0.5 rounded bg-accent-savings/10 text-accent-savings font-bold text-[9px] border border-accent-savings/20">GRN-2026-089</span>
                         </div>
                         <div className="space-y-2 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Qty Received:</span>
-                            <span className="font-semibold text-slate-200">{deliveredQty} units</span>
+                            <span className="text-textSecondary">Qty Received:</span>
+                            <span className="font-semibold text-textPrimary">{deliveredQty} units</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Quality Check:</span>
-                            <span className="font-bold text-emerald-400">PASSED</span>
+                            <span className="text-textSecondary">Quality Check:</span>
+                            <span className="font-bold text-accent-savings">PASSED</span>
                           </div>
-                          <div className="flex justify-between pt-2 border-t border-slate-800">
-                            <span className="text-slate-400">Stock Status:</span>
-                            <span className="font-bold text-emerald-400">Posted</span>
+                          <div className="flex justify-between pt-2 border-t border-borderTheme">
+                            <span className="text-textSecondary">Stock Status:</span>
+                            <span className="font-bold text-accent-savings">Posted</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Column 3: Invoice */}
-                      <div className="p-4 rounded-xl bg-slate-850 border border-slate-750 space-y-3">
+                      <div className="p-4 rounded-xl bg-secondary border border-borderTheme/70 space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-indigo-400 uppercase">3. Vendor Invoice</span>
-                          <span className="px-2 py-0.5 rounded bg-amber-500/15 text-amber-400 font-bold text-[9px]">BILL-2026-045</span>
+                          <span className="text-xs font-bold text-accent-budget uppercase">3. Vendor Invoice</span>
+                          <span className="px-2 py-0.5 rounded bg-accent-approvals/10 text-accent-approvals font-bold text-[9px] border border-accent-approvals/20">BILL-2026-045</span>
                         </div>
                         <div className="space-y-2 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Qty Billed:</span>
-                            <span className="font-semibold text-slate-200">{currentRequest.productQty} units</span>
+                            <span className="text-textSecondary">Qty Billed:</span>
+                            <span className="font-semibold text-textPrimary">{currentRequest.productQty} units</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Rate Billed:</span>
-                            <span className="font-semibold text-slate-200">₹{currentRequest.targetPrice.toLocaleString()}</span>
+                            <span className="text-textSecondary">Rate Billed:</span>
+                            <span className="font-semibold text-textPrimary">₹{currentRequest.targetPrice.toLocaleString()}</span>
                           </div>
-                          <div className="flex justify-between pt-2 border-t border-slate-800">
-                            <span className="text-slate-400">Total Billed:</span>
-                            <span className="font-bold text-slate-200">₹{currentRequest.totalCost.toLocaleString()}</span>
+                          <div className="flex justify-between pt-2 border-t border-borderTheme">
+                            <span className="text-textSecondary">Total Billed:</span>
+                            <span className="font-bold text-textPrimary">₹{currentRequest.totalCost.toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-5 bg-emerald-950/20 border border-emerald-900/40 rounded-xl flex items-start space-x-3 text-emerald-400 text-xs">
-                      <CheckCircle2 className="h-5.5 w-5.5 flex-shrink-0 mt-0.5 text-emerald-400" />
+                    <div className="p-5 bg-accent-savings/10 border border-accent-savings/20 rounded-xl flex items-start space-x-3 text-accent-savings text-xs shadow-sm">
+                      <CheckCircle2 className="h-5.5 w-5.5 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-bold text-sm">3-Way Match Verification Success</p>
-                        <p className="mt-1 text-slate-350 text-xs">All comparison checks pass. PO quantities, GRN warehouse receipts, and the PDF extracted vendor invoice details match 100%. Ready for general ledger posting.</p>
+                        <p className="font-bold text-sm text-textPrimary font-outfit">3-Way Match Verification Success</p>
+                        <p className="mt-1 text-textSecondary text-xs leading-relaxed">All comparison checks pass. PO quantities, GRN warehouse receipts, and the PDF extracted vendor invoice details match 100%. Ready for general ledger posting.</p>
                       </div>
                     </div>
 
                     {billPosted ? (
-                      <div className="p-4 bg-slate-850 rounded-xl flex justify-between items-center animate-fadeIn text-xs">
-                        <span className="text-slate-400">Vendor Bill successfully posted to accounts payable.</span>
+                      <div className="p-4 bg-secondary border border-borderTheme rounded-xl flex justify-between items-center animate-fadeIn text-xs shadow-sm">
+                        <span className="text-textSecondary">Vendor Bill successfully posted to accounts payable.</span>
                         <button 
                           onClick={() => {
                             setRequests(prev => prev.map(r => {
@@ -2486,11 +2486,11 @@ export default function App() {
                                   history: [...r.history, { title: "Vendor Bill Posted (BILL-2026-045)", date: "Now", desc: `Posted total AP liability of ₹${r.totalCost.toLocaleString()}.` }]
                                 };
                               }
-                              return r;
+                                return r;
                             }));
                             setActiveScene(14);
                           }}
-                          className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1"
+                          className="px-5 py-2 bg-textPrimary hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
                         >
                           <span>Proceed to Payment Execution</span>
                           <ArrowRight className="h-4 w-4" />
@@ -2500,7 +2500,7 @@ export default function App() {
                       <div className="flex justify-end pt-2">
                         <button 
                           onClick={() => setBillPosted(true)}
-                          className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1 shadow-lg"
+                          className="px-5 py-2.5 bg-accent-savings hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
                         >
                           <span>Post Vendor Bill to Ledger</span>
                           <ArrowRight className="h-4 w-4" />
@@ -2516,68 +2516,68 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 14: Payment Disbursement &amp; Reconciliation</h2>
-                      <p className="text-xs text-slate-400">Authorize the cash disbursement and auto-reconcile bank statements in Odoo.</p>
+                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Scene 14: Payment Disbursement &amp; Reconciliation</h2>
+                      <p className="text-xs text-textSecondary">Authorize the cash disbursement and auto-reconcile bank statements in Odoo.</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-2 p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6">
-                      <div className="flex items-center space-x-3 text-indigo-400">
+                    <div className="md:col-span-2 p-6 rounded-2xl bg-surface border border-borderTheme space-y-6 shadow-sm">
+                      <div className="flex items-center space-x-3 text-accent-budget">
                         <CreditCard className="h-5 w-5" />
-                        <h3 className="font-outfit text-lg font-bold text-slate-200">Disbursement Voucher</h3>
+                        <h3 className="font-outfit text-lg font-bold text-textPrimary">Disbursement Voucher</h3>
                       </div>
 
-                      <div className="space-y-4 text-xs">
+                      <div className="space-y-4 text-xs font-outfit">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <span className="text-slate-500 font-bold uppercase tracking-wider block mb-1">Beneficiary Vendor</span>
-                            <span className="text-sm font-semibold text-slate-200 block bg-slate-850 p-2.5 rounded-lg border border-slate-750">{currentRequest.vendor || "Primus Technologies"}</span>
+                            <span className="text-textSecondary font-bold uppercase tracking-wider block mb-1">Beneficiary Vendor</span>
+                            <span className="text-sm font-semibold text-textPrimary block bg-secondary p-2.5 rounded-lg border border-borderTheme">{currentRequest.vendor || "Primus Technologies"}</span>
                           </div>
                           <div>
-                            <span className="text-slate-500 font-bold uppercase tracking-wider block mb-1">Invoice Reference</span>
-                            <span className="text-sm font-semibold text-slate-200 block bg-slate-850 p-2.5 rounded-lg border border-slate-750 font-mono">BILL-2026-045</span>
+                            <span className="text-textSecondary font-bold uppercase tracking-wider block mb-1">Invoice Reference</span>
+                            <span className="text-sm font-semibold text-textPrimary block bg-secondary p-2.5 rounded-lg border border-borderTheme font-mono">BILL-2026-045</span>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <span className="text-slate-500 font-bold uppercase tracking-wider block mb-1">Paying Bank A/c</span>
-                            <span className="text-sm font-semibold text-slate-200 block bg-slate-850 p-2.5 rounded-lg border border-slate-750">HDFC Corporate A/c (*9824)</span>
+                            <span className="text-textSecondary font-bold uppercase tracking-wider block mb-1">Paying Bank A/c</span>
+                            <span className="text-sm font-semibold text-textPrimary block bg-secondary p-2.5 rounded-lg border border-borderTheme">HDFC Corporate A/c (*9824)</span>
                           </div>
                           <div>
-                            <span className="text-slate-500 font-bold uppercase tracking-wider block mb-1">Settlement Amount</span>
-                            <span className="text-sm font-extrabold text-indigo-400 block bg-slate-850 p-2.5 rounded-lg border border-slate-750">₹{currentRequest.totalCost.toLocaleString()}</span>
+                            <span className="text-textSecondary font-bold uppercase tracking-wider block mb-1">Settlement Amount</span>
+                            <span className="text-sm font-extrabold text-accent-budget block bg-secondary p-2.5 rounded-lg border border-borderTheme">₹{currentRequest.totalCost.toLocaleString()}</span>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="text-indigo-400 font-bold uppercase tracking-wider block mb-1">Payment Method</label>
+                            <label className="text-accent-budget font-bold uppercase tracking-wider block mb-1">Payment Method</label>
                             <select 
                               value={paymentMethod}
                               onChange={(e) => setPaymentMethod(e.target.value)}
-                              className="w-full bg-slate-800 border border-slate-750 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500 font-semibold"
+                              className="w-full bg-secondary border border-borderTheme rounded-lg p-2.5 text-textPrimary focus:outline-none focus:border-textPrimary font-semibold"
                             >
-                              <option value="Bank Transfer">Bank Transfer (NEFT/RTGS)</option>
-                              <option value="Corporate Card">Corporate Card</option>
-                              <option value="UPI Pay">UPI Corporate Pay</option>
+                              <option value="Bank Transfer" className="bg-surface text-textPrimary">Bank Transfer (NEFT/RTGS)</option>
+                              <option value="Corporate Card" className="bg-surface text-textPrimary">Corporate Card</option>
+                              <option value="UPI Pay" className="bg-surface text-textPrimary">UPI Corporate Pay</option>
                             </select>
                           </div>
                           <div>
-                            <span className="text-slate-500 font-bold uppercase tracking-wider block mb-1">Value Date</span>
-                            <span className="text-sm font-semibold text-slate-200 block bg-slate-850 p-2.5 rounded-lg border border-slate-750">July 13, 2026</span>
+                            <span className="text-textSecondary font-bold uppercase tracking-wider block mb-1">Value Date</span>
+                            <span className="text-sm font-semibold text-textPrimary block bg-secondary p-2.5 rounded-lg border border-borderTheme">July 13, 2026</span>
                           </div>
                         </div>
                       </div>
 
                       {paymentComplete ? (
-                        <div className="p-4 bg-emerald-950/20 border border-emerald-900/40 rounded-xl space-y-3 animate-fadeIn">
-                          <div className="flex items-start space-x-3 text-emerald-400 text-xs">
-                            <CheckCircle2 className="h-5.5 w-5.5 mt-0.5 flex-shrink-0 text-emerald-400" />
+                        <div className="p-4 bg-accent-savings/10 border border-accent-savings/20 rounded-xl space-y-3 animate-fadeIn shadow-sm">
+                          <div className="flex items-start space-x-3 text-accent-savings text-xs">
+                            <CheckCircle2 className="h-5.5 w-5.5 mt-0.5 flex-shrink-0" />
                             <div>
-                              <p className="font-bold">Payment Completed &amp; Reconciled</p>
-                              <p className="mt-1 text-slate-350">Transaction posted successfully. Odoo auto-reconciliation engine verified the bank statement entry against HDFC corporate accounts. Invoice status: PAID.</p>
+                              <p className="font-bold text-textPrimary font-outfit">Payment Completed &amp; Reconciled</p>
+                              <p className="mt-1 text-textSecondary leading-relaxed">Transaction posted successfully. Odoo auto-reconciliation engine verified the bank statement entry against HDFC corporate accounts. Invoice status: PAID.</p>
                             </div>
                           </div>
                           <div className="flex justify-end pt-2">
@@ -2595,7 +2595,7 @@ export default function App() {
                                 }));
                                 setActiveScene(15);
                               }}
-                              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1"
+                              className="px-5 py-2 bg-textPrimary hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
                             >
                               <span>Proceed to Spend Intelligence</span>
                               <ArrowRight className="h-4 w-4" />
@@ -2606,7 +2606,7 @@ export default function App() {
                         <div className="flex justify-end pt-2">
                           <button 
                             onClick={() => setPaymentComplete(true)}
-                            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1 shadow-lg"
+                            className="px-5 py-2.5 bg-accent-savings hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
                           >
                             <span>Authorize &amp; Pay Invoice</span>
                             <ArrowRight className="h-4 w-4" />
@@ -2615,20 +2615,20 @@ export default function App() {
                       )}
                     </div>
 
-                    <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 h-fit text-xs">
-                      <div className="flex items-center space-x-2 text-indigo-400 mb-2">
+                    <div className="p-5 rounded-2xl bg-surface border border-borderTheme space-y-4 h-fit text-xs shadow-sm">
+                      <div className="flex items-center space-x-2 text-accent-budget mb-2">
                         <Landmark className="h-4.5 w-4.5" />
-                        <h4 className="font-outfit font-extrabold text-sm text-white">Bank Statement Audit</h4>
+                        <h4 className="font-outfit font-extrabold text-sm text-textPrimary">Bank Statement Audit</h4>
                       </div>
-                      <div className="space-y-3">
-                        <div className="p-3 bg-slate-850 rounded-lg border border-slate-750 flex items-center justify-between">
+                      <div className="space-y-3 font-outfit">
+                        <div className="p-3 bg-secondary rounded-lg border border-borderTheme flex items-center justify-between">
                           <div>
-                            <p className="font-semibold text-slate-200">HDFC Bank Ledger</p>
-                            <p className="text-[10px] text-slate-500 font-mono">STMT-99281-2026</p>
+                            <p className="font-semibold text-textPrimary">HDFC Bank Ledger</p>
+                            <p className="text-[10px] text-textSecondary font-mono">STMT-99281-2026</p>
                           </div>
-                          <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold text-[9px]">Matched</span>
+                          <span className="px-2 py-0.5 rounded bg-accent-savings/10 text-accent-savings font-bold text-[9px] border border-accent-savings/20">Matched</span>
                         </div>
-                        <p className="text-slate-400 leading-relaxed text-[11px]">AI matches banking feeds with internal ledgers in real-time, removing manual end-of-month reconciliation tasks.</p>
+                        <p className="text-textSecondary leading-relaxed text-[11px]">AI matches banking feeds with internal ledgers in real-time, removing manual end-of-month reconciliation tasks.</p>
                       </div>
                     </div>
                   </div>
@@ -2640,28 +2640,28 @@ export default function App() {
                 <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 15: Spend Intelligence Dashboard</h2>
-                      <p className="text-xs text-slate-400">High-level capital monitoring and automated fraud detection audits.</p>
+                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Scene 15: Spend Intelligence Dashboard</h2>
+                      <p className="text-xs text-textSecondary">High-level capital monitoring and automated fraud detection audits.</p>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-between">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-outfit">
+                    <div className="p-6 bg-surface border border-borderTheme rounded-2xl flex items-center justify-between shadow-sm">
                       <div>
-                        <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block">Total Capital Audited</span>
-                        <p className="text-3xl font-outfit font-extrabold text-white mt-1">₹4.58 Crore</p>
+                        <span className="text-xs text-textSecondary font-bold uppercase tracking-wider block">Total Capital Audited</span>
+                        <p className="text-3xl font-extrabold text-textPrimary mt-1">₹4.58 Crore</p>
                       </div>
                     </div>
-                    <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-between">
+                    <div className="p-6 bg-surface border border-borderTheme rounded-2xl flex items-center justify-between shadow-sm">
                       <div>
-                        <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider block">Autonomous AI Savings</span>
-                        <p className="text-3xl font-outfit font-extrabold text-emerald-400 mt-1">₹28.45 Lakhs</p>
+                        <span className="text-xs text-accent-savings font-bold uppercase tracking-wider block">Autonomous AI Savings</span>
+                        <p className="text-3xl font-extrabold text-accent-savings mt-1">₹28.45 Lakhs</p>
                       </div>
                     </div>
-                    <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-between">
+                    <div className="p-6 bg-surface border border-borderTheme rounded-2xl flex items-center justify-between shadow-sm">
                       <div>
-                        <span className="text-xs text-rose-455 font-bold uppercase tracking-wider block text-rose-400">Blocked Anomalies</span>
-                        <p className="text-3xl font-outfit font-extrabold text-rose-400 mt-1">4 Breaches</p>
+                        <span className="text-xs text-accent-alerts font-bold uppercase tracking-wider block">Blocked Anomalies</span>
+                        <p className="text-3xl font-extrabold text-accent-alerts mt-1">4 Breaches</p>
                       </div>
                     </div>
                   </div>

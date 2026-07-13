@@ -6,12 +6,53 @@
 
 :root {
   font-family: 'Inter', sans-serif;
+  
+  /* Light Theme Variables */
+  --bg-app: #F6F7F9;
+  --bg-surface: #FFFFFF;
+  --bg-secondary: #F1F3F5;
+  --border-color: #E4E7EC;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  
+  --accent-budget: #3b82f6;
+  --accent-savings: #10b981;
+  --accent-expenses: #f43f5e;
+  --accent-approvals: #f59e0b;
+  --accent-analytics: #06b6d4;
+  --accent-alerts: #ef4444;
+}
+
+.dark {
+  /* Dark Theme Variables */
+  --bg-app: #0B0D12;
+  --bg-surface: #151922;
+  --bg-secondary: #1C212B;
+  --border-color: #2C3440;
+  --text-primary: #F8FAFC;
+  --text-secondary: #9CA3AF;
+  
+  --accent-budget: #3b82f6;
+  --accent-savings: #10b981;
+  --accent-expenses: #f43f5e;
+  --accent-approvals: #f59e0b;
+  --accent-analytics: #06b6d4;
+  --accent-alerts: #ef4444;
 }
 
 body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+}
+
+/* Global transitions for theme-affected properties */
+*, *::before, *::after {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
 }
 
 /* Custom soundwave animations */
