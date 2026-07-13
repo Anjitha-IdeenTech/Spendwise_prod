@@ -4,48 +4,111 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  SmartSpend — "Emerald Treasury" theme
+  All colors are stored as raw RGB channels (e.g. "15 157 110") so that Tailwind
+  utilities can apply opacity modifiers, e.g. bg-brand/10, border-line2/60.
+  In config each token is wrapped as rgb(var(--token) / <alpha-value>).
+*/
+
 :root {
   font-family: 'Inter', sans-serif;
-  
-  /* Light Theme Variables */
-  --bg-app: #F6F7F9;
-  --bg-surface: #FFFFFF;
-  --bg-secondary: #F1F3F5;
-  --border-color: #E4E7EC;
-  --text-primary: #111827;
-  --text-secondary: #6B7280;
-  
-  --accent-budget: #3b82f6;
-  --accent-savings: #10b981;
-  --accent-expenses: #f43f5e;
-  --accent-approvals: #f59e0b;
-  --accent-analytics: #06b6d4;
-  --accent-alerts: #ef4444;
+
+  /* Light theme — warm alabaster + deep emerald ink */
+  --bg-app:        251 250 247;   /* #FBFAF7 warm stone   */
+  --bg-surface:    255 255 255;   /* #FFFFFF card         */
+  --bg-secondary:  244 242 236;   /* #F4F2EC inset panel  */
+  --bg-raised:     234 231 222;   /* #EAE7DE hover/raised */
+  --border-color:  229 225 214;   /* #E5E1D6 hairline     */
+  --border-strong: 214 209 196;   /* #D6D1C4 strong line  */
+  --text-primary:   22  32  27;   /* #16201B ink          */
+  --text-secondary: 90 101  96;   /* #5A6560 muted        */
+  --text-faint:    139 148 142;   /* #8B948E faint        */
+  --onbrand:       255 255 255;   /* text on colored fills */
+
+  --accent-budget:     10 125  88;   /* #0A7D58 emerald brand   */
+  --accent-savings:    11 138  90;   /* #0B8A5A positive green  */
+  --accent-expenses:  200  45  69;   /* #C82D45 expense rose    */
+  --accent-approvals: 176 120  20;   /* #B07814 warm gold       */
+  --accent-analytics:  14 116 144;   /* #0E7490 analytics cyan  */
+  --accent-alerts:    190  30  45;   /* #BE1E2D alert red       */
+
+  /* raw decorative colors (theme-tinted) */
+  --glow-brand: 15 157 110;
+  --glow-gold:  224 168 46;
 }
 
 .dark {
-  /* Dark Theme Variables */
-  --bg-app: #0B0D12;
-  --bg-surface: #151922;
-  --bg-secondary: #1C212B;
-  --border-color: #2C3440;
-  --text-primary: #F8FAFC;
-  --text-secondary: #9CA3AF;
-  
-  --accent-budget: #3b82f6;
-  --accent-savings: #10b981;
-  --accent-expenses: #f43f5e;
-  --accent-approvals: #f59e0b;
-  --accent-analytics: #06b6d4;
-  --accent-alerts: #ef4444;
+  /* Dark theme — deep forest-black + luminous emerald */
+  --bg-app:          6  17  13;   /* #06110D deep forest-black */
+  --bg-surface:     12  26  21;   /* #0C1A15 card              */
+  --bg-secondary:   17  38  32;   /* #112620 inset panel       */
+  --bg-raised:      23  51  43;   /* #17332B hover/raised      */
+  --border-color:   40  66  56;   /* #284238 hairline          */
+  --border-strong:  56  88  76;   /* #38584C strong line       */
+  --text-primary:  232 240 236;   /* #E8F0EC                   */
+  --text-secondary:157 176 168;   /* #9DB0A8                   */
+  --text-faint:    110 131 123;   /* #6E837B                   */
+  --onbrand:       255 255 255;
+
+  --accent-budget:     18 184 134;   /* #12B886 emerald brand   */
+  --accent-savings:    52 211 153;   /* #34D399 positive green  */
+  --accent-expenses:  251 113 133;   /* #FB7185 expense rose    */
+  --accent-approvals: 224 168  46;   /* #E0A82E warm gold       */
+  --accent-analytics:  34 211 238;   /* #22D3EE analytics cyan  */
+  --accent-alerts:    248 113 113;   /* #F87171 alert red       */
+
+  --glow-brand: 16 185 129;
+  --glow-gold:  224 168 46;
 }
 
 body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: var(--bg-app);
-  color: var(--text-primary);
+  background-color: rgb(var(--bg-app));
+  color: rgb(var(--text-primary));
+  overflow-x: hidden;
+}
+
+/* Subtle grid texture on the app canvas */
+.bg-grid-pattern {
+  background-size: 34px 34px;
+  background-image:
+    linear-gradient(to right, rgb(var(--glow-brand) / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--glow-brand) / 0.035) 1px, transparent 1px);
+}
+.dark .bg-grid-pattern {
+  background-image:
+    linear-gradient(to right, rgb(var(--glow-brand) / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--glow-brand) / 0.05) 1px, transparent 1px);
+}
+
+/* Ambient decorative glows */
+.ambient-glow-1 { background: radial-gradient(circle, rgb(var(--glow-brand) / 0.07) 0%, transparent 70%); }
+.dark .ambient-glow-1 { background: radial-gradient(circle, rgb(var(--glow-brand) / 0.10) 0%, transparent 70%); }
+
+.ambient-glow-2 { background: radial-gradient(circle, rgb(var(--glow-gold) / 0.06) 0%, transparent 70%); }
+.dark .ambient-glow-2 { background: radial-gradient(circle, rgb(var(--glow-gold) / 0.07) 0%, transparent 70%); }
+
+/* Frosted glass panels */
+.glass-panel {
+  background: rgb(var(--bg-surface) / 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgb(var(--border-color) / 0.6);
+}
+.dark .glass-panel {
+  background: rgb(var(--bg-surface) / 0.7);
+  border: 1px solid rgb(var(--border-color) / 0.7);
+}
+
+/* Premium card hover — emerald glowing border */
+.glow-card { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.glow-card:hover {
+  border-color: rgb(var(--accent-budget));
+  box-shadow: 0 0 26px rgb(var(--glow-brand) / 0.12);
+  transform: translateY(-1px);
 }
 
 /* Global transitions for theme-affected properties */
@@ -55,34 +118,20 @@ body {
   transition-duration: 200ms;
 }
 
-/* Custom soundwave animations */
+/* Custom soundwave animation */
 @keyframes wave {
-  0%, 100% {
-    transform: scaleY(0.3);
-  }
-  50% {
-    transform: scaleY(1.2);
-  }
+  0%, 100% { transform: scaleY(0.3); }
+  50%      { transform: scaleY(1.2); }
 }
 
-/* Custom fadeIn transitions */
+/* fadeIn transitions */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+.animate-fadeIn { animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-.animate-fadeIn {
-  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Delay classes helper */
-.delay-75 { animation-delay: 75ms; }
+.delay-75  { animation-delay: 75ms; }
 .delay-100 { animation-delay: 100ms; }
 .delay-150 { animation-delay: 150ms; }
 .delay-200 { animation-delay: 200ms; }

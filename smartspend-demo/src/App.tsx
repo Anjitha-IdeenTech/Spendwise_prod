@@ -7,7 +7,7 @@ import {
   HelpCircle, Volume2, ShieldCheck, Landmark, Briefcase, FileInput, 
   Calendar, Layers, Clock, Users, ArrowUpRight, ArrowDownRight, Menu,
   Paperclip, MessageSquare, History, Search, Eye, Filter,
-  Truck, Package, Receipt, CreditCard
+  Truck, Package, Receipt, CreditCard, Moon, Sun
 } from 'lucide-react';
 
 // Define the Scene IDs and names
@@ -82,10 +82,31 @@ const getNegotiatedTargetPrice = (name: string) => {
 
 export default function App() {
   // Global States
-  const [activeScene, setActiveScene] = useState<number>(1);
-  const [darkMode, setDarkMode] = useState<boolean>(true);
+  const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const [activeScene, setActiveScene] = useState<number>(() => {
+    const s = Number(params?.get('scene'));
+    return s >= 1 && s <= 15 ? s : 1;
+  });
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    const q = params?.get('theme');
+    if (q === 'light') return false;
+    if (q === 'dark') return true;
+    try {
+      const saved = localStorage.getItem('smartspend-theme');
+      if (saved) return saved === 'dark';
+    } catch { /* ignore */ }
+    return true; // default to the flagship dark theme
+  });
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<string>("Employee"); // Employee, Manager, SCM Buyer, Vendor, CEO
+
+  // Apply the active theme by toggling the `dark` class on <html> so every
+  // CSS-variable-backed token switches at once.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle('dark', darkMode);
+    try { localStorage.setItem('smartspend-theme', darkMode ? 'dark' : 'light'); } catch { /* ignore */ }
+  }, [darkMode]);
 
   // Post-PO simulation states
   const [grnGenerated, setGrnGenerated] = useState<boolean>(false);
@@ -545,44 +566,48 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${darkMode ? 'bg-[#0b0f19] text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-hidden bg-app text-textPrimary bg-grid-pattern`}>
+      {/* Background ambient decorative glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full ambient-glow-1 filter blur-[120px] pointer-events-none opacity-60 z-0" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full ambient-glow-2 filter blur-[120px] pointer-events-none opacity-60 z-0" />
       
       {/* --- SCENE 1: Microsoft SSO & Role Portal Login --- */}
       {activeScene === 1 && (
-        <div className="flex-grow flex flex-col lg:flex-row min-h-screen">
-          <div className="lg:w-7/12 bg-gradient-to-tr from-[#0F172A] via-[#1E1B4B] to-[#311042] flex flex-col justify-between p-8 lg:p-16 text-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(99,102,241,0.15),transparent)] pointer-events-none" />
+        <div className="flex-grow flex flex-col lg:flex-row min-h-screen z-10">
+          <div className="lg:w-7/12 bg-gradient-to-tr from-[#04120c] via-[#08201a] to-[#0c2b20] flex flex-col justify-between p-8 lg:p-16 text-onbrand relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(16,185,129,0.16),transparent)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(224,168,46,0.10),transparent)] pointer-events-none" />
             <div className="z-10 flex items-center space-x-2">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <Sparkles className="h-5 w-5 text-white" />
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-accent-budget to-gold flex items-center justify-center shadow-lg">
+                <Sparkles className="h-5 w-5 text-onbrand animate-pulse" />
               </div>
               <span className="font-outfit text-2xl font-bold tracking-tight">SmartSpend</span>
             </div>
             
             <div className="z-10 my-auto py-12 max-w-xl">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 uppercase tracking-widest">
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-accent-budget/10 border border-accent-budget/20 text-accent-budget uppercase tracking-widest font-mono">
                 AI Orchestration Gateway
               </span>
               <h1 className="font-outfit text-4xl lg:text-6xl font-extrabold tracking-tight mt-6 leading-tight">
                 Request Anything.<br />
-                <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Track Everything.</span>
+                <span className="bg-gradient-to-r from-accent-budget via-brand to-gold bg-clip-text text-transparent">Track Everything.</span>
               </h1>
-              <p className="text-slate-300 text-lg mt-6 leading-relaxed">
+              <p className="text-textSecondary text-lg mt-6 leading-relaxed">
                 Experience corporate procurement simplified. SmartSpend abstracts complex Odoo ERP processes into a single, intelligent workspace. No forms, no jargon, no training required.
               </p>
             </div>
             
-            <div className="z-10 flex items-center justify-between text-xs text-slate-500">
+            <div className="z-10 flex items-center justify-between text-xs text-textFaint font-mono">
               <span>Powered by Odoo ERP Backend</span>
-              <span>CONFIDENTIAL PROTOTYPE V2</span>
+              <span>CONFIDENTIAL PROTOTYPE V3</span>
             </div>
           </div>
           
-          <div className="lg:w-5/12 flex flex-col justify-center px-6 py-12 md:px-16 lg:px-20 bg-slate-900 border-l border-slate-800">
+          <div className="lg:w-5/12 flex flex-col justify-center px-6 py-12 md:px-16 lg:px-20 bg-surface border-l border-borderTheme">
             <div className="max-w-md w-full mx-auto space-y-8">
               <div>
-                <h2 className="font-outfit text-3xl font-extrabold text-white tracking-tight">Sign In</h2>
-                <p className="mt-3 text-sm text-slate-400">
+                <h2 className="font-outfit text-3xl font-extrabold text-textPrimary tracking-tight">Sign In</h2>
+                <p className="mt-3 text-sm text-textSecondary">
                   Authenticate via your corporate SSO portal to test each interactive role.
                 </p>
               </div>
@@ -590,7 +615,7 @@ export default function App() {
               <div className="space-y-4">
                 <button
                   onClick={() => handleSsoLogin("Employee")}
-                  className="w-full flex items-center justify-center space-x-3 py-3.5 px-4 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-750 text-white font-medium shadow-sm transition-all"
+                  className="w-full flex items-center justify-center space-x-3 py-3.5 px-4 rounded-xl border border-borderTheme bg-secondary hover:opacity-90 text-textPrimary font-medium shadow-sm transition-all font-outfit"
                 >
                   <svg className="h-5 w-5" viewBox="0 0 23 23" fill="currentColor">
                     <path fill="#f35325" d="M1 1h10v10H1z" />
@@ -602,33 +627,33 @@ export default function App() {
                 </button>
                 
                 <div className="relative flex py-4 items-center">
-                  <div className="flex-grow border-t border-slate-850"></div>
-                  <span className="flex-shrink mx-4 text-slate-500 text-xs font-semibold uppercase tracking-wider">Select Demo Role Portal</span>
-                  <div className="flex-grow border-t border-slate-850"></div>
+                  <div className="flex-grow border-t border-borderTheme"></div>
+                  <span className="flex-shrink mx-4 text-textSecondary text-xs font-bold uppercase tracking-wider font-mono">Select Demo Role Portal</span>
+                  <div className="flex-grow border-t border-borderTheme"></div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 font-outfit">
                   <button 
                     onClick={() => handleSsoLogin("Employee")}
-                    className="p-3 bg-slate-800/50 hover:bg-indigo-600/20 border border-slate-800 hover:border-indigo-500/30 rounded-xl text-center text-xs text-slate-350 font-medium transition-all"
+                    className="p-3 bg-secondary hover:bg-accent-budget/10 border border-borderTheme hover:border-accent-budget/30 rounded-xl text-center text-xs text-textSecondary hover:text-textPrimary font-medium transition-all"
                   >
                     Employee Portal
                   </button>
                   <button 
                     onClick={() => handleSsoLogin("Manager")}
-                    className="p-3 bg-slate-800/50 hover:bg-amber-600/20 border border-slate-800 hover:border-amber-500/30 rounded-xl text-center text-xs text-slate-350 font-medium transition-all"
+                    className="p-3 bg-secondary hover:bg-accent-approvals/10 border border-borderTheme hover:border-accent-approvals/30 rounded-xl text-center text-xs text-textSecondary hover:text-textPrimary font-medium transition-all"
                   >
                     Manager Inbox
                   </button>
                   <button 
                     onClick={() => handleSsoLogin("SCM Buyer")}
-                    className="p-3 bg-slate-800/50 hover:bg-purple-600/20 border border-slate-800 hover:border-purple-500/30 rounded-xl text-center text-xs text-slate-350 font-medium transition-all"
+                    className="p-3 bg-secondary hover:bg-accent-budget/10 border border-borderTheme hover:border-accent-budget/30 rounded-xl text-center text-xs text-textSecondary hover:text-textPrimary font-medium transition-all"
                   >
                     SCM Buyer Portal
                   </button>
                   <button 
                     onClick={() => handleSsoLogin("Vendor")}
-                    className="p-3 bg-slate-800/50 hover:bg-emerald-600/20 border border-slate-800 hover:border-emerald-500/30 rounded-xl text-center text-xs text-slate-350 font-medium transition-all"
+                    className="p-3 bg-secondary hover:bg-accent-savings/10 border border-borderTheme hover:border-accent-savings/30 rounded-xl text-center text-xs text-textSecondary hover:text-textPrimary font-medium transition-all"
                   >
                     Vendor Portal
                   </button>
@@ -645,24 +670,24 @@ export default function App() {
           
           {/* LEFT SIDEBAR */}
           {sidebarOpen && (
-            <aside className={`w-64 flex-shrink-0 flex flex-col justify-between border-r ${darkMode ? 'bg-[#0f1422] border-slate-800' : 'bg-white border-slate-200'}`}>
+            <aside className="w-64 flex-shrink-0 flex flex-col justify-between border-r bg-surface border-borderTheme">
               <div>
-                <div className="p-6 flex items-center justify-between border-b border-slate-800/40">
+                <div className="p-6 flex items-center justify-between border-b border-borderTheme/40">
                   <div className="flex items-center space-x-2">
-                    <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center">
-                      <Sparkles className="h-4.5 w-4.5 text-white" />
+                    <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-brand to-gold flex items-center justify-center">
+                      <Sparkles className="h-4.5 w-4.5 text-onbrand" />
                     </div>
                     <span className="font-outfit font-bold text-lg tracking-tight">SmartSpend</span>
                   </div>
                 </div>
                 
                 {/* Switch Role Quick Dropdown */}
-                <div className="p-4 border-b border-slate-850">
-                  <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Switch Interactive Role</label>
+                <div className="p-4 border-b border-borderTheme">
+                  <label className="text-[10px] text-textFaint font-bold uppercase tracking-wider block mb-1.5">Switch Interactive Role</label>
                   <select 
                     value={userRole}
                     onChange={(e) => handleSsoLogin(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700/60 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:outline-none"
+                    className="w-full bg-secondary border border-line2/60 rounded-lg px-2.5 py-1.5 text-xs text-primary font-semibold focus:outline-none"
                   >
                     <option value="Employee">Employee (Requester)</option>
                     <option value="Manager">Manager (Approver)</option>
@@ -674,40 +699,40 @@ export default function App() {
                 
                 {/* Navigation Items (Role-Adaptive) */}
                 <nav className="p-4 space-y-1.5">
-                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block px-3 mb-2">Portal Navigation</span>
+                  <span className="text-[10px] text-textFaint font-bold uppercase tracking-wider block px-3 mb-2">Portal Navigation</span>
                   
                   {userRole === "Employee" && (
                     <>
                       <button 
                         onClick={() => { setActiveScene(2); setEmployeeTab('chat'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'chat' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'chat' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
                       >
                         <MessageSquare className="h-4 w-4" />
                         <span>Conversational Agent</span>
                       </button>
                       <button 
                         onClick={() => { setActiveScene(2); setEmployeeTab('list'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'list' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'list' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
                       >
                         <FileText className="h-4 w-4" />
                         <span>My Requests</span>
-                        <span className="ml-auto bg-slate-850 text-slate-350 text-[10px] px-2 py-0.5 rounded-full font-bold">{requests.length}</span>
+                        <span className="ml-auto bg-secondary text-textSecondary text-[10px] px-2 py-0.5 rounded-full font-bold">{requests.length}</span>
                       </button>
                       <button 
                         onClick={() => { setActiveScene(2); setEmployeeTab('tracking'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'tracking' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'tracking' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
                       >
                         <History className="h-4 w-4" />
                         <span>Request Tracking</span>
                       </button>
                       <button 
                         onClick={() => { setActiveScene(2); setEmployeeTab('clarify'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'clarify' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'clarify' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
                       >
                         <AlertTriangle className="h-4 w-4" />
                         <span>Clarification Inbox</span>
                         {requests.filter(r => r.status === 'Needs Clarification').length > 0 && (
-                          <span className="ml-auto bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">
+                          <span className="ml-auto bg-gold/20 text-gold border border-gold/30 text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">
                             {requests.filter(r => r.status === 'Needs Clarification').length}
                           </span>
                         )}
@@ -719,11 +744,11 @@ export default function App() {
                     <>
                       <button 
                         onClick={() => setActiveScene(10)}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 10 ? 'bg-amber-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 10 ? 'bg-gold text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
                       >
                         <CheckCircle2 className="h-4 w-4" />
                         <span>Approval Queue</span>
-                        <span className="ml-auto bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                        <span className="ml-auto bg-gold/20 text-gold border border-gold/30 text-[10px] px-2 py-0.5 rounded-full font-bold">
                           {requests.filter(r => r.status === 'Pending Approval').length}
                         </span>
                       </button>
@@ -734,17 +759,17 @@ export default function App() {
                     <>
                       <button 
                         onClick={() => { setActiveScene(6); setScmTab('requests'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 6 && scmTab === 'requests' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 6 && scmTab === 'requests' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
                       >
                         <Briefcase className="h-4 w-4" />
                         <span>Contract Requests</span>
-                        <span className="ml-auto bg-purple-500/20 text-purple-400 border border-purple-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                        <span className="ml-auto bg-brand/20 text-brand border border-brand/30 text-[10px] px-2 py-0.5 rounded-full font-bold">
                           {requests.filter(r => r.status === 'Sourcing').length}
                         </span>
                       </button>
                       <button 
                         onClick={() => { setActiveScene(6); setScmTab('discovery'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 6 && scmTab === 'discovery' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 6 && scmTab === 'discovery' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
                       >
                         <Search className="h-4 w-4" />
                         <span>AI Vendor Discovery</span>
@@ -756,7 +781,7 @@ export default function App() {
                     <>
                       <button 
                         onClick={() => { setActiveScene(6); setScmTab('bidding'); }}
-                        className="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 bg-slate-800 border border-slate-700/60"
+                        className="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium text-pos bg-secondary border border-line2/60"
                       >
                         <FileSpreadsheet className="h-4 w-4" />
                         <span>Active RFQs to Quote</span>
@@ -768,7 +793,7 @@ export default function App() {
                     <>
                       <button 
                         onClick={() => setActiveScene(15)}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 15 ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 15 ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
                       >
                         <TrendingUp className="h-4 w-4" />
                         <span>Spend Analytics</span>
@@ -779,20 +804,25 @@ export default function App() {
               </div>
               
               {/* Bottom Quick Controls */}
-              <div className="p-4 space-y-3 border-t border-slate-850">
-                <div className="flex items-center justify-between text-[11px] text-slate-500 px-2">
-                  <span>Theme Mode:</span>
-                  <button 
+              <div className="p-4 space-y-3 border-t border-borderTheme">
+                <div className="flex items-center justify-between text-[11px] text-textFaint px-2">
+                  <span className="font-semibold uppercase tracking-wider">Appearance</span>
+                  <button
                     onClick={() => setDarkMode(!darkMode)}
-                    className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-350 font-semibold"
+                    aria-label="Toggle color theme"
+                    className="relative inline-flex h-7 w-[52px] items-center rounded-full border border-borderTheme bg-secondary transition-colors"
                   >
-                    {darkMode ? 'Light' : 'Dark'}
+                    <span
+                      className={`absolute flex h-5 w-5 items-center justify-center rounded-full bg-brand text-onbrand shadow transition-transform duration-300 ${darkMode ? 'translate-x-[3px]' : 'translate-x-[27px]'}`}
+                    >
+                      {darkMode ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
+                    </span>
                   </button>
                 </div>
                 
                 <button
                   onClick={() => setActiveScene(1)}
-                  className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-lg border border-slate-850 bg-slate-850 hover:bg-slate-800 text-[11px] text-slate-400 hover:text-white font-medium transition-all"
+                  className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-lg border border-borderTheme bg-secondary hover:bg-secondary text-[11px] text-textSecondary hover:text-primary font-medium transition-all"
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
                   <span>Logout / Reset Demo</span>
@@ -805,23 +835,23 @@ export default function App() {
           <main className="flex-grow flex flex-col min-w-0 overflow-y-auto">
             
             {/* TOP NAVIGATION HEADER WITH SCENE PICKER */}
-            <header className={`h-16 px-6 border-b flex items-center justify-between flex-shrink-0 ${darkMode ? 'bg-[#0f1422] border-slate-800' : 'bg-white border-slate-200'}`}>
+            <header className="h-16 px-6 border-b flex items-center justify-between flex-shrink-0 bg-surface/80 backdrop-blur-md border-borderTheme">
               <div className="flex items-center space-x-4">
                 <button 
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white"
+                  className="p-2 rounded-lg hover:bg-secondary text-textSecondary hover:text-primary"
                 >
                   <Menu className="h-5 w-5" />
                 </button>
-                <div className="h-4 w-[1px] bg-slate-750" />
+                <div className="h-4 w-[1px] bg-raised" />
                 
                 {/* Scene Selector */}
                 <div className="flex items-center space-x-2 text-xs">
-                  <span className="font-semibold text-indigo-400">DEMO STEP:</span>
+                  <span className="font-semibold text-brand">DEMO STEP:</span>
                   <select 
                     value={activeScene}
                     onChange={(e) => setActiveScene(Number(e.target.value))}
-                    className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-white font-bold"
+                    className="bg-secondary border border-line2 rounded-lg px-2.5 py-1 text-primary font-bold"
                   >
                     {SCENES.map(s => (
                       <option key={s.id} value={s.id}>{s.name}</option>
@@ -834,14 +864,14 @@ export default function App() {
                 <button 
                   onClick={prevScene} 
                   disabled={activeScene === 2}
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-750 text-white disabled:opacity-30 transition-all border border-slate-750"
+                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-secondary hover:bg-raised text-primary disabled:opacity-30 transition-all border border-borderTheme"
                 >
                   Back
                 </button>
                 <button 
                   onClick={nextScene}
                   disabled={activeScene === 15}
-                  className="px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-30 transition-all flex items-center space-x-1"
+                  className="px-4 py-1.5 rounded-lg text-xs font-bold bg-brand hover:bg-brand text-onbrand disabled:opacity-30 transition-all flex items-center space-x-1"
                 >
                   <span>Next Step</span>
                   <ChevronRight className="h-3 w-3" />
@@ -857,28 +887,28 @@ export default function App() {
                 <div className="space-y-6 animate-fadeIn">
                   
                   {/* Employee Tabs Bar */}
-                  <div className="flex border-b border-slate-800">
+                  <div className="flex border-b border-borderTheme">
                     <button 
                       onClick={() => setEmployeeTab('chat')} 
-                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${employeeTab === 'chat' ? 'border-indigo-500 text-white' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${employeeTab === 'chat' ? 'border-brand text-primary' : 'border-transparent text-textSecondary hover:text-textPrimary'}`}
                     >
                       Raise Request
                     </button>
                     <button 
                       onClick={() => setEmployeeTab('list')} 
-                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${employeeTab === 'list' ? 'border-indigo-500 text-white' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${employeeTab === 'list' ? 'border-brand text-primary' : 'border-transparent text-textSecondary hover:text-textPrimary'}`}
                     >
                       My Requests
                     </button>
                     <button 
                       onClick={() => setEmployeeTab('tracking')} 
-                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${employeeTab === 'tracking' ? 'border-indigo-500 text-white' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${employeeTab === 'tracking' ? 'border-brand text-primary' : 'border-transparent text-textSecondary hover:text-textPrimary'}`}
                     >
                       Request Tracking
                     </button>
                     <button 
                       onClick={() => setEmployeeTab('clarify')} 
-                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${employeeTab === 'clarify' ? 'border-indigo-500 text-white' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${employeeTab === 'clarify' ? 'border-brand text-primary' : 'border-transparent text-textSecondary hover:text-textPrimary'}`}
                     >
                       Clarification Inbox
                     </button>
@@ -888,30 +918,30 @@ export default function App() {
                   {employeeTab === 'chat' && (
                     <div className="max-w-3xl mx-auto space-y-12 py-10">
                       <div className="text-center space-y-3">
-                        <h2 className="font-outfit text-4xl font-extrabold tracking-tight text-white">What's on the agenda today?</h2>
-                        <p className="text-sm text-slate-450">Request any item or service. The AI orchestration layer maps the compliance rules in Odoo.</p>
+                        <h2 className="font-outfit text-4xl font-extrabold tracking-tight text-primary">What's on the agenda today?</h2>
+                        <p className="text-sm text-textSecondary">Request any item or service. The AI orchestration layer maps the compliance rules in Odoo.</p>
                       </div>
 
                       {/* File Attached Success Banner */}
                       {showFileAttachedAlert && (
-                        <div className="p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl flex items-center justify-between text-xs text-indigo-400 animate-fadeIn">
+                        <div className="p-3 bg-brand/40 border border-brand/30 rounded-xl flex items-center justify-between text-xs text-brand animate-fadeIn">
                           <span className="flex items-center space-x-2">
                             <Paperclip className="h-4 w-4" />
                             <span><strong>1 File Attached:</strong> specification_matrix.pdf</span>
                           </span>
-                          <button onClick={() => setAttachedFiles([])} className="text-slate-400 hover:text-white">
+                          <button onClick={() => setAttachedFiles([])} className="text-textSecondary hover:text-primary">
                             <X className="h-4 w-4" />
                           </button>
                         </div>
                       )}
 
                       {/* Unified Input Bar (Matching user's attachment screenshot exactly) */}
-                      <form onSubmit={handleChatSubmit} className="relative flex items-center bg-slate-900 border border-slate-750/70 rounded-full px-5 py-3.5 focus-within:border-indigo-500/60 shadow-xl transition-all">
+                      <form onSubmit={handleChatSubmit} className="relative flex items-center bg-surface border border-borderTheme/70 rounded-full px-5 py-3.5 focus-within:border-brand/60 shadow-xl transition-all">
                         {/* Attach button */}
                         <button 
                           type="button"
                           onClick={handleAttachmentAdd}
-                          className="p-1.5 rounded-full hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-all mr-3"
+                          className="p-1.5 rounded-full hover:bg-secondary text-textSecondary hover:text-textPrimary transition-all mr-3"
                           title="Add attachment"
                         >
                           <Paperclip className="h-5 w-5" />
@@ -923,24 +953,24 @@ export default function App() {
                           value={chatInputText}
                           onChange={(e) => setChatInputText(e.target.value)}
                           placeholder="Ask anything..."
-                          className="flex-grow bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none pr-28"
+                          className="flex-grow bg-transparent text-sm text-primary placeholder-textFaint focus:outline-none pr-28"
                         />
 
                         {/* Integration Logos & Voice Action Group */}
                         <div className="absolute right-3 flex items-center space-x-2">
-                          <span className="text-slate-700 font-bold text-lg">|</span>
+                          <span className="text-textFaint font-bold text-lg">|</span>
                           
                           {/* Chatgpt/WhatsApp integration icons */}
-                          <div className="hidden sm:flex items-center space-x-1 text-slate-550 mr-1.5">
-                            <span className="p-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 rounded-md text-[10px] font-bold">WA</span>
-                            <span className="p-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 rounded-md text-[10px] font-bold">GPT</span>
+                          <div className="hidden sm:flex items-center space-x-1 text-textFaint mr-1.5">
+                            <span className="p-1 bg-pos/10 text-pos border border-pos/25 rounded-md text-[10px] font-bold">WA</span>
+                            <span className="p-1 bg-brand/10 text-brand border border-brand/25 rounded-md text-[10px] font-bold">GPT</span>
                           </div>
 
                           {/* Voice Mic Icon */}
                           <button 
                             type="button"
                             onClick={() => setActiveScene(3)}
-                            className="p-1.5 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-all"
+                            className="p-1.5 rounded-full hover:bg-secondary text-textSecondary hover:text-primary transition-all"
                             title="Voice Procurement"
                           >
                             <Mic className="h-4.5 w-4.5" />
@@ -950,20 +980,20 @@ export default function App() {
                           <button 
                             type="button"
                             onClick={() => setActiveScene(3)}
-                            className="h-9 w-9 rounded-full bg-slate-950 hover:bg-slate-850 text-indigo-400 hover:text-indigo-300 flex items-center justify-center transition-all border border-slate-800/80 shadow shadow-indigo-500/10"
+                            className="h-9 w-9 rounded-full bg-app hover:bg-secondary text-brand hover:text-brand flex items-center justify-center transition-all border border-borderTheme/80 shadow shadow-brand/10"
                             title="Simulate Voice"
                           >
                             <div className="flex items-center space-x-0.5 h-3">
-                              <div className="w-0.5 bg-indigo-400 rounded h-1 animate-pulse" />
-                              <div className="w-0.5 bg-indigo-400 rounded h-3 animate-pulse" />
-                              <div className="w-0.5 bg-indigo-400 rounded h-2 animate-pulse" />
+                              <div className="w-0.5 bg-brand rounded h-1 animate-pulse" />
+                              <div className="w-0.5 bg-brand rounded h-3 animate-pulse" />
+                              <div className="w-0.5 bg-brand rounded h-2 animate-pulse" />
                             </div>
                           </button>
 
                           {/* Send Button */}
                           <button 
                             type="submit"
-                            className="p-2 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white transition-all"
+                            className="p-2 rounded-full bg-brand hover:bg-brand text-onbrand transition-all"
                           >
                             <Send className="h-3.5 w-3.5" />
                           </button>
@@ -974,17 +1004,17 @@ export default function App() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6">
                         <div 
                           onClick={() => setChatInputText("I need 20 Dell Latitude laptops for the Bangalore office")}
-                          className="cursor-pointer p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all text-left text-xs space-y-1"
+                          className="cursor-pointer p-4 rounded-xl bg-surface/60 border border-borderTheme hover:border-line2 transition-all text-left text-xs space-y-1"
                         >
-                          <span className="font-semibold text-slate-200 block">💻 Request IT Hardware</span>
-                          <span className="text-slate-450">"I need 20 Dell Latitude laptops for the Bangalore office..."</span>
+                          <span className="font-semibold text-textPrimary block">💻 Request IT Hardware</span>
+                          <span className="text-textSecondary">"I need 20 Dell Latitude laptops for the Bangalore office..."</span>
                         </div>
                         <div 
                           onClick={() => setChatInputText("Requesting 10 ergonomic conference chairs for the Mumbai office")}
-                          className="cursor-pointer p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all text-left text-xs space-y-1"
+                          className="cursor-pointer p-4 rounded-xl bg-surface/60 border border-borderTheme hover:border-line2 transition-all text-left text-xs space-y-1"
                         >
-                          <span className="font-semibold text-slate-200 block">🪑 Request Office Furniture</span>
-                          <span className="text-slate-450">"Requesting 10 ergonomic conference chairs for Mumbai..."</span>
+                          <span className="font-semibold text-textPrimary block">🪑 Request Office Furniture</span>
+                          <span className="text-textSecondary">"Requesting 10 ergonomic conference chairs for Mumbai..."</span>
                         </div>
                       </div>
                     </div>
@@ -994,8 +1024,8 @@ export default function App() {
                   {employeeTab === 'list' && (
                     <div className="space-y-4 animate-fadeIn">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-outfit font-extrabold text-xl text-white">Your Procurement Requisitions</h3>
-                        <span className="text-xs text-slate-500">Select any request to view its live tracking timeline</span>
+                        <h3 className="font-outfit font-extrabold text-xl text-primary">Your Procurement Requisitions</h3>
+                        <span className="text-xs text-textFaint">Select any request to view its live tracking timeline</span>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1003,30 +1033,30 @@ export default function App() {
                           <div 
                             key={req.id} 
                             onClick={() => { setSelectedRequestId(req.id); setEmployeeTab('tracking'); }}
-                            className={`cursor-pointer p-5 rounded-2xl border transition-all ${selectedRequestId === req.id ? 'bg-[#0f1422]/90 border-indigo-500 shadow-lg' : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'}`}
+                            className={`cursor-pointer p-5 rounded-2xl border transition-all ${selectedRequestId === req.id ? 'bg-surface/90 border-brand shadow-lg' : 'bg-surface/60 border-borderTheme hover:border-line2'}`}
                           >
                             <div className="flex items-center justify-between mb-3">
-                              <span className="text-xs font-bold text-slate-450">{req.id}</span>
+                              <span className="text-xs font-bold text-textSecondary">{req.id}</span>
                               <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                req.status === 'PO Confirmed' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                                req.status === 'Approved' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
-                                req.status === 'Needs Clarification' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse' :
-                                'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                                req.status === 'PO Confirmed' ? 'bg-pos/20 text-pos border border-pos/30' :
+                                req.status === 'Approved' ? 'bg-info/20 text-info border border-info/30' :
+                                req.status === 'Needs Clarification' ? 'bg-gold/20 text-gold border border-gold/30 animate-pulse' :
+                                'bg-brand/20 text-brand border border-brand/30'
                               }`}>
                                 {req.status}
                               </span>
                             </div>
                             
-                            <h4 className="font-outfit font-extrabold text-base text-white">{req.productQty}x {req.productName}</h4>
+                            <h4 className="font-outfit font-extrabold text-base text-primary">{req.productQty}x {req.productName}</h4>
                             
-                            <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-800/60 text-xs text-slate-400">
+                            <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-borderTheme/60 text-xs text-textSecondary">
                               <div>
-                                <span className="block text-[10px] text-slate-550 uppercase">Total budget:</span>
-                                <span className="font-bold text-slate-200">₹{req.totalCost.toLocaleString()}</span>
+                                <span className="block text-[10px] text-textFaint uppercase">Total budget:</span>
+                                <span className="font-bold text-textPrimary">₹{req.totalCost.toLocaleString()}</span>
                               </div>
                               <div>
-                                <span className="block text-[10px] text-slate-550 uppercase">Location:</span>
-                                <span className="font-bold text-slate-200">{req.location}</span>
+                                <span className="block text-[10px] text-textFaint uppercase">Location:</span>
+                                <span className="font-bold text-textPrimary">{req.location}</span>
                               </div>
                             </div>
                           </div>
@@ -1037,24 +1067,24 @@ export default function App() {
 
                   {/* Tab 3: Request Tracking (Selected Requisition Timeline) */}
                   {employeeTab === 'tracking' && (
-                    <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6 animate-fadeIn">
-                      <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+                    <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-6 animate-fadeIn">
+                      <div className="flex justify-between items-center border-b border-borderTheme pb-4">
                         <div>
-                          <span className="text-xs text-indigo-400 font-bold block">{currentRequest.id} Tracking</span>
-                          <h3 className="font-outfit font-extrabold text-xl text-white">{currentRequest.productQty}x {currentRequest.productName}</h3>
+                          <span className="text-xs text-brand font-bold block">{currentRequest.id} Tracking</span>
+                          <h3 className="font-outfit font-extrabold text-xl text-primary">{currentRequest.productQty}x {currentRequest.productName}</h3>
                         </div>
-                        <span className="px-3 py-1 bg-slate-850 rounded-full border border-slate-800 text-xs font-bold text-slate-350">
+                        <span className="px-3 py-1 bg-secondary rounded-full border border-borderTheme text-xs font-bold text-textSecondary">
                           Status: {currentRequest.status}
                         </span>
                       </div>
 
                       {/* Timeline Nodes */}
                       <div className="relative flex justify-between items-center max-w-2xl mx-auto py-6">
-                        <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-slate-800 z-0" />
+                        <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-secondary z-0" />
                         
                         {/* Dynamic Progress indicator */}
                         <div 
-                          className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-emerald-500 z-0 transition-all duration-500" 
+                          className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-pos z-0 transition-all duration-500" 
                           style={{ 
                             width: currentRequest.status === 'PO Confirmed' ? '100%' :
                                    currentRequest.status === 'Approved' ? '75%' :
@@ -1064,53 +1094,53 @@ export default function App() {
 
                         {/* Node 1: Request Submitted */}
                         <div className="flex flex-col items-center z-10 text-center space-y-1.5">
-                          <div className="h-8 w-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs">
+                          <div className="h-8 w-8 rounded-full bg-pos text-onbrand flex items-center justify-center font-bold text-xs">
                             <Check className="h-4 w-4" />
                           </div>
-                          <span className="text-[10px] font-bold text-slate-200 block">Submitted</span>
+                          <span className="text-[10px] font-bold text-textPrimary block">Submitted</span>
                         </div>
 
                         {/* Node 2: Sourcing Mapped */}
                         <div className="flex flex-col items-center z-10 text-center space-y-1.5">
                           <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs ${
-                            ['Sourcing', 'Approved', 'PO Confirmed'].includes(currentRequest.status) ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-500 border border-slate-700'
+                            ['Sourcing', 'Approved', 'PO Confirmed'].includes(currentRequest.status) ? 'bg-pos text-onbrand' : 'bg-secondary text-textFaint border border-line2'
                           }`}>
                             {['Sourcing', 'Approved', 'PO Confirmed'].includes(currentRequest.status) ? <Check className="h-4 w-4" /> : '2'}
                           </div>
-                          <span className="text-[10px] font-bold text-slate-250 block">Sourcing</span>
+                          <span className="text-[10px] font-bold text-textPrimary block">Sourcing</span>
                         </div>
 
                         {/* Node 3: Manager Approved */}
                         <div className="flex flex-col items-center z-10 text-center space-y-1.5">
                           <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs ${
-                            ['Approved', 'PO Confirmed'].includes(currentRequest.status) ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-500 border border-slate-700'
+                            ['Approved', 'PO Confirmed'].includes(currentRequest.status) ? 'bg-pos text-onbrand' : 'bg-secondary text-textFaint border border-line2'
                           }`}>
                             {['Approved', 'PO Confirmed'].includes(currentRequest.status) ? <Check className="h-4 w-4" /> : '3'}
                           </div>
-                          <span className="text-[10px] font-bold text-slate-250 block">Approved</span>
+                          <span className="text-[10px] font-bold text-textPrimary block">Approved</span>
                         </div>
 
                         {/* Node 4: PO Confirmed */}
                         <div className="flex flex-col items-center z-10 text-center space-y-1.5">
                           <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs ${
-                            currentRequest.status === 'PO Confirmed' ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-500 border border-slate-700'
+                            currentRequest.status === 'PO Confirmed' ? 'bg-pos text-onbrand' : 'bg-secondary text-textFaint border border-line2'
                           }`}>
                             {currentRequest.status === 'PO Confirmed' ? <Check className="h-4 w-4" /> : '4'}
                           </div>
-                          <span className="text-[10px] font-bold text-slate-250 block">PO Sent</span>
+                          <span className="text-[10px] font-bold text-textPrimary block">PO Sent</span>
                         </div>
                       </div>
 
                       {/* Audit Log / History */}
-                      <div className="border-t border-slate-800/80 pt-6 max-w-xl mx-auto space-y-3">
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Odoo Event Log</span>
+                      <div className="border-t border-borderTheme/80 pt-6 max-w-xl mx-auto space-y-3">
+                        <span className="text-xs font-bold text-textFaint uppercase tracking-wider block">Odoo Event Log</span>
                         {currentRequest.history.map((h, idx) => (
-                          <div key={idx} className="p-3 bg-slate-850/45 border border-slate-800 rounded-xl flex items-start justify-between text-xs">
+                          <div key={idx} className="p-3 bg-secondary/45 border border-borderTheme rounded-xl flex items-start justify-between text-xs">
                             <div>
-                              <span className="font-bold text-slate-200 block">{h.title}</span>
-                              <span className="text-slate-400 mt-0.5 block">{h.desc}</span>
+                              <span className="font-bold text-textPrimary block">{h.title}</span>
+                              <span className="text-textSecondary mt-0.5 block">{h.desc}</span>
                             </div>
-                            <span className="text-[10px] text-slate-500">{h.date}</span>
+                            <span className="text-[10px] text-textFaint">{h.date}</span>
                           </div>
                         ))}
                       </div>
@@ -1120,48 +1150,48 @@ export default function App() {
                   {/* Tab 4: Clarification Inbox */}
                   {employeeTab === 'clarify' && (
                     <div className="space-y-6 animate-fadeIn">
-                      <h3 className="font-outfit font-extrabold text-xl text-white">Clarification Requests</h3>
+                      <h3 className="font-outfit font-extrabold text-xl text-primary">Clarification Requests</h3>
                       
                       {requests.filter(r => r.status === 'Needs Clarification').length === 0 ? (
-                        <div className="p-8 text-center bg-slate-900/40 border border-slate-800 rounded-2xl text-slate-450">
-                          <CheckCircle2 className="h-8 w-8 mx-auto text-emerald-400 mb-2" />
+                        <div className="p-8 text-center bg-surface/40 border border-borderTheme rounded-2xl text-textSecondary">
+                          <CheckCircle2 className="h-8 w-8 mx-auto text-pos mb-2" />
                           <p className="text-sm font-semibold">Your inbox is clear!</p>
                           <p className="text-xs mt-1">No manager queries pending clarification.</p>
                         </div>
                       ) : (
                         <div className="space-y-4">
                           {requests.filter(r => r.status === 'Needs Clarification').map(req => (
-                            <div key={req.id} className="p-6 rounded-2xl bg-slate-900 border border-amber-500/30 space-y-4">
-                              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div key={req.id} className="p-6 rounded-2xl bg-surface border border-gold/30 space-y-4">
+                              <div className="flex items-center justify-between border-b border-borderTheme pb-3">
                                 <div>
-                                  <span className="text-xs text-amber-400 font-bold block">{req.id}</span>
-                                  <h4 className="font-outfit font-extrabold text-lg text-white">{req.productQty}x {req.productName}</h4>
+                                  <span className="text-xs text-gold font-bold block">{req.id}</span>
+                                  <h4 className="font-outfit font-extrabold text-lg text-primary">{req.productQty}x {req.productName}</h4>
                                 </div>
-                                <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/25 rounded-md text-[10px] font-bold">RFI PENDING</span>
+                                <span className="px-2 py-0.5 bg-gold/10 text-gold border border-gold/25 rounded-md text-[10px] font-bold">RFI PENDING</span>
                               </div>
 
                               {/* Manager Comment Display */}
-                              <div className="p-4 bg-slate-850 border border-slate-800 rounded-xl">
-                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Manager Query:</span>
-                                <p className="text-xs text-slate-350 mt-1 font-medium italic">
+                              <div className="p-4 bg-secondary border border-borderTheme rounded-xl">
+                                <span className="text-[10px] text-textFaint font-bold uppercase tracking-wider block">Manager Query:</span>
+                                <p className="text-xs text-textSecondary mt-1 font-medium italic">
                                   "{req.clarificationComments[req.clarificationComments.length - 1]?.text || 'Please provide details.'}"
                                 </p>
                               </div>
 
                               {/* Reply form */}
                               <div className="space-y-2">
-                                <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Your Response / Clarification</label>
+                                <label className="text-[10px] text-textFaint font-bold uppercase tracking-wider block">Your Response / Clarification</label>
                                 <textarea 
                                   rows={3}
                                   value={employeeReplyText}
                                   onChange={(e) => setEmployeeReplyText(e.target.value)}
                                   placeholder="Provide the requested details to re-submit for approval..."
-                                  className="w-full bg-slate-800 border border-slate-700/60 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500"
+                                  className="w-full bg-secondary border border-line2/60 rounded-xl p-3 text-xs text-primary focus:outline-none focus:border-brand"
                                 />
                                 <div className="flex justify-end pt-2">
                                   <button 
                                     onClick={() => handleEmployeeReplySubmit(req.id)}
-                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all"
+                                    className="px-4 py-2 bg-brand hover:bg-brand text-xs font-bold rounded-lg text-onbrand transition-all"
                                   >
                                     Submit Response
                                   </button>
@@ -1180,15 +1210,15 @@ export default function App() {
               {/* --- SCENE 3: VOICE ASSISTANT MODAL SIMULATOR --- */}
               {activeScene === 3 && (
                 <div className="max-w-2xl mx-auto py-8 animate-fadeIn">
-                  <div className="p-8 rounded-2xl border border-slate-800 bg-[#0f1422]/60 backdrop-blur-xl shadow-2xl space-y-8 relative overflow-hidden">
+                  <div className="p-8 rounded-2xl border border-borderTheme bg-surface/60 backdrop-blur-xl shadow-2xl space-y-8 relative overflow-hidden">
                     <div className="absolute top-4 right-4 flex items-center space-x-2">
-                      <Volume2 className="h-4 w-4 text-indigo-400 animate-bounce" />
-                      <span className="text-xs text-indigo-400 font-bold uppercase tracking-wider">Voice Portal</span>
+                      <Volume2 className="h-4 w-4 text-brand animate-bounce" />
+                      <span className="text-xs text-brand font-bold uppercase tracking-wider">Voice Portal</span>
                     </div>
                     
                     <div className="text-center space-y-2">
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">SmartSpend Voice Assistant</h2>
-                      <p className="text-sm text-slate-400 max-w-md mx-auto font-medium">Click the microphone to simulate recording your purchase request details.</p>
+                      <h2 className="font-outfit text-2xl font-extrabold text-primary">SmartSpend Voice Assistant</h2>
+                      <p className="text-sm text-textSecondary max-w-md mx-auto font-medium">Click the microphone to simulate recording your purchase request details.</p>
                     </div>
                     
                     {/* Microphone Soundwave Visual Area */}
@@ -1196,7 +1226,7 @@ export default function App() {
                       {voiceState === 'idle' && (
                         <button 
                           onClick={() => setVoiceState('listening')}
-                          className="h-24 w-24 rounded-full bg-slate-800 hover:bg-indigo-600 text-slate-350 hover:text-white flex items-center justify-center shadow-lg border border-slate-700/50 transition-all duration-300 hover:scale-105"
+                          className="h-24 w-24 rounded-full bg-secondary hover:bg-brand text-textSecondary hover:text-onbrand flex items-center justify-center shadow-lg border border-line2/50 transition-all duration-300 hover:scale-105"
                         >
                           <Mic className="h-10 w-10" />
                         </button>
@@ -1206,51 +1236,51 @@ export default function App() {
                         <div className="flex flex-col items-center space-y-4">
                           <button 
                             onClick={() => setVoiceState('processing')}
-                            className="h-24 w-24 rounded-full bg-indigo-600 text-white flex items-center justify-center relative shadow-2xl"
+                            className="h-24 w-24 rounded-full bg-brand text-onbrand flex items-center justify-center relative shadow-2xl"
                           >
-                            <span className="absolute inset-0 rounded-full bg-indigo-500/40 animate-ping" />
+                            <span className="absolute inset-0 rounded-full bg-brand/40 animate-ping" />
                             <Mic className="h-10 w-10" />
                           </button>
                           
                           {/* Animated soundwaves */}
                           <div className="flex items-center space-x-1.5 h-10 py-1">
-                            <div className="w-1 bg-indigo-400 rounded animate-[wave_0.8s_infinite_ease-in-out_delay-100] h-6" />
-                            <div className="w-1 bg-indigo-300 rounded animate-[wave_0.8s_infinite_ease-in-out_delay-300] h-10" />
-                            <div className="w-1 bg-indigo-400 rounded animate-[wave_0.8s_infinite_ease-in-out_delay-200] h-8" />
-                            <div className="w-1 bg-indigo-500 rounded animate-[wave_0.8s_infinite_ease-in-out_delay-400] h-5" />
-                            <div className="w-1 bg-indigo-300 rounded animate-[wave_0.8s_infinite_ease-in-out_delay-150] h-9" />
+                            <div className="w-1 bg-brand rounded animate-[wave_0.8s_infinite_ease-in-out_delay-100] h-6" />
+                            <div className="w-1 bg-brand rounded animate-[wave_0.8s_infinite_ease-in-out_delay-300] h-10" />
+                            <div className="w-1 bg-brand rounded animate-[wave_0.8s_infinite_ease-in-out_delay-200] h-8" />
+                            <div className="w-1 bg-brand rounded animate-[wave_0.8s_infinite_ease-in-out_delay-400] h-5" />
+                            <div className="w-1 bg-brand rounded animate-[wave_0.8s_infinite_ease-in-out_delay-150] h-9" />
                           </div>
                           
                           <div className="text-center">
-                            <span className="text-sm font-semibold text-indigo-400">Listening...</span>
-                            <span className="text-xs text-slate-500 block mt-1">Simulated Duration: 0:0{voiceSeconds}</span>
+                            <span className="text-sm font-semibold text-brand">Listening...</span>
+                            <span className="text-xs text-textFaint block mt-1">Simulated Duration: 0:0{voiceSeconds}</span>
                           </div>
                         </div>
                       )}
                       
                       {voiceState === 'processing' && (
                         <div className="flex flex-col items-center space-y-4">
-                          <div className="h-24 w-24 rounded-full bg-indigo-900/40 border border-indigo-500/30 flex items-center justify-center">
-                            <div className="h-8 w-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                          <div className="h-24 w-24 rounded-full bg-brand/40 border border-brand/30 flex items-center justify-center">
+                            <div className="h-8 w-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
                           </div>
                           <div className="text-center">
-                            <span className="text-sm font-semibold text-indigo-400">Transcribing Speech to Text...</span>
-                            <span className="text-xs text-slate-505 block mt-1 text-slate-400">Analyzing Intent &amp; Catalog entities</span>
+                            <span className="text-sm font-semibold text-brand">Transcribing Speech to Text...</span>
+                            <span className="text-xs text-textFaint block mt-1 text-textSecondary">Analyzing Intent &amp; Catalog entities</span>
                           </div>
                         </div>
                       )}
                       
                       {voiceState === 'done' && (
                         <div className="w-full space-y-4">
-                          <div className="p-4 bg-slate-800/40 border border-slate-700/60 rounded-xl">
-                            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Converted Text:</p>
-                            <p className="text-sm text-slate-200 mt-2 font-medium italic">"{speechText}"</p>
+                          <div className="p-4 bg-secondary/40 border border-line2/60 rounded-xl">
+                            <p className="text-xs text-textFaint font-bold uppercase tracking-wider">Converted Text:</p>
+                            <p className="text-sm text-textPrimary mt-2 font-medium italic">"{speechText}"</p>
                           </div>
                           
                           <div className="flex justify-center space-x-3">
                             <button 
                               onClick={() => { setVoiceState('idle'); setVoiceSeconds(0); setSpeechText(""); }}
-                              className="px-4 py-2 border border-slate-700 hover:bg-slate-800 text-xs font-semibold rounded-lg text-slate-300 transition-all"
+                              className="px-4 py-2 border border-line2 hover:bg-secondary text-xs font-semibold rounded-lg text-textSecondary transition-all"
                             >
                               Record Again
                             </button>
@@ -1259,7 +1289,7 @@ export default function App() {
                                 parseSpeechText(speechText);
                                 setActiveScene(4);
                               }}
-                              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1"
+                              className="px-5 py-2 bg-brand hover:bg-brand text-xs font-bold rounded-lg text-onbrand transition-all flex items-center space-x-1"
                             >
                               <span>Continue</span>
                               <ChevronRight className="h-3.5 w-3.5" />
@@ -1277,8 +1307,8 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">AI Parsed Requisition Form</h2>
-                      <p className="text-xs text-slate-400">Review and edit the parameters extracted from your conversational request.</p>
+                      <h2 className="font-outfit text-2xl font-extrabold text-primary">AI Parsed Requisition Form</h2>
+                      <p className="text-xs text-textSecondary">Review and edit the parameters extracted from your conversational request.</p>
                     </div>
                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/25 flex items-center space-x-1">
                       <ShieldCheck className="h-3 w-3" />
@@ -1288,75 +1318,75 @@ export default function App() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Left Form: Editable details */}
-                    <div className="md:col-span-2 p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-                      <h3 className="font-outfit text-base font-bold text-slate-200 border-b border-slate-800 pb-2">Extracted Parameters</h3>
+                    <div className="md:col-span-2 p-6 rounded-2xl bg-surface border border-borderTheme space-y-4">
+                      <h3 className="font-outfit text-base font-bold text-textPrimary border-b border-borderTheme pb-2">Extracted Parameters</h3>
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2">
-                          <label className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Product Description</label>
+                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Product Description</label>
                           <input 
                             type="text" 
                             value={editProductName}
                             onChange={(e) => setEditProductName(e.target.value)}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                            className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand"
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Quantity</label>
+                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Quantity</label>
                           <input 
                             type="number" 
                             value={editProductQty}
                             onChange={(e) => setEditProductQty(Number(e.target.value))}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                            className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand"
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Target Price (per unit)</label>
-                          <span className="w-full bg-slate-800/50 border border-slate-750 rounded-lg p-2 text-sm text-indigo-400 block font-semibold">
+                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Target Price (per unit)</label>
+                          <span className="w-full bg-secondary/50 border border-borderTheme rounded-lg p-2 text-sm text-brand block font-semibold">
                             TBD (Determined Post-Contract / Sourcing)
                           </span>
                         </div>
                         <div>
-                          <label className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Category (Mapped)</label>
+                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Category (Mapped)</label>
                           <input 
                             type="text" 
                             value={editExpenseCategory}
                             onChange={(e) => setEditExpenseCategory(e.target.value)}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                            className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand"
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Expense Type</label>
-                          <span className="w-full bg-slate-800/50 border border-slate-750 rounded-lg p-2 text-sm text-slate-350 block">Capital Expenditure (CapEx)</span>
+                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Expense Type</label>
+                          <span className="w-full bg-secondary/50 border border-borderTheme rounded-lg p-2 text-sm text-textSecondary block">Capital Expenditure (CapEx)</span>
                         </div>
                       </div>
                       
                       <div className="pt-4 flex justify-end space-x-3">
-                        <button onClick={() => setActiveScene(2)} className="px-4 py-2 text-xs text-slate-400 hover:text-white transition-all font-semibold">Cancel</button>
-                        <button onClick={createRequisitionFromForm} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all">Submit for Validation</button>
+                        <button onClick={() => setActiveScene(2)} className="px-4 py-2 text-xs text-textSecondary hover:text-primary transition-all font-semibold">Cancel</button>
+                        <button onClick={createRequisitionFromForm} className="px-5 py-2 bg-brand hover:bg-brand text-xs font-bold rounded-lg text-onbrand transition-all">Submit for Validation</button>
                       </div>
                     </div>
                     
                     {/* Right Card: Address Resolution Mappings */}
                     <div className="space-y-4">
-                      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-                        <h3 className="font-outfit text-base font-bold text-slate-200 border-b border-slate-800 pb-2">Branch Mapped Addresses</h3>
+                      <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-4">
+                        <h3 className="font-outfit text-base font-bold text-textPrimary border-b border-borderTheme pb-2">Branch Mapped Addresses</h3>
                         
                         <div className="space-y-3">
                           <div>
-                            <span className="text-[10px] text-slate-550 font-bold uppercase tracking-wider block mb-0.5">Input location:</span>
-                            <span className="text-xs font-semibold text-slate-300">"{editLocation}"</span>
+                            <span className="text-[10px] text-textFaint font-bold uppercase tracking-wider block mb-0.5">Input location:</span>
+                            <span className="text-xs font-semibold text-textSecondary">"{editLocation}"</span>
                           </div>
                           
-                          <div className="pt-2 border-t border-slate-800">
-                            <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider block">Resolved Bill-To Address</span>
-                            <span className="text-xs text-slate-300 font-medium block mt-1 font-semibold">Kuttukaran Corporate HQ, Metro Pillar 32, Kochi, KL - 682025</span>
-                            <span className="text-[9px] text-slate-500 block mt-0.5">GSTIN: 32AAAAB1234C1Z0</span>
+                          <div className="pt-2 border-t border-borderTheme">
+                            <span className="text-[10px] text-brand font-bold uppercase tracking-wider block">Resolved Bill-To Address</span>
+                            <span className="text-xs text-textSecondary font-medium block mt-1 font-semibold">Kuttukaran Corporate HQ, Metro Pillar 32, Kochi, KL - 682025</span>
+                            <span className="text-[9px] text-textFaint block mt-0.5">GSTIN: 32AAAAB1234C1Z0</span>
                           </div>
                           
-                          <div className="pt-2 border-t border-slate-800">
-                            <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider block">Resolved Ship-To Address</span>
-                            <span className="text-xs text-slate-300 font-medium block mt-1 font-semibold">Kuttukaran Regional Warehouse, IT Park, Bangalore, KA - 560066</span>
+                          <div className="pt-2 border-t border-borderTheme">
+                            <span className="text-[10px] text-brand font-bold uppercase tracking-wider block">Resolved Ship-To Address</span>
+                            <span className="text-xs text-textSecondary font-medium block mt-1 font-semibold">Kuttukaran Regional Warehouse, IT Park, Bangalore, KA - 560066</span>
                           </div>
                         </div>
                       </div>
@@ -1370,21 +1400,21 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 9: Smart Budget Verification &amp; Allocation</h2>
-                      <p className="text-xs text-slate-400">The platform cross-references available cost center funds in real-time after contract pricing is resolved.</p>
+                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Scene 9: Smart Budget Verification &amp; Allocation</h2>
+                      <p className="text-xs text-textSecondary">The platform cross-references available cost center funds in real-time after contract pricing is resolved.</p>
                     </div>
                     
-                    <div className="flex items-center space-x-3 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
-                      <span className="font-semibold text-slate-350">Simulate Budget Status:</span>
+                    <div className="flex items-center space-x-3 bg-secondary px-3 py-1.5 rounded-lg border border-line2 text-xs">
+                      <span className="font-semibold text-textSecondary">Simulate Budget Status:</span>
                       <button 
                         onClick={() => { setBudgetBreach(false); setBudgetAction("default"); }}
-                        className={`px-2 py-1 rounded font-bold ${!budgetBreach ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+                        className={`px-2 py-1 rounded font-bold ${!budgetBreach ? 'bg-brand text-onbrand' : 'bg-raised text-textSecondary'}`}
                       >
                         Within Limit
                       </button>
                       <button 
                         onClick={() => { setBudgetBreach(true); }}
-                        className={`px-2 py-1 rounded font-bold ${budgetBreach ? 'bg-rose-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+                        className={`px-2 py-1 rounded font-bold ${budgetBreach ? 'bg-neg text-onbrand' : 'bg-raised text-textSecondary'}`}
                       >
                         Limit Exceeded
                       </button>
@@ -1392,51 +1422,51 @@ export default function App() {
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-2 p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6">
-                      <h3 className="font-outfit text-base font-bold text-slate-200 border-b border-slate-800 pb-2">{currentRequest.expenseCategory} Budget Allocation</h3>
+                    <div className="md:col-span-2 p-6 rounded-2xl bg-surface border border-borderTheme space-y-6">
+                      <h3 className="font-outfit text-base font-bold text-textPrimary border-b border-borderTheme pb-2">{currentRequest.expenseCategory} Budget Allocation</h3>
                       
                       <div className="space-y-4">
-                        <div className="flex justify-between text-xs text-slate-400">
+                        <div className="flex justify-between text-xs text-textSecondary">
                           <span>Total Allocated Q3 Budget:</span>
-                          <span className="font-bold text-slate-200">₹30,00,000</span>
+                          <span className="font-bold text-textPrimary">₹30,00,000</span>
                         </div>
-                        <div className="flex justify-between text-xs text-slate-400">
+                        <div className="flex justify-between text-xs text-textSecondary">
                           <span>Committed Spend:</span>
-                          <span className="font-bold text-slate-200">₹12,00,000</span>
+                          <span className="font-bold text-textPrimary">₹12,00,000</span>
                         </div>
-                        <div className="flex justify-between text-xs text-slate-400">
+                        <div className="flex justify-between text-xs text-textSecondary">
                           <span>Current Request ({currentRequest.productQty} units @ ₹{currentRequest.targetPrice.toLocaleString()}):</span>
-                          <span className="font-bold text-indigo-400">₹{(currentRequest.productQty * currentRequest.targetPrice).toLocaleString()}</span>
+                          <span className="font-bold text-brand">₹{(currentRequest.productQty * currentRequest.targetPrice).toLocaleString()}</span>
                         </div>
                         
                         <div className="relative pt-2">
-                          <div className="h-4 w-full bg-slate-800 rounded-full overflow-hidden flex">
-                            <div className="h-full bg-slate-500" style={{ width: '40%' }} />
-                            <div className={`h-full ${budgetBreach ? 'bg-rose-500' : 'bg-indigo-500'}`} style={{ width: budgetBreach ? '70%' : '20%' }} />
+                          <div className="h-4 w-full bg-secondary rounded-full overflow-hidden flex">
+                            <div className="h-full bg-raised" style={{ width: '40%' }} />
+                            <div className={`h-full ${budgetBreach ? 'bg-neg' : 'bg-brand'}`} style={{ width: budgetBreach ? '70%' : '20%' }} />
                           </div>
                         </div>
                       </div>
                       
                       {!budgetBreach ? (
-                        <div className="p-4 bg-emerald-950/20 border border-emerald-900/40 rounded-xl flex items-start space-x-3 text-emerald-400 text-xs">
-                          <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-400" />
+                        <div className="p-4 bg-pos/20 border border-pos/40 rounded-xl flex items-start space-x-3 text-pos text-xs">
+                          <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0 text-pos" />
                           <div>
                             <p className="font-bold">Budget Verification Passed</p>
-                            <p className="mt-1 text-slate-350">Funds are available. Mapped to Cost Center. No pre-approvals required for budget allocation.</p>
+                            <p className="mt-1 text-textSecondary">Funds are available. Mapped to Cost Center. No pre-approvals required for budget allocation.</p>
                           </div>
                         </div>
                       ) : (
-                        <div className="p-4 bg-rose-950/20 border border-rose-900/40 rounded-xl flex items-start space-x-3 text-rose-400 text-xs">
-                          <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0 text-rose-400 animate-pulse" />
+                        <div className="p-4 bg-neg/20 border border-neg/40 rounded-xl flex items-start space-x-3 text-neg text-xs">
+                          <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0 text-neg animate-pulse" />
                           <div>
                             <p className="font-bold">Budget Limit Exceeded by ₹{(currentRequest.productQty * currentRequest.targetPrice + 1200000 - 3000000).toLocaleString()}</p>
-                            <p className="mt-1 text-slate-350">This requisition exceeds the remaining allocated budget threshold.</p>
+                            <p className="mt-1 text-textSecondary">This requisition exceeds the remaining allocated budget threshold.</p>
                           </div>
                         </div>
                       )}
                       
                       <div className="pt-2 flex justify-end space-x-3">
-                        <button onClick={() => setActiveScene(4)} className="px-4 py-2 text-xs text-slate-400 font-semibold hover:text-white">Modify Request</button>
+                        <button onClick={() => setActiveScene(4)} className="px-4 py-2 text-xs text-textSecondary font-semibold hover:text-primary">Modify Request</button>
                         {hasContract ? (
                           <button onClick={() => {
                             setRequests(prev => prev.map(r => {
@@ -1450,7 +1480,7 @@ export default function App() {
                               return r;
                             }));
                             setActiveScene(11);
-                          }} className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1">
+                          }} className="px-5 py-2 bg-pos hover:bg-pos text-xs font-bold rounded-lg text-onbrand transition-all flex items-center space-x-1">
                             <span>Auto-Generate Purchase Order</span>
                             <ArrowRight className="h-4 w-4" />
                           </button>
@@ -1468,7 +1498,7 @@ export default function App() {
                             }));
                             setUserRole("Manager");
                             setActiveScene(10);
-                          }} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1">
+                          }} className="px-5 py-2 bg-brand hover:bg-brand text-xs font-bold rounded-lg text-onbrand transition-all flex items-center space-x-1">
                             <span>Route to Manager Approval</span>
                             <ArrowRight className="h-4 w-4" />
                           </button>
@@ -1484,37 +1514,37 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 5: Active Contract Search</h2>
-                      <p className="text-xs text-slate-400">AI queries the Odoo registry for valid Rate Contracts or pricing agreements.</p>
+                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Scene 5: Active Contract Search</h2>
+                      <p className="text-xs text-textSecondary">AI queries the Odoo registry for valid Rate Contracts or pricing agreements.</p>
                     </div>
                     
-                    <div className="flex items-center space-x-3 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
-                      <span className="font-semibold text-slate-350">Active Contract exists?</span>
+                    <div className="flex items-center space-x-3 bg-secondary px-3 py-1.5 rounded-lg border border-line2 text-xs">
+                      <span className="font-semibold text-textSecondary">Active Contract exists?</span>
                       <button 
                         onClick={() => setHasContract(true)}
-                        className={`px-2.5 py-1 rounded font-bold ${hasContract ? 'bg-[#10b981] text-white' : 'bg-slate-700 text-slate-400'}`}
+                        className={`px-2.5 py-1 rounded font-bold ${hasContract ? 'bg-[#10b981] text-primary' : 'bg-raised text-textSecondary'}`}
                       >
                         Yes
                       </button>
                       <button 
                         onClick={() => setHasContract(false)}
-                        className={`px-2.5 py-1 rounded font-bold ${!hasContract ? 'bg-amber-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+                        className={`px-2.5 py-1 rounded font-bold ${!hasContract ? 'bg-gold text-onbrand' : 'bg-raised text-textSecondary'}`}
                       >
                         No
                       </button>
                     </div>
                   </div>
                   
-                  <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6">
+                  <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-6">
                     {hasContract ? (
                       <div className="space-y-6 animate-fadeIn">
-                        <div className="p-5 bg-emerald-950/20 border border-emerald-900/40 rounded-2xl flex items-start space-x-4">
-                          <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/25 text-emerald-400">
+                        <div className="p-5 bg-pos/20 border border-pos/40 rounded-2xl flex items-start space-x-4">
+                          <div className="h-12 w-12 rounded-xl bg-pos/10 flex items-center justify-center border border-pos/25 text-pos">
                             <ShieldCheck className="h-6 w-6" />
                           </div>
                           <div className="space-y-1">
-                            <h3 className="font-outfit font-extrabold text-lg text-emerald-400">Active Rate Contract Mapped</h3>
-                            <p className="text-sm text-slate-300">
+                            <h3 className="font-outfit font-extrabold text-lg text-pos">Active Rate Contract Mapped</h3>
+                            <p className="text-sm text-textSecondary">
                               Found active agreement registered in Odoo for this product category: 
                               <strong> ₹{getContractPrice(currentRequest.productName).toLocaleString()} / unit</strong>. 
                               Total Allocation: 
@@ -1538,7 +1568,7 @@ export default function App() {
                               return r;
                             }));
                             setActiveScene(9);
-                          }} className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1">
+                          }} className="px-5 py-2.5 bg-pos hover:bg-pos text-xs font-bold rounded-lg text-onbrand transition-all flex items-center space-x-1">
                             <span>Proceed to Budget Verification</span>
                             <ArrowRight className="h-4 w-4" />
                           </button>
@@ -1546,13 +1576,13 @@ export default function App() {
                       </div>
                     ) : (
                       <div className="space-y-6 animate-fadeIn">
-                        <div className="p-5 bg-amber-950/25 border border-amber-900/45 rounded-2xl flex items-start space-x-4">
-                          <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/25 text-amber-400">
+                        <div className="p-5 bg-gold/25 border border-gold/45 rounded-2xl flex items-start space-x-4">
+                          <div className="h-12 w-12 rounded-xl bg-gold/10 flex items-center justify-center border border-gold/25 text-gold">
                             <AlertCircle className="h-6 w-6" />
                           </div>
                           <div className="space-y-1">
-                            <h3 className="font-outfit font-extrabold text-lg text-amber-400">No Active Contract Found</h3>
-                            <p className="text-sm text-slate-300">The product category does not have a pre-negotiated volume contract. Sourcing is required.</p>
+                            <h3 className="font-outfit font-extrabold text-lg text-gold">No Active Contract Found</h3>
+                            <p className="text-sm text-textSecondary">The product category does not have a pre-negotiated volume contract. Sourcing is required.</p>
                           </div>
                         </div>
                         
@@ -1570,7 +1600,7 @@ export default function App() {
                             setUserRole("SCM Buyer");
                             setScmTab('requests');
                             setActiveScene(6);
-                          }} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1">
+                          }} className="px-5 py-2.5 bg-brand hover:bg-brand text-xs font-bold rounded-lg text-onbrand transition-all flex items-center space-x-1">
                             <span>Launch RFQ Sourcing Portal</span>
                             <ArrowRight className="h-4 w-4" />
                           </button>
@@ -1586,22 +1616,22 @@ export default function App() {
                 <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn">
                   
                   {/* SCM Sourcing Tab Selector */}
-                  <div className="flex border-b border-slate-800">
+                  <div className="flex border-b border-borderTheme">
                     <button 
                       onClick={() => setScmTab('requests')} 
-                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${scmTab === 'requests' ? 'border-purple-500 text-white' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${scmTab === 'requests' ? 'border-brand text-primary' : 'border-transparent text-textSecondary hover:text-textPrimary'}`}
                     >
                       Active Contract Requests (CR)
                     </button>
                     <button 
                       onClick={() => setScmTab('bidding')} 
-                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${scmTab === 'bidding' ? 'border-purple-500 text-white' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${scmTab === 'bidding' ? 'border-brand text-primary' : 'border-transparent text-textSecondary hover:text-textPrimary'}`}
                     >
                       Bidding &amp; Live RFQs
                     </button>
                     <button 
                       onClick={() => setScmTab('discovery')} 
-                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${scmTab === 'discovery' ? 'border-purple-500 text-white' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+                      className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${scmTab === 'discovery' ? 'border-brand text-primary' : 'border-transparent text-textSecondary hover:text-textPrimary'}`}
                     >
                       AI Vendor Sourcing Discovery
                     </button>
@@ -1612,21 +1642,21 @@ export default function App() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="font-outfit font-extrabold text-xl text-white">Pending Sourcing Workload</h3>
-                          <p className="text-xs text-slate-400">Requisitions flagged by Odoo requiring vendor quotation sourcing.</p>
+                          <h3 className="font-outfit font-extrabold text-xl text-primary">Pending Sourcing Workload</h3>
+                          <p className="text-xs text-textSecondary">Requisitions flagged by Odoo requiring vendor quotation sourcing.</p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 gap-4">
                         {requests.filter(r => r.status === 'Sourcing').map(req => (
-                          <div key={req.id} className="p-6 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div key={req.id} className="p-6 rounded-2xl bg-surface border border-borderTheme flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div className="space-y-2">
                               <div className="flex items-center space-x-2">
-                                <span className="text-xs font-bold text-slate-500">{req.id}</span>
-                                <span className="text-xs px-2.5 py-0.5 rounded bg-purple-550/20 text-purple-400 border border-purple-500/20 font-bold uppercase">SOURCING FALLBACK</span>
+                                <span className="text-xs font-bold text-textFaint">{req.id}</span>
+                                <span className="text-xs px-2.5 py-0.5 rounded bg-brand/20 text-brand border border-brand/20 font-bold uppercase">SOURCING FALLBACK</span>
                               </div>
-                              <h4 className="font-outfit font-extrabold text-lg text-white">{req.productQty}x {req.productName}</h4>
-                              <p className="text-xs text-slate-450">Estimated Value: <strong>{req.totalCost > 0 ? `₹${req.totalCost.toLocaleString()}` : "TBD (Pending Sourcing Bids)"}</strong> | Mapped to: {req.expenseCategory}</p>
+                              <h4 className="font-outfit font-extrabold text-lg text-primary">{req.productQty}x {req.productName}</h4>
+                              <p className="text-xs text-textSecondary">Estimated Value: <strong>{req.totalCost > 0 ? `₹${req.totalCost.toLocaleString()}` : "TBD (Pending Sourcing Bids)"}</strong> | Mapped to: {req.expenseCategory}</p>
                             </div>
 
                             <div className="flex items-center space-x-3">
@@ -1637,7 +1667,7 @@ export default function App() {
                                   const method = e.target.value as 'Direct' | 'RFQ' | 'Auction';
                                   setRequests(prev => prev.map(r => r.id === req.id ? { ...r, selectedSourcingMethod: method } : r));
                                 }}
-                                className="bg-slate-800 border border-slate-700/80 rounded-lg p-2 text-xs text-white focus:outline-none"
+                                className="bg-secondary border border-line2/80 rounded-lg p-2 text-xs text-primary focus:outline-none"
                               >
                                 <option value="RFQ">Invite Preferred (Multi-RFQ)</option>
                                 <option value="Direct">Direct Price Negotiator</option>
@@ -1646,7 +1676,7 @@ export default function App() {
 
                               <button 
                                 onClick={() => { setSelectedRequestId(req.id); setScmTab('bidding'); }}
-                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all"
+                                className="px-4 py-2 bg-brand hover:bg-brand text-xs font-bold rounded-lg text-onbrand transition-all"
                               >
                                 Manage RFQ
                               </button>
@@ -1660,15 +1690,15 @@ export default function App() {
                   {/* SCM Tab 2: RFQ Bidding Events (Managing RFQs and bidding) */}
                   {scmTab === 'bidding' && (
                     <div className="space-y-6">
-                      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-850 pb-4">
+                      <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-borderTheme pb-4">
                           <div>
-                            <span className="text-xs text-indigo-400 font-bold block">{currentRequest.id} Bidding Management</span>
-                            <h3 className="font-outfit font-extrabold text-xl text-white">{currentRequest.productQty}x {currentRequest.productName}</h3>
+                            <span className="text-xs text-brand font-bold block">{currentRequest.id} Bidding Management</span>
+                            <h3 className="font-outfit font-extrabold text-xl text-primary">{currentRequest.productQty}x {currentRequest.productName}</h3>
                           </div>
 
                           <div className="mt-2 sm:mt-0 flex items-center space-x-2">
-                            <span className="px-2.5 py-1 bg-purple-500/20 text-purple-400 border border-purple-500/25 rounded-md text-xs font-bold">
+                            <span className="px-2.5 py-1 bg-brand/20 text-brand border border-brand/25 rounded-md text-xs font-bold">
                               Sourcing: {currentRequest.selectedSourcingMethod} Mode
                             </span>
                           </div>
@@ -1676,17 +1706,17 @@ export default function App() {
 
                         {/* Bid submissions table */}
                         <div className="space-y-3">
-                          <h4 className="text-xs text-slate-500 font-bold uppercase tracking-wider">Active Vendor Bids (Received in real-time)</h4>
+                          <h4 className="text-xs text-textFaint font-bold uppercase tracking-wider">Active Vendor Bids (Received in real-time)</h4>
                           
                           {currentRequest.vendorBids.length === 0 ? (
-                            <div className="p-6 text-center bg-slate-850/40 border border-slate-800 rounded-xl text-slate-400 text-xs">
+                            <div className="p-6 text-center bg-secondary/40 border border-borderTheme rounded-xl text-textSecondary text-xs">
                               No bids received yet. Invite vendors or click "Trigger Bidding" below to populate quotes.
                             </div>
                           ) : (
                             <div className="overflow-x-auto">
                               <table className="w-full text-left border-collapse text-xs">
                                 <thead>
-                                  <tr className="border-b border-slate-800 text-slate-500 font-bold">
+                                  <tr className="border-b border-borderTheme text-textFaint font-bold">
                                     <th className="py-2.5">Supplier Name</th>
                                     <th className="py-2.5">Quote Price</th>
                                     <th className="py-2.5">Warranty SLA</th>
@@ -1694,15 +1724,15 @@ export default function App() {
                                     <th className="py-2.5">Odoo Onboard Status</th>
                                   </tr>
                                 </thead>
-                                <tbody className="text-slate-300">
+                                <tbody className="text-textSecondary">
                                   {currentRequest.vendorBids.map((bid, idx) => (
-                                    <tr key={idx} className="border-b border-slate-850">
+                                    <tr key={idx} className="border-b border-borderTheme">
                                       <td className="py-3 font-semibold">{bid.vendorName}</td>
-                                      <td className="py-3 font-bold text-white">₹{bid.price.toLocaleString()}</td>
-                                      <td className="py-3 text-slate-400">{bid.warranty}</td>
-                                      <td className="py-3 text-slate-400">{bid.leadTime}</td>
+                                      <td className="py-3 font-bold text-primary">₹{bid.price.toLocaleString()}</td>
+                                      <td className="py-3 text-textSecondary">{bid.warranty}</td>
+                                      <td className="py-3 text-textSecondary">{bid.leadTime}</td>
                                       <td className="py-3">
-                                        <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold text-[9px] uppercase border border-emerald-500/20">
+                                        <span className="px-2 py-0.5 rounded bg-pos/15 text-pos font-bold text-[9px] uppercase border border-pos/20">
                                           Approved Partner
                                         </span>
                                       </td>
@@ -1715,7 +1745,7 @@ export default function App() {
                         </div>
 
                         {/* Interactive simulation action controls */}
-                        <div className="flex justify-between items-center pt-4 border-t border-slate-850">
+                        <div className="flex justify-between items-center pt-4 border-t border-borderTheme">
                           <button 
                             onClick={() => {
                               // Simulate adding a bid from Primus Tech
@@ -1733,7 +1763,7 @@ export default function App() {
                               }));
                               alert("Simulated: Vendor 'Primus Technologies' submitted a new quote.");
                             }}
-                            className="px-4 py-2 bg-slate-800 hover:bg-slate-750 text-xs font-semibold rounded-lg text-slate-200 transition-all border border-slate-750"
+                            className="px-4 py-2 bg-secondary hover:bg-raised text-xs font-semibold rounded-lg text-textPrimary transition-all border border-borderTheme"
                           >
                             Simulate Vendor Bid Submission
                           </button>
@@ -1741,7 +1771,7 @@ export default function App() {
                           <div className="flex space-x-3">
                             <button 
                               onClick={() => setActiveScene(7)} 
-                              className="px-4 py-2 border border-slate-700 hover:bg-slate-800 text-xs font-semibold rounded-lg text-slate-300"
+                              className="px-4 py-2 border border-line2 hover:bg-secondary text-xs font-semibold rounded-lg text-textSecondary"
                             >
                               Open Scorecard Matrix
                             </button>
@@ -1750,7 +1780,7 @@ export default function App() {
                                 resetNegotiation();
                                 setActiveScene(8);
                               }} 
-                              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white"
+                              className="px-5 py-2.5 bg-brand hover:bg-brand text-xs font-bold rounded-lg text-onbrand"
                             >
                               Launch AI Negotiation
                             </button>
@@ -1759,36 +1789,36 @@ export default function App() {
                       </div>
 
                       {/* Mock Vendor Submission Form panel (To show how vendors interact) */}
-                      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-                        <div className="flex items-center space-x-2 text-indigo-400">
+                      <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-4">
+                        <div className="flex items-center space-x-2 text-brand">
                           <Landmark className="h-4.5 w-4.5" />
-                          <h4 className="font-outfit font-extrabold text-base text-white">Vendor Portal Simulation Workspace</h4>
+                          <h4 className="font-outfit font-extrabold text-base text-primary">Vendor Portal Simulation Workspace</h4>
                         </div>
-                        <p className="text-xs text-slate-400">This simulates the external vendor's secure magic link. Entering details submits them to Odoo.</p>
+                        <p className="text-xs text-textSecondary">This simulates the external vendor's secure magic link. Entering details submits them to Odoo.</p>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-2">
                           <div>
-                            <label className="text-slate-500 block mb-1">Quote price per unit (₹):</label>
+                            <label className="text-textFaint block mb-1">Quote price per unit (₹):</label>
                             <input 
                               type="number"
                               value={vendorBidPrice}
                               onChange={(e) => setVendorBidPrice(e.target.value)}
-                              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white"
+                              className="w-full bg-secondary border border-line2 rounded-lg p-2 text-primary"
                             />
                           </div>
                           <div>
-                            <label className="text-slate-500 block mb-1">Delivery Lead Time:</label>
+                            <label className="text-textFaint block mb-1">Delivery Lead Time:</label>
                             <input 
                               type="text"
                               value={vendorLeadTime}
                               onChange={(e) => setVendorLeadTime(e.target.value)}
-                              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white"
+                              className="w-full bg-secondary border border-line2 rounded-lg p-2 text-primary"
                             />
                           </div>
                           <div className="flex items-end">
                             <button 
                               onClick={handleVendorBidSubmit}
-                              className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition-all"
+                              className="w-full py-2 bg-pos hover:bg-pos text-xs font-bold rounded-lg text-onbrand transition-all"
                             >
                               Submit Vendor Bid to Odoo
                             </button>
@@ -1801,9 +1831,9 @@ export default function App() {
                   {/* SCM Tab 3: AI Vendor Sourcing Discovery (Auto creation of draft vendor) */}
                   {scmTab === 'discovery' && (
                     <div className="space-y-6">
-                      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-                        <h3 className="font-outfit font-extrabold text-lg text-white">AI Sourcing Directory Discovery</h3>
-                        <p className="text-xs text-slate-400">Search external B2B registries to resolve suppliers for non-catalog categories.</p>
+                      <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-4">
+                        <h3 className="font-outfit font-extrabold text-lg text-primary">AI Sourcing Directory Discovery</h3>
+                        <p className="text-xs text-textSecondary">Search external B2B registries to resolve suppliers for non-catalog categories.</p>
 
                         <form onSubmit={handleSearchVendors} className="flex gap-2 max-w-lg">
                           <input 
@@ -1811,9 +1841,9 @@ export default function App() {
                             value={searchVendorQuery}
                             onChange={(e) => setSearchVendorQuery(e.target.value)}
                             placeholder="Type product categories (e.g. Server components, desks)..."
-                            className="flex-grow bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
+                            className="flex-grow bg-secondary border border-line2 rounded-lg px-3 py-2 text-xs text-primary focus:outline-none"
                           />
-                          <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white">
+                          <button type="submit" className="px-4 py-2 bg-brand hover:bg-brand text-xs font-bold rounded-lg text-onbrand">
                             Search registries
                           </button>
                         </form>
@@ -1821,11 +1851,11 @@ export default function App() {
 
                       {/* Onboard Success Notification banner */}
                       {showDraftOnboardSuccess && (
-                        <div className="p-4 bg-emerald-950/20 border border-emerald-900/40 rounded-xl flex items-start space-x-3 text-emerald-400 text-xs animate-fadeIn">
+                        <div className="p-4 bg-pos/20 border border-pos/40 rounded-xl flex items-start space-x-3 text-pos text-xs animate-fadeIn">
                           <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0" />
                           <div>
                             <p className="font-bold">Odoo Draft Partner Auto-Created!</p>
-                            <p className="mt-1 text-slate-350">
+                            <p className="mt-1 text-textSecondary">
                               Successfully registered <strong>{lastOnboardedVendor}</strong> as a draft partner in Odoo (Record ID: `res.partner.draft_092`). Magic link sent for onboard completion.
                             </p>
                           </div>
@@ -1834,29 +1864,29 @@ export default function App() {
 
                       {/* SCM Discovery search result lists */}
                       {searchingVendors ? (
-                        <div className="p-8 text-center text-xs text-slate-400">Searching B2B databases...</div>
+                        <div className="p-8 text-center text-xs text-textSecondary">Searching B2B databases...</div>
                       ) : discoveredVendors.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {discoveredVendors.map((vendor, idx) => (
-                            <div key={idx} className="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col justify-between h-56">
+                            <div key={idx} className="p-5 rounded-2xl bg-surface border border-borderTheme flex flex-col justify-between h-56">
                               <div>
-                                <span className="px-2 py-0.5 bg-slate-850 border border-slate-700/60 rounded text-[9px] font-bold text-slate-400 uppercase">
+                                <span className="px-2 py-0.5 bg-secondary border border-line2/60 rounded text-[9px] font-bold text-textSecondary uppercase">
                                   External Discovery Match
                                 </span>
-                                <h4 className="font-outfit font-extrabold text-lg text-white mt-2">{vendor.name}</h4>
-                                <p className="text-xs text-slate-450 mt-1">{vendor.category}</p>
+                                <h4 className="font-outfit font-extrabold text-lg text-primary mt-2">{vendor.name}</h4>
+                                <p className="text-xs text-textSecondary mt-1">{vendor.category}</p>
 
-                                <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-850 text-xs text-slate-450">
+                                <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-borderTheme text-xs text-textSecondary">
                                   <span>Trust score: <strong>{vendor.rating}/100</strong></span>
                                   <span>AI Index: <strong>{vendor.score}%</strong></span>
                                 </div>
                               </div>
 
                               <div className="flex justify-between items-center pt-2">
-                                <span className="text-[10px] text-slate-550">Not in local Odoo Partner DB</span>
+                                <span className="text-[10px] text-textFaint">Not in local Odoo Partner DB</span>
                                 <button 
                                   onClick={() => handleAutoOnboard(vendor.name)}
-                                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white"
+                                  className="px-3.5 py-1.5 bg-pos hover:bg-pos text-xs font-bold rounded-lg text-onbrand"
                                 >
                                   Auto-Create Draft Vendor
                                 </button>
@@ -1865,7 +1895,7 @@ export default function App() {
                           ))}
                         </div>
                       ) : (
-                        <div className="p-8 text-center bg-slate-900/40 border border-slate-800 rounded-xl text-slate-450 text-xs">
+                        <div className="p-8 text-center bg-surface/40 border border-borderTheme rounded-xl text-textSecondary text-xs">
                           Search above to simulate sourcing new suppliers from B2B catalogs.
                         </div>
                       )}
@@ -1880,61 +1910,61 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 7: Side-by-Side RFQ Comparison</h2>
-                      <p className="text-xs text-slate-400">Value scorecard compiled from active vendor bids in local Odoo database.</p>
+                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Scene 7: Side-by-Side RFQ Comparison</h2>
+                      <p className="text-xs text-textSecondary">Value scorecard compiled from active vendor bids in local Odoo database.</p>
                     </div>
                   </div>
                   
-                  <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden">
+                  <div className="p-6 rounded-2xl bg-surface border border-borderTheme overflow-hidden">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="border-b border-slate-800 text-xs text-slate-400 uppercase font-bold tracking-wider">
+                        <tr className="border-b border-borderTheme text-xs text-textSecondary uppercase font-bold tracking-wider">
                           <th className="py-3 px-4">Evaluation Criteria</th>
-                          <th className="py-3 px-4 bg-indigo-950/20 text-indigo-400">Primus Technologies</th>
+                          <th className="py-3 px-4 bg-brand/20 text-brand">Primus Technologies</th>
                           <th className="py-3 px-4">Apex Systems</th>
                         </tr>
                       </thead>
-                      <tbody className="text-xs text-slate-300">
-                        <tr className="border-b border-slate-800/50">
+                      <tbody className="text-xs text-textSecondary">
+                        <tr className="border-b border-borderTheme/50">
                           <td className="py-3 px-4 font-semibold">Unit Quote Price</td>
-                          <td className="py-3 px-4 bg-indigo-950/15 font-bold text-white">₹{getNegotiationBaselinePrice(currentRequest.productName).toLocaleString()}</td>
+                          <td className="py-3 px-4 bg-brand/15 font-bold text-primary">₹{getNegotiationBaselinePrice(currentRequest.productName).toLocaleString()}</td>
                           <td className="py-3 px-4">₹{(getNegotiationBaselinePrice(currentRequest.productName) + 3000).toLocaleString()}</td>
                         </tr>
-                        <tr className="border-b border-slate-800/50">
+                        <tr className="border-b border-borderTheme/50">
                           <td className="py-3 px-4 font-semibold">Warranty Terms</td>
-                          <td className="py-3 px-4 bg-indigo-950/15">3 Years On-Site Support</td>
+                          <td className="py-3 px-4 bg-brand/15">3 Years On-Site Support</td>
                           <td className="py-3 px-4">1 Year Carry-In Warranty</td>
                         </tr>
-                        <tr className="border-b border-slate-800/50">
+                        <tr className="border-b border-borderTheme/50">
                           <td className="py-3 px-4 font-semibold">Delivery Timeframe</td>
-                          <td className="py-3 px-4 bg-indigo-950/15 font-bold text-emerald-400">5 Business Days</td>
+                          <td className="py-3 px-4 bg-brand/15 font-bold text-pos">5 Business Days</td>
                           <td className="py-3 px-4">10 Business Days</td>
                         </tr>
-                        <tr className="border-b border-slate-800/50">
+                        <tr className="border-b border-borderTheme/50">
                           <td className="py-3 px-4 font-semibold">Payment Milestones</td>
-                          <td className="py-3 px-4 bg-indigo-950/15">Net-30 Audited Terms</td>
+                          <td className="py-3 px-4 bg-brand/15">Net-30 Audited Terms</td>
                           <td className="py-3 px-4">Net-15 Invoice Terms</td>
                         </tr>
-                        <tr className="border-b border-slate-800/50">
+                        <tr className="border-b border-borderTheme/50">
                           <td className="py-3 px-4 font-semibold">Risk &amp; Health Score</td>
-                          <td className="py-3 px-4 bg-indigo-950/15">Low Risk (Score: 96)</td>
-                          <td className="py-3 px-4 text-amber-400 font-medium">Medium Risk (Score: 88)</td>
+                          <td className="py-3 px-4 bg-brand/15">Low Risk (Score: 96)</td>
+                          <td className="py-3 px-4 text-gold font-medium">Medium Risk (Score: 88)</td>
                         </tr>
                         <tr>
                           <td className="py-3 px-4 font-semibold">AI Recommendation</td>
-                          <td className="py-3 px-4 bg-indigo-950/20">
-                            <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px]">RECOMMENDED FIT</span>
+                          <td className="py-3 px-4 bg-brand/20">
+                            <span className="px-2 py-0.5 rounded bg-pos/20 text-pos font-bold text-[10px]">RECOMMENDED FIT</span>
                           </td>
                           <td className="py-3 px-4">
-                            <span className="text-slate-500 font-medium">Not Recommended</span>
+                            <span className="text-textFaint font-medium">Not Recommended</span>
                           </td>
                         </tr>
                       </tbody>
                     </table>
                     
                     <div className="pt-6 flex justify-end space-x-3">
-                      <button onClick={() => { setUserRole("SCM Buyer"); setScmTab('bidding'); setActiveScene(6); }} className="px-4 py-2 text-xs text-slate-400 font-semibold hover:text-white">Back to Sourcing</button>
-                      <button onClick={() => setActiveScene(8)} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1">
+                      <button onClick={() => { setUserRole("SCM Buyer"); setScmTab('bidding'); setActiveScene(6); }} className="px-4 py-2 text-xs text-textSecondary font-semibold hover:text-primary">Back to Sourcing</button>
+                      <button onClick={() => setActiveScene(8)} className="px-5 py-2.5 bg-brand hover:bg-brand text-xs font-bold rounded-lg text-onbrand transition-all flex items-center space-x-1">
                         <span>Trigger AI Negotiation</span>
                         <ArrowRight className="h-4 w-4" />
                       </button>
@@ -1948,8 +1978,8 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 8: AI Autonomous Negotiation</h2>
-                      <p className="text-xs text-slate-400">Watch the AI agent negotiate rates and terms directly with the supplier bot.</p>
+                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Scene 8: AI Autonomous Negotiation</h2>
+                      <p className="text-xs text-textSecondary">Watch the AI agent negotiate rates and terms directly with the supplier bot.</p>
                     </div>
                     
                     <div className="flex items-center space-x-2">
@@ -1958,7 +1988,7 @@ export default function App() {
                       </span>
                       <button 
                         onClick={resetNegotiation}
-                        className="p-2 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-350"
+                        className="p-2 rounded-lg bg-secondary hover:bg-raised text-textSecondary"
                         title="Restart Negotiation"
                       >
                         <RefreshCw className="h-3.5 w-3.5" />
@@ -1967,27 +1997,27 @@ export default function App() {
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-2 flex flex-col h-[400px] rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden">
-                      <div className="p-4 bg-slate-850 border-b border-slate-800 flex items-center justify-between">
-                        <span className="text-xs text-slate-200 font-bold uppercase tracking-wider">Live Agent Log</span>
-                        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+                    <div className="md:col-span-2 flex flex-col h-[400px] rounded-2xl bg-surface border border-borderTheme overflow-hidden">
+                      <div className="p-4 bg-secondary border-b border-borderTheme flex items-center justify-between">
+                        <span className="text-xs text-textPrimary font-bold uppercase tracking-wider">Live Agent Log</span>
+                        <span className="h-2 w-2 rounded-full bg-pos animate-ping" />
                       </div>
                       
                       <div className="flex-grow p-4 overflow-y-auto space-y-4">
                         {chatLog.length === 0 ? (
                           <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
-                            <div className="h-12 w-12 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                            <div className="h-12 w-12 rounded-full bg-brand/10 flex items-center justify-center text-brand border border-brand/20">
                               <Sparkles className="h-6 w-6" />
                             </div>
                             <div>
-                              <p className="text-sm font-semibold text-slate-350">Negotiation Lounge Ready</p>
-                              <p className="text-xs text-slate-500 mt-1">Click the button below to simulate the AI autonomous pricing discussion.</p>
+                              <p className="text-sm font-semibold text-textSecondary">Negotiation Lounge Ready</p>
+                              <p className="text-xs text-textFaint mt-1">Click the button below to simulate the AI autonomous pricing discussion.</p>
                             </div>
                           </div>
                         ) : (
                           chatLog.map((m, idx) => (
                             <div key={idx} className={`flex ${m.sender === 'ai' ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
-                              <div className={`max-w-md p-3.5 rounded-2xl text-xs space-y-1 ${m.sender === 'ai' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-250 rounded-tl-none border border-slate-700/60'}`}>
+                              <div className={`max-w-md p-3.5 rounded-2xl text-xs space-y-1 ${m.sender === 'ai' ? 'bg-brand text-onbrand rounded-tr-none' : 'bg-secondary text-textPrimary rounded-tl-none border border-line2/60'}`}>
                                 <div className="flex items-center justify-between text-[9px] opacity-75 font-bold uppercase tracking-wider mb-1">
                                   <span>{m.sender === 'ai' ? '🤖 SmartSpend AI' : '👤 Primus Bot'}</span>
                                   <span>{m.timestamp}</span>
@@ -2000,18 +2030,18 @@ export default function App() {
                         <div ref={chatEndRef} />
                       </div>
                       
-                      <div className="p-3 bg-slate-850/60 border-t border-slate-800 flex justify-between items-center">
-                        <span className="text-[10px] text-slate-500">Autonomous API negotiation active</span>
+                      <div className="p-3 bg-secondary/60 border-t border-borderTheme flex justify-between items-center">
+                        <span className="text-[10px] text-textFaint">Autonomous API negotiation active</span>
                         {!negotiationComplete ? (
                           <button 
                             onClick={triggerNextNegotiationStep}
-                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1"
+                            className="px-4 py-2 bg-brand hover:bg-brand text-xs font-bold rounded-lg text-onbrand transition-all flex items-center space-x-1"
                           >
                             <span>{negotiationStep === 0 ? 'Start Agent Session' : 'Continue Negotiation'}</span>
                             <ArrowRight className="h-3.5 w-3.5" />
                           </button>
                         ) : (
-                          <span className="text-xs text-emerald-400 font-bold flex items-center space-x-1 animate-fadeIn">
+                          <span className="text-xs text-pos font-bold flex items-center space-x-1 animate-fadeIn">
                             <CheckCircle2 className="h-4 w-4" />
                             <span>Agreement Locked &amp; Confirmed</span>
                           </span>
@@ -2020,21 +2050,21 @@ export default function App() {
                     </div>
                     
                     <div className="space-y-4">
-                      <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-                        <h3 className="font-outfit text-base font-bold text-slate-200 border-b border-slate-800 pb-2">Deal Tracker</h3>
+                      <div className="p-5 rounded-2xl bg-surface border border-borderTheme space-y-4">
+                        <h3 className="font-outfit text-base font-bold text-textPrimary border-b border-borderTheme pb-2">Deal Tracker</h3>
                         
                         <div className="space-y-3 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Original Bid:</span>
-                            <span className="font-semibold text-slate-350">₹{getNegotiationBaselinePrice(currentRequest.productName).toLocaleString()} / unit</span>
+                            <span className="text-textFaint">Original Bid:</span>
+                            <span className="font-semibold text-textSecondary">₹{getNegotiationBaselinePrice(currentRequest.productName).toLocaleString()} / unit</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Negotiated Rate:</span>
-                            <span className="font-bold text-emerald-400">₹{currentOfferPrice.toLocaleString()} / unit</span>
+                            <span className="text-textFaint">Negotiated Rate:</span>
+                            <span className="font-bold text-pos">₹{currentOfferPrice.toLocaleString()} / unit</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Savings ({currentRequest.productQty} units):</span>
-                            <span className="font-bold text-emerald-400">₹{((getNegotiationBaselinePrice(currentRequest.productName) - currentOfferPrice) * currentRequest.productQty).toLocaleString()}</span>
+                            <span className="text-textFaint">Savings ({currentRequest.productQty} units):</span>
+                            <span className="font-bold text-pos">₹{((getNegotiationBaselinePrice(currentRequest.productName) - currentOfferPrice) * currentRequest.productQty).toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
@@ -2045,7 +2075,7 @@ export default function App() {
                             setRequests(prev => prev.map(r => r.id === selectedRequestId ? { ...r, targetPrice: currentOfferPrice, totalCost: currentOfferPrice * r.productQty, vendor: "Primus Technologies" } : r));
                             setActiveScene(9);
                           }}
-                          className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-xl text-white transition-all shadow-lg flex items-center justify-center space-x-2"
+                          className="w-full py-3 bg-brand hover:bg-brand text-xs font-bold rounded-xl text-onbrand transition-all shadow-lg flex items-center justify-center space-x-2"
                         >
                           <span>Proceed to Budget Verification</span>
                           <ArrowRight className="h-4 w-4" />
