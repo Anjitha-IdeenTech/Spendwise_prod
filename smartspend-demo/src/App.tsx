@@ -6,7 +6,8 @@ import {
   Play, RefreshCw, X, AlertTriangle, AlertCircle, Check, 
   HelpCircle, Volume2, ShieldCheck, Landmark, Briefcase, FileInput, 
   Calendar, Layers, Clock, Users, ArrowUpRight, ArrowDownRight, Menu,
-  Paperclip, MessageSquare, History, Search, Eye, Filter
+  Paperclip, MessageSquare, History, Search, Eye, Filter,
+  Truck, Package, Receipt, CreditCard
 } from 'lucide-react';
 
 // Define the Scene IDs and names
@@ -15,14 +16,17 @@ const SCENES = [
   { id: 2, name: "Scene 2: Employee Portal (Consolidated Chat & Tabs)" },
   { id: 3, name: "Scene 3: Voice Assistant Simulation" },
   { id: 4, name: "Scene 4: AI Requisition Extraction Form" },
-  { id: 5, name: "Scene 5: Smart Budget Verification" },
-  { id: 6, name: "Scene 6: Active Rate Contract Search" },
-  { id: 7, name: "Scene 7: SCM Sourcing & External Sourcing Bids" },
-  { id: 8, name: "Scene 8: RFQ Value Scorecard" },
-  { id: 9, name: "Scene 9: AI Autonomous Negotiation Lounge" },
+  { id: 5, name: "Scene 5: Active Rate Contract Search" },
+  { id: 6, name: "Scene 6: SCM Sourcing & External Sourcing Bids" },
+  { id: 7, name: "Scene 7: RFQ Value Scorecard" },
+  { id: 8, name: "Scene 8: AI Autonomous Negotiation Lounge" },
+  { id: 9, name: "Scene 9: Smart Budget Verification & Allocation" },
   { id: 10, name: "Scene 10: Manager Approval Dashboard" },
   { id: 11, name: "Scene 11: Request Tracking Timeline" },
-  { id: 12, name: "Scene 12: Spend Intelligence Analytics" }
+  { id: 12, name: "Scene 12: Product Receiving & Inspection (GRN)" },
+  { id: 13, name: "Scene 13: Vendor Bill 3-Way Matching" },
+  { id: 14, name: "Scene 14: Payment Processing & Reconciliation" },
+  { id: 15, name: "Scene 15: Spend Intelligence Analytics" }
 ];
 
 interface ChatMessage {
@@ -39,7 +43,7 @@ interface RequestItem {
   totalCost: number;
   location: string;
   expenseCategory: string;
-  status: 'Draft' | 'Pending Approval' | 'Needs Clarification' | 'Sourcing' | 'Approved' | 'PO Confirmed' | 'Rejected';
+  status: 'Draft' | 'Pending Approval' | 'Needs Clarification' | 'Sourcing' | 'Approved' | 'PO Confirmed' | 'Rejected' | 'Paid';
   urgency: 'High' | 'Medium' | 'Low';
   createdDate: string;
   buyer: string;
@@ -58,6 +62,14 @@ export default function App() {
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<string>("Employee"); // Employee, Manager, SCM Buyer, Vendor, CEO
+
+  // Post-PO simulation states
+  const [grnGenerated, setGrnGenerated] = useState<boolean>(false);
+  const [billPosted, setBillPosted] = useState<boolean>(false);
+  const [paymentComplete, setPaymentComplete] = useState<boolean>(false);
+  const [deliveredQty, setDeliveredQty] = useState<number>(20);
+  const [qualityPassed, setQualityPassed] = useState<boolean>(true);
+  const [paymentMethod, setPaymentMethod] = useState<string>("Bank Transfer");
   
   // Shared Data Model representing Odoo's live state
   const [requests, setRequests] = useState<RequestItem[]>([
@@ -144,6 +156,12 @@ export default function App() {
   const [selectedRequestId, setSelectedRequestId] = useState<string>("PR-2026-089");
   const currentRequest = requests.find(r => r.id === selectedRequestId) || requests[0];
 
+  useEffect(() => {
+    if (currentRequest) {
+      setDeliveredQty(currentRequest.productQty);
+    }
+  }, [selectedRequestId, currentRequest]);
+
   // Employee Portal Local States
   const [employeeTab, setEmployeeTab] = useState<'chat' | 'list' | 'tracking' | 'clarify'>('chat');
   const [chatInputText, setChatInputText] = useState<string>("");
@@ -198,7 +216,7 @@ export default function App() {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   // Quick navigation helpers
-  const nextScene = () => activeScene < 12 && setActiveScene(activeScene + 1);
+  const nextScene = () => activeScene < 15 && setActiveScene(activeScene + 1);
   const prevScene = () => activeScene > 1 && setActiveScene(activeScene - 1);
 
   // Simulation timer for voice recording
@@ -266,11 +284,11 @@ export default function App() {
       setActiveScene(10);
     } else if (role === "SCM Buyer") {
       setScmTab('requests');
-      setActiveScene(7);
+      setActiveScene(6);
     } else if (role === "Vendor") {
-      setActiveScene(7); // Redirect to show bidding/interaction
+      setActiveScene(6); // Redirect to show bidding/interaction
     } else if (role === "CEO") {
-      setActiveScene(12);
+      setActiveScene(15);
     }
   };
 
@@ -685,11 +703,11 @@ export default function App() {
                     </>
                   )}
 
-                  {userRole === "SCM Buyer" && (
+                   {userRole === "SCM Buyer" && (
                     <>
                       <button 
-                        onClick={() => { setActiveScene(7); setScmTab('requests'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 7 && scmTab === 'requests' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
+                        onClick={() => { setActiveScene(6); setScmTab('requests'); }}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 6 && scmTab === 'requests' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
                       >
                         <Briefcase className="h-4 w-4" />
                         <span>Contract Requests</span>
@@ -698,8 +716,8 @@ export default function App() {
                         </span>
                       </button>
                       <button 
-                        onClick={() => { setActiveScene(7); setScmTab('discovery'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 7 && scmTab === 'discovery' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
+                        onClick={() => { setActiveScene(6); setScmTab('discovery'); }}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 6 && scmTab === 'discovery' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
                       >
                         <Search className="h-4 w-4" />
                         <span>AI Vendor Discovery</span>
@@ -710,7 +728,7 @@ export default function App() {
                   {userRole === "Vendor" && (
                     <>
                       <button 
-                        onClick={() => { setActiveScene(7); setScmTab('bidding'); }}
+                        onClick={() => { setActiveScene(6); setScmTab('bidding'); }}
                         className="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 bg-slate-800 border border-slate-700/60"
                       >
                         <FileSpreadsheet className="h-4 w-4" />
@@ -722,8 +740,8 @@ export default function App() {
                   {userRole === "CEO" && (
                     <>
                       <button 
-                        onClick={() => setActiveScene(12)}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 12 ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
+                        onClick={() => setActiveScene(15)}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 15 ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800/40 hover:text-white'}`}
                       >
                         <TrendingUp className="h-4 w-4" />
                         <span>Spend Analytics</span>
@@ -795,7 +813,7 @@ export default function App() {
                 </button>
                 <button 
                   onClick={nextScene}
-                  disabled={activeScene === 12}
+                  disabled={activeScene === 15}
                   className="px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-30 transition-all flex items-center space-x-1"
                 >
                   <span>Next Step</span>
@@ -1323,13 +1341,13 @@ export default function App() {
                 </div>
               )}
               
-              {/* --- SCENE 5: BUDGET VALIDATION --- */}
-              {activeScene === 5 && (
+              {/* --- SCENE 9: BUDGET VALIDATION --- */}
+              {activeScene === 9 && (
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 5: Smart Budget Verification</h2>
-                      <p className="text-xs text-slate-400">The platform cross-references available cost center funds in real-time.</p>
+                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 9: Smart Budget Verification &amp; Allocation</h2>
+                      <p className="text-xs text-slate-400">The platform cross-references available cost center funds in real-time after contract pricing is resolved.</p>
                     </div>
                     
                     <div className="flex items-center space-x-3 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
@@ -1351,7 +1369,7 @@ export default function App() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2 p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6">
-                      <h3 className="font-outfit text-base font-bold text-slate-200 border-b border-slate-800 pb-2">{editExpenseCategory} Budget Allocation</h3>
+                      <h3 className="font-outfit text-base font-bold text-slate-200 border-b border-slate-800 pb-2">{currentRequest.expenseCategory} Budget Allocation</h3>
                       
                       <div className="space-y-4">
                         <div className="flex justify-between text-xs text-slate-400">
@@ -1363,8 +1381,8 @@ export default function App() {
                           <span className="font-bold text-slate-200">₹12,00,000</span>
                         </div>
                         <div className="flex justify-between text-xs text-slate-400">
-                          <span>Current Request:</span>
-                          <span className="font-bold text-indigo-400">₹{(editProductQty * editTargetPrice).toLocaleString()}</span>
+                          <span>Current Request ({currentRequest.productQty} units @ ₹{currentRequest.targetPrice.toLocaleString()}):</span>
+                          <span className="font-bold text-indigo-400">₹{(currentRequest.productQty * currentRequest.targetPrice).toLocaleString()}</span>
                         </div>
                         
                         <div className="relative pt-2">
@@ -1387,7 +1405,7 @@ export default function App() {
                         <div className="p-4 bg-rose-950/20 border border-rose-900/40 rounded-xl flex items-start space-x-3 text-rose-400 text-xs">
                           <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0 text-rose-400 animate-pulse" />
                           <div>
-                            <p className="font-bold">Budget Limit Exceeded by ₹{(editProductQty * editTargetPrice + 1200000 - 3000000).toLocaleString()}</p>
+                            <p className="font-bold">Budget Limit Exceeded by ₹{(currentRequest.productQty * currentRequest.targetPrice + 1200000 - 3000000).toLocaleString()}</p>
                             <p className="mt-1 text-slate-350">This requisition exceeds the remaining allocated budget threshold.</p>
                           </div>
                         </div>
@@ -1395,19 +1413,54 @@ export default function App() {
                       
                       <div className="pt-2 flex justify-end space-x-3">
                         <button onClick={() => setActiveScene(4)} className="px-4 py-2 text-xs text-slate-400 font-semibold hover:text-white">Modify Request</button>
-                        <button onClick={() => setActiveScene(6)} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all">Proceed to Sourcing Check</button>
+                        {hasContract ? (
+                          <button onClick={() => {
+                            setRequests(prev => prev.map(r => {
+                              if (r.id === selectedRequestId) {
+                                return {
+                                  ...r,
+                                  status: "PO Confirmed",
+                                  history: [...r.history, { title: "Fast-Track Auto PO Created", date: "Now", desc: "Active Rate Contract bypassed manual sourcing." }]
+                                };
+                              }
+                              return r;
+                            }));
+                            setActiveScene(11);
+                          }} className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1">
+                            <span>Auto-Generate Purchase Order</span>
+                            <ArrowRight className="h-4 w-4" />
+                          </button>
+                        ) : (
+                          <button onClick={() => {
+                            setRequests(prev => prev.map(r => {
+                              if (r.id === selectedRequestId) {
+                                return {
+                                  ...r,
+                                  status: "Pending Approval",
+                                  history: [...r.history, { title: "Routed for Manager Approval", date: "Now", desc: "Negotiated contract routed for operational sign-off." }]
+                                };
+                              }
+                              return r;
+                            }));
+                            setUserRole("Manager");
+                            setActiveScene(10);
+                          }} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1">
+                            <span>Route to Manager Approval</span>
+                            <ArrowRight className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
               )}
               
-              {/* --- SCENE 6: RATE CONTRACT CHECK --- */}
-              {activeScene === 6 && (
+              {/* --- SCENE 5: RATE CONTRACT CHECK --- */}
+              {activeScene === 5 && (
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 6: Active Contract Search</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 5: Active Contract Search</h2>
                       <p className="text-xs text-slate-400">AI queries the Odoo registry for valid Rate Contracts or pricing agreements.</p>
                     </div>
                     
@@ -1443,20 +1496,9 @@ export default function App() {
                         
                         <div className="flex justify-end space-x-3 pt-2">
                           <button onClick={() => {
-                            // Update request status to Approved and fast-track PO
-                            setRequests(prev => prev.map(r => {
-                              if (r.id === selectedRequestId) {
-                                return {
-                                  ...r,
-                                  status: "PO Confirmed",
-                                  history: [...r.history, { title: "Fast-Track Auto PO Created", date: "Now", desc: "Active Rate Contract bypassed manual sourcing." }]
-                                };
-                              }
-                              return r;
-                            }));
-                            setActiveScene(11);
+                            setActiveScene(9);
                           }} className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1">
-                            <span>Auto-Generate Purchase Order</span>
+                            <span>Proceed to Budget Verification</span>
                             <ArrowRight className="h-4 w-4" />
                           </button>
                         </div>
@@ -1486,7 +1528,7 @@ export default function App() {
                             }));
                             setUserRole("SCM Buyer");
                             setScmTab('requests');
-                            setActiveScene(7);
+                            setActiveScene(6);
                           }} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1">
                             <span>Launch RFQ Sourcing Portal</span>
                             <ArrowRight className="h-4 w-4" />
@@ -1498,8 +1540,8 @@ export default function App() {
                 </div>
               )}
               
-              {/* --- SCENE 7: SCM BUYER PORTAL (RFQ & BIDDING MANAGEMENT) --- */}
-              {activeScene === 7 && (
+              {/* --- SCENE 6: SCM BUYER PORTAL (RFQ & BIDDING MANAGEMENT) --- */}
+              {activeScene === 6 && (
                 <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn">
                   
                   {/* SCM Sourcing Tab Selector */}
@@ -1657,7 +1699,7 @@ export default function App() {
 
                           <div className="flex space-x-3">
                             <button 
-                              onClick={() => setActiveScene(8)} 
+                              onClick={() => setActiveScene(7)} 
                               className="px-4 py-2 border border-slate-700 hover:bg-slate-800 text-xs font-semibold rounded-lg text-slate-300"
                             >
                               Open Scorecard Matrix
@@ -1665,7 +1707,7 @@ export default function App() {
                             <button 
                               onClick={() => {
                                 resetNegotiation();
-                                setActiveScene(9);
+                                setActiveScene(8);
                               }} 
                               className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white"
                             >
@@ -1792,12 +1834,12 @@ export default function App() {
                 </div>
               )}
               
-              {/* --- SCENE 8: RFQ COMPARISON MATRIX --- */}
-              {activeScene === 8 && (
+              {/* --- SCENE 7: RFQ COMPARISON MATRIX --- */}
+              {activeScene === 7 && (
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 8: Side-by-Side RFQ Comparison</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 7: Side-by-Side RFQ Comparison</h2>
                       <p className="text-xs text-slate-400">Value scorecard compiled from active vendor bids in local Odoo database.</p>
                     </div>
                   </div>
@@ -1850,8 +1892,8 @@ export default function App() {
                     </table>
                     
                     <div className="pt-6 flex justify-end space-x-3">
-                      <button onClick={() => { setUserRole("SCM Buyer"); setScmTab('bidding'); setActiveScene(7); }} className="px-4 py-2 text-xs text-slate-400 font-semibold hover:text-white">Back to Sourcing</button>
-                      <button onClick={() => setActiveScene(9)} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1">
+                      <button onClick={() => { setUserRole("SCM Buyer"); setScmTab('bidding'); setActiveScene(6); }} className="px-4 py-2 text-xs text-slate-400 font-semibold hover:text-white">Back to Sourcing</button>
+                      <button onClick={() => setActiveScene(8)} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1">
                         <span>Trigger AI Negotiation</span>
                         <ArrowRight className="h-4 w-4" />
                       </button>
@@ -1860,12 +1902,12 @@ export default function App() {
                 </div>
               )}
               
-              {/* --- SCENE 9: AI NEGOTIATION LOUNGE --- */}
-              {activeScene === 9 && (
+              {/* --- SCENE 8: AI NEGOTIATION LOUNGE --- */}
+              {activeScene === 8 && (
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 9: AI Autonomous Negotiation</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 8: AI Autonomous Negotiation</h2>
                       <p className="text-xs text-slate-400">Watch the AI agent negotiate rates and terms directly with the supplier bot.</p>
                     </div>
                     
@@ -1959,13 +2001,12 @@ export default function App() {
                       {negotiationComplete && (
                         <button 
                           onClick={() => {
-                            setRequests(prev => prev.map(r => r.id === selectedRequestId ? { ...r, status: "Pending Approval" } : r));
-                            setUserRole("Manager");
-                            setActiveScene(10);
+                            setRequests(prev => prev.map(r => r.id === selectedRequestId ? { ...r, targetPrice: currentOfferPrice, totalCost: currentOfferPrice * r.productQty, vendor: "Primus Technologies" } : r));
+                            setActiveScene(9);
                           }}
                           className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-xl text-white transition-all shadow-lg flex items-center justify-center space-x-2"
                         >
-                          <span>Route to Manager Approval</span>
+                          <span>Proceed to Budget Verification</span>
                           <ArrowRight className="h-4 w-4" />
                         </button>
                       )}
@@ -2120,7 +2161,7 @@ export default function App() {
                   <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-8">
                     <div className="relative flex justify-between items-center max-w-2xl mx-auto py-4">
                       <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-slate-800 z-0" />
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-emerald-500 z-0" style={{ width: '60%' }} />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-emerald-500 z-0" style={{ width: '100%' }} />
                       
                       <div className="flex flex-col items-center z-10 text-center space-y-2">
                         <div className="h-8 w-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs">
@@ -2144,22 +2185,421 @@ export default function App() {
                       </div>
                       
                       <div className="flex flex-col items-center z-10 text-center space-y-2">
-                        <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-700 text-slate-500 flex items-center justify-center font-bold text-xs">
-                          4
+                        <div className="h-8 w-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs">
+                          <Check className="h-4 w-4" />
                         </div>
-                        <span className="text-[10px] font-bold text-slate-400">PO Sent</span>
+                        <span className="text-[10px] font-bold text-slate-200">PO Sent</span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-slate-800/60">
+                      <button 
+                        onClick={() => setActiveScene(12)}
+                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1 shadow-lg"
+                      >
+                        <span>Proceed to Product Receiving</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* --- SCENE 12: PRODUCT RECEIVING & INSPECTION (GRN) --- */}
+              {activeScene === 12 && (
+                <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 12: Product Receiving &amp; Goods Receipt Note</h2>
+                      <p className="text-xs text-slate-400">Simulate warehouse operations. Inspect the delivered items and generate the GRN in Odoo.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="md:col-span-2 p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6">
+                      <div className="flex items-center space-x-3 text-indigo-400">
+                        <Truck className="h-5 w-5" />
+                        <h3 className="font-outfit text-lg font-bold text-slate-200">Goods Receipt Portal</h3>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Source PO</span>
+                            <span className="text-sm font-semibold text-slate-350 bg-slate-800/50 border border-slate-750 rounded-lg p-2 block">PO-2026-003</span>
+                          </div>
+                          <div>
+                            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Vendor</span>
+                            <span className="text-sm font-semibold text-slate-350 bg-slate-800/50 border border-slate-750 rounded-lg p-2 block">{currentRequest.vendor || "Primus Technologies"}</span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Product Details</span>
+                          <span className="text-sm font-semibold text-slate-350 bg-slate-800/50 border border-slate-750 rounded-lg p-2 block">{currentRequest.productName}</span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Ordered Qty</span>
+                            <span className="text-sm font-semibold text-slate-350 bg-slate-800/50 border border-slate-750 rounded-lg p-2 block">{currentRequest.productQty} units</span>
+                          </div>
+                          <div>
+                            <label className="text-xs text-indigo-400 font-bold uppercase tracking-wider block mb-1">Delivered Qty</label>
+                            <input 
+                              type="number" 
+                              value={deliveredQty} 
+                              onChange={(e) => setDeliveredQty(Number(e.target.value))}
+                              className="w-full bg-slate-800 border border-indigo-500/50 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-semibold"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="pt-2">
+                          <label className="flex items-center space-x-2.5 cursor-pointer select-none">
+                            <input 
+                              type="checkbox" 
+                              checked={qualityPassed}
+                              onChange={(e) => setQualityPassed(e.target.checked)}
+                              className="rounded border-slate-755 text-indigo-600 focus:ring-indigo-500 h-4.5 w-4.5 bg-slate-800"
+                            />
+                            <span className="text-sm text-slate-300 font-medium">Quality Inspection Approved: Items match specs with no defects</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {grnGenerated ? (
+                        <div className="p-4 bg-emerald-950/20 border border-emerald-900/40 rounded-xl space-y-3 animate-fadeIn">
+                          <div className="flex items-start space-x-3 text-emerald-400 text-xs">
+                            <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-400" />
+                            <div>
+                              <p className="font-bold">Goods Receipt Note (GRN-2026-089) Generated</p>
+                              <p className="mt-1 text-slate-350">Successfully posted to Odoo. Stock levels updated at Bangalore Warehouse. Handing off to Accounts Payable.</p>
+                            </div>
+                          </div>
+                          <div className="flex justify-end pt-2">
+                            <button 
+                              onClick={() => {
+                                setRequests(prev => prev.map(r => {
+                                  if (r.id === selectedRequestId) {
+                                    return {
+                                      ...r,
+                                      history: [...r.history, { title: "Goods Received (GRN-2026-089)", date: "Now", desc: `Received ${deliveredQty}/${r.productQty} units. Quality inspect: PASSED.` }]
+                                    };
+                                  }
+                                  return r;
+                                }));
+                                setActiveScene(13);
+                              }}
+                              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1"
+                            >
+                              <span>Proceed to 3-Way Match Audit</span>
+                              <ArrowRight className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="pt-2 flex justify-end space-x-3">
+                          <button 
+                            onClick={() => {
+                              if (!qualityPassed) {
+                                alert("Please perform quality inspection before generating GRN.");
+                                return;
+                              }
+                              setGrnGenerated(true);
+                            }}
+                            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1"
+                          >
+                            <span>Validate &amp; Generate GRN</span>
+                            <Check className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 h-fit">
+                      <div className="flex items-center space-x-2 text-indigo-400">
+                        <Package className="h-4.5 w-4.5" />
+                        <h4 className="font-outfit font-extrabold text-sm text-white">Odoo Warehouse Status</h4>
+                      </div>
+                      <div className="space-y-3 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Destination:</span>
+                          <span className="font-semibold text-slate-350">Bangalore Warehouse</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Carrier:</span>
+                          <span className="font-semibold text-slate-350">Blue Dart Express</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Waybill Ref:</span>
+                          <span className="font-mono text-indigo-400">AWB-77291024</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
-              
-              {/* --- SCENE 12: spend INTELLIGENCE ANALYTICS --- */}
-              {activeScene === 12 && (
+
+              {/* --- SCENE 13: VENDOR BILL 3-WAY MATCHING --- */}
+              {activeScene === 13 && (
+                <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 13: Automated 3-Way Match Verification</h2>
+                      <p className="text-xs text-slate-400">Audit and reconcile PO details, Goods Receipt note, and Vendor Invoice side-by-side.</p>
+                    </div>
+                  </div>
+
+                  <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6">
+                    <div className="flex items-center space-x-3 text-indigo-400">
+                      <ShieldCheck className="h-5.5 w-5.5" />
+                      <h3 className="font-outfit text-lg font-bold text-slate-200">Reconciliation Matrix</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Column 1: PO */}
+                      <div className="p-4 rounded-xl bg-slate-850 border border-slate-750 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-indigo-400 uppercase">1. Purchase Order</span>
+                          <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold text-[9px]">PO-2026-003</span>
+                        </div>
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Qty Ordered:</span>
+                            <span className="font-semibold text-slate-200">{currentRequest.productQty} units</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Rate:</span>
+                            <span className="font-semibold text-slate-200">₹{currentRequest.targetPrice.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between pt-2 border-t border-slate-800">
+                            <span className="text-slate-400">Total amount:</span>
+                            <span className="font-bold text-slate-200">₹{currentRequest.totalCost.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Column 2: GRN */}
+                      <div className="p-4 rounded-xl bg-slate-850 border border-slate-750 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-indigo-400 uppercase">2. Goods Receipt</span>
+                          <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold text-[9px]">GRN-2026-089</span>
+                        </div>
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Qty Received:</span>
+                            <span className="font-semibold text-slate-200">{deliveredQty} units</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Quality Check:</span>
+                            <span className="font-bold text-emerald-400">PASSED</span>
+                          </div>
+                          <div className="flex justify-between pt-2 border-t border-slate-800">
+                            <span className="text-slate-400">Stock Status:</span>
+                            <span className="font-bold text-emerald-400">Posted</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Column 3: Invoice */}
+                      <div className="p-4 rounded-xl bg-slate-850 border border-slate-750 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-indigo-400 uppercase">3. Vendor Invoice</span>
+                          <span className="px-2 py-0.5 rounded bg-amber-500/15 text-amber-400 font-bold text-[9px]">BILL-2026-045</span>
+                        </div>
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Qty Billed:</span>
+                            <span className="font-semibold text-slate-200">{currentRequest.productQty} units</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Rate Billed:</span>
+                            <span className="font-semibold text-slate-200">₹{currentRequest.targetPrice.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between pt-2 border-t border-slate-800">
+                            <span className="text-slate-400">Total Billed:</span>
+                            <span className="font-bold text-slate-200">₹{currentRequest.totalCost.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-5 bg-emerald-950/20 border border-emerald-900/40 rounded-xl flex items-start space-x-3 text-emerald-400 text-xs">
+                      <CheckCircle2 className="h-5.5 w-5.5 flex-shrink-0 mt-0.5 text-emerald-400" />
+                      <div>
+                        <p className="font-bold text-sm">3-Way Match Verification Success</p>
+                        <p className="mt-1 text-slate-350 text-xs">All comparison checks pass. PO quantities, GRN warehouse receipts, and the PDF extracted vendor invoice details match 100%. Ready for general ledger posting.</p>
+                      </div>
+                    </div>
+
+                    {billPosted ? (
+                      <div className="p-4 bg-slate-850 rounded-xl flex justify-between items-center animate-fadeIn text-xs">
+                        <span className="text-slate-400">Vendor Bill successfully posted to accounts payable.</span>
+                        <button 
+                          onClick={() => {
+                            setRequests(prev => prev.map(r => {
+                              if (r.id === selectedRequestId) {
+                                return {
+                                  ...r,
+                                  history: [...r.history, { title: "Vendor Bill Posted (BILL-2026-045)", date: "Now", desc: `Posted total AP liability of ₹${r.totalCost.toLocaleString()}.` }]
+                                };
+                              }
+                              return r;
+                            }));
+                            setActiveScene(14);
+                          }}
+                          className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1"
+                        >
+                          <span>Proceed to Payment Execution</span>
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex justify-end pt-2">
+                        <button 
+                          onClick={() => setBillPosted(true)}
+                          className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1 shadow-lg"
+                        >
+                          <span>Post Vendor Bill to Ledger</span>
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* --- SCENE 14: PAYMENT PROCESSING & RECONCILIATION --- */}
+              {activeScene === 14 && (
+                <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 14: Payment Disbursement &amp; Reconciliation</h2>
+                      <p className="text-xs text-slate-400">Authorize the cash disbursement and auto-reconcile bank statements in Odoo.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="md:col-span-2 p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6">
+                      <div className="flex items-center space-x-3 text-indigo-400">
+                        <CreditCard className="h-5 w-5" />
+                        <h3 className="font-outfit text-lg font-bold text-slate-200">Disbursement Voucher</h3>
+                      </div>
+
+                      <div className="space-y-4 text-xs">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <span className="text-slate-500 font-bold uppercase tracking-wider block mb-1">Beneficiary Vendor</span>
+                            <span className="text-sm font-semibold text-slate-200 block bg-slate-850 p-2.5 rounded-lg border border-slate-750">{currentRequest.vendor || "Primus Technologies"}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 font-bold uppercase tracking-wider block mb-1">Invoice Reference</span>
+                            <span className="text-sm font-semibold text-slate-200 block bg-slate-850 p-2.5 rounded-lg border border-slate-750 font-mono">BILL-2026-045</span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <span className="text-slate-500 font-bold uppercase tracking-wider block mb-1">Paying Bank A/c</span>
+                            <span className="text-sm font-semibold text-slate-200 block bg-slate-850 p-2.5 rounded-lg border border-slate-750">HDFC Corporate A/c (*9824)</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 font-bold uppercase tracking-wider block mb-1">Settlement Amount</span>
+                            <span className="text-sm font-extrabold text-indigo-400 block bg-slate-850 p-2.5 rounded-lg border border-slate-750">₹{currentRequest.totalCost.toLocaleString()}</span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-indigo-400 font-bold uppercase tracking-wider block mb-1">Payment Method</label>
+                            <select 
+                              value={paymentMethod}
+                              onChange={(e) => setPaymentMethod(e.target.value)}
+                              className="w-full bg-slate-800 border border-slate-750 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500 font-semibold"
+                            >
+                              <option value="Bank Transfer">Bank Transfer (NEFT/RTGS)</option>
+                              <option value="Corporate Card">Corporate Card</option>
+                              <option value="UPI Pay">UPI Corporate Pay</option>
+                            </select>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 font-bold uppercase tracking-wider block mb-1">Value Date</span>
+                            <span className="text-sm font-semibold text-slate-200 block bg-slate-850 p-2.5 rounded-lg border border-slate-750">July 13, 2026</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {paymentComplete ? (
+                        <div className="p-4 bg-emerald-950/20 border border-emerald-900/40 rounded-xl space-y-3 animate-fadeIn">
+                          <div className="flex items-start space-x-3 text-emerald-400 text-xs">
+                            <CheckCircle2 className="h-5.5 w-5.5 mt-0.5 flex-shrink-0 text-emerald-400" />
+                            <div>
+                              <p className="font-bold">Payment Completed &amp; Reconciled</p>
+                              <p className="mt-1 text-slate-350">Transaction posted successfully. Odoo auto-reconciliation engine verified the bank statement entry against HDFC corporate accounts. Invoice status: PAID.</p>
+                            </div>
+                          </div>
+                          <div className="flex justify-end pt-2">
+                            <button 
+                              onClick={() => {
+                                setRequests(prev => prev.map(r => {
+                                  if (r.id === selectedRequestId) {
+                                    return {
+                                      ...r,
+                                      status: "Paid",
+                                      history: [...r.history, { title: "Payment Cleared & Reconciled", date: "Now", desc: `Paid ₹${r.totalCost.toLocaleString()} via ${paymentMethod}. Ref: TXN-98402517.` }]
+                                    };
+                                  }
+                                  return r;
+                                }));
+                                setActiveScene(15);
+                              }}
+                              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1"
+                            >
+                              <span>Proceed to Spend Intelligence</span>
+                              <ArrowRight className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex justify-end pt-2">
+                          <button 
+                            onClick={() => setPaymentComplete(true)}
+                            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition-all flex items-center space-x-1 shadow-lg"
+                          >
+                            <span>Authorize &amp; Pay Invoice</span>
+                            <ArrowRight className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 h-fit text-xs">
+                      <div className="flex items-center space-x-2 text-indigo-400 mb-2">
+                        <Landmark className="h-4.5 w-4.5" />
+                        <h4 className="font-outfit font-extrabold text-sm text-white">Bank Statement Audit</h4>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="p-3 bg-slate-850 rounded-lg border border-slate-750 flex items-center justify-between">
+                          <div>
+                            <p className="font-semibold text-slate-200">HDFC Bank Ledger</p>
+                            <p className="text-[10px] text-slate-500 font-mono">STMT-99281-2026</p>
+                          </div>
+                          <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold text-[9px]">Matched</span>
+                        </div>
+                        <p className="text-slate-400 leading-relaxed text-[11px]">AI matches banking feeds with internal ledgers in real-time, removing manual end-of-month reconciliation tasks.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* --- SCENE 15: spend INTELLIGENCE ANALYTICS --- */}
+              {activeScene === 15 && (
                 <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 12: Spend Intelligence Dashboard</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-white">Scene 15: Spend Intelligence Dashboard</h2>
                       <p className="text-xs text-slate-400">High-level capital monitoring and automated fraud detection audits.</p>
                     </div>
                   </div>
