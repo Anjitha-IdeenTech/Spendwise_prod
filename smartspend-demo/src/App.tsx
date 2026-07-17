@@ -92,10 +92,10 @@ export default function App() {
     if (q === 'light') return false;
     if (q === 'dark') return true;
     try {
-      const saved = localStorage.getItem('smartspend-theme');
+      const saved = localStorage.getItem('smartspend-theme-v2');
       if (saved) return saved === 'dark';
     } catch { /* ignore */ }
-    return true; // default to the flagship dark theme
+    return false; // default to the light theme
   });
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<string>("Employee"); // Employee, Manager, SCM Buyer, Vendor, CEO
@@ -104,7 +104,7 @@ export default function App() {
   // CSS-variable-backed token switches at once, and persist the choice.
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
-    try { localStorage.setItem('smartspend-theme', darkMode ? 'dark' : 'light'); } catch { /* ignore */ }
+    try { localStorage.setItem('smartspend-theme-v2', darkMode ? 'dark' : 'light'); } catch { /* ignore */ }
   }, [darkMode]);
 
   // Post-PO simulation states
