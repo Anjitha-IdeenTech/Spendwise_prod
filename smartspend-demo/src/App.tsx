@@ -966,12 +966,6 @@ export default function App() {
                         {/* Integration Logos & Voice Action Group */}
                         <div className="absolute right-3 flex items-center space-x-2">
                           <span className="text-textFaint font-bold text-lg">|</span>
-                          
-                          {/* Chatgpt/WhatsApp integration icons */}
-                          <div className="hidden sm:flex items-center space-x-1 text-textFaint mr-1.5">
-                            <span className="p-1 bg-pos/10 text-pos border border-pos/25 rounded-md text-[10px] font-bold">WA</span>
-                            <span className="p-1 bg-brand/10 text-brand border border-brand/25 rounded-md text-[10px] font-bold">GPT</span>
-                          </div>
 
                           {/* Voice Mic Icon */}
                           <button 
