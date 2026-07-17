@@ -967,18 +967,14 @@ export default function App() {
                         <div className="absolute right-3 flex items-center space-x-2">
                           <span className="text-textFaint font-bold text-lg">|</span>
 
-                          {/* Black round waveform button */}
-                          <button 
+                          {/* Voice Mic Icon */}
+                          <button
                             type="button"
                             onClick={() => setActiveScene(3)}
-                            className="h-9 w-9 rounded-full bg-app hover:bg-secondary text-brand hover:text-brand flex items-center justify-center transition-all border border-borderTheme/80 shadow shadow-brand/10"
-                            title="Simulate Voice"
+                            className="p-1.5 rounded-full hover:bg-secondary text-textSecondary hover:text-primary transition-all"
+                            title="Voice Procurement"
                           >
-                            <div className="flex items-center space-x-0.5 h-3">
-                              <div className="w-0.5 bg-brand rounded h-1 animate-pulse" />
-                              <div className="w-0.5 bg-brand rounded h-3 animate-pulse" />
-                              <div className="w-0.5 bg-brand rounded h-2 animate-pulse" />
-                            </div>
+                            <Mic className="h-4.5 w-4.5" />
                           </button>
 
                           {/* Send Button */}
