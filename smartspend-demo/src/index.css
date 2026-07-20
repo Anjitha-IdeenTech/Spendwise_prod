@@ -38,29 +38,37 @@
   --glow-gold:  224 168 46;
 }
 
+/*
+  Dark theme temporarily disabled — light theme only for now.
+  The `.dark` rules below are preserved for future use. The `dark` class is
+  never added to <html> while the toggle is disabled in App.tsx, so these rules
+  are inert; keeping them commented documents the intent. To re-enable, remove
+  the surrounding comment markers here and restore the toggle in App.tsx.
+
 .dark {
-  /* Dark theme — deep forest-black + luminous emerald */
-  --bg-app:          6  17  13;   /* #06110D deep forest-black */
-  --bg-surface:     12  26  21;   /* #0C1A15 card              */
-  --bg-secondary:   17  38  32;   /* #112620 inset panel       */
-  --bg-raised:      23  51  43;   /* #17332B hover/raised      */
-  --border-color:   40  66  56;   /* #284238 hairline          */
-  --border-strong:  56  88  76;   /* #38584C strong line       */
-  --text-primary:  232 240 236;   /* #E8F0EC                   */
-  --text-secondary:157 176 168;   /* #9DB0A8                   */
-  --text-faint:    110 131 123;   /* #6E837B                   */
+  Dark theme — deep forest-black + luminous emerald
+  --bg-app:          6  17  13;      #06110D deep forest-black
+  --bg-surface:     12  26  21;      #0C1A15 card
+  --bg-secondary:   17  38  32;      #112620 inset panel
+  --bg-raised:      23  51  43;      #17332B hover/raised
+  --border-color:   40  66  56;      #284238 hairline
+  --border-strong:  56  88  76;      #38584C strong line
+  --text-primary:  232 240 236;      #E8F0EC
+  --text-secondary:157 176 168;      #9DB0A8
+  --text-faint:    110 131 123;      #6E837B
   --onbrand:       255 255 255;
 
-  --accent-budget:     18 184 134;   /* #12B886 emerald brand   */
-  --accent-savings:    52 211 153;   /* #34D399 positive green  */
-  --accent-expenses:  251 113 133;   /* #FB7185 expense rose    */
-  --accent-approvals: 224 168  46;   /* #E0A82E warm gold       */
-  --accent-analytics:  34 211 238;   /* #22D3EE analytics cyan  */
-  --accent-alerts:    248 113 113;   /* #F87171 alert red       */
+  --accent-budget:     18 184 134;      #12B886 emerald brand
+  --accent-savings:    52 211 153;      #34D399 positive green
+  --accent-expenses:  251 113 133;      #FB7185 expense rose
+  --accent-approvals: 224 168  46;      #E0A82E warm gold
+  --accent-analytics:  34 211 238;      #22D3EE analytics cyan
+  --accent-alerts:    248 113 113;      #F87171 alert red
 
   --glow-brand: 16 185 129;
   --glow-gold:  224 168 46;
 }
+*/
 
 body {
   margin: 0;
@@ -78,18 +86,24 @@ body {
     linear-gradient(to right, rgb(var(--glow-brand) / 0.035) 1px, transparent 1px),
     linear-gradient(to bottom, rgb(var(--glow-brand) / 0.035) 1px, transparent 1px);
 }
+/* Dark theme disabled — preserved for future use.
 .dark .bg-grid-pattern {
   background-image:
     linear-gradient(to right, rgb(var(--glow-brand) / 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgb(var(--glow-brand) / 0.05) 1px, transparent 1px);
 }
+*/
 
 /* Ambient decorative glows */
 .ambient-glow-1 { background: radial-gradient(circle, rgb(var(--glow-brand) / 0.07) 0%, transparent 70%); }
+/* Dark theme disabled — preserved for future use.
 .dark .ambient-glow-1 { background: radial-gradient(circle, rgb(var(--glow-brand) / 0.10) 0%, transparent 70%); }
+*/
 
 .ambient-glow-2 { background: radial-gradient(circle, rgb(var(--glow-gold) / 0.06) 0%, transparent 70%); }
+/* Dark theme disabled — preserved for future use.
 .dark .ambient-glow-2 { background: radial-gradient(circle, rgb(var(--glow-gold) / 0.07) 0%, transparent 70%); }
+*/
 
 /* Frosted glass panels */
 .glass-panel {
@@ -98,10 +112,12 @@ body {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgb(var(--border-color) / 0.6);
 }
+/* Dark theme disabled — preserved for future use.
 .dark .glass-panel {
   background: rgb(var(--bg-surface) / 0.7);
   border: 1px solid rgb(var(--border-color) / 0.7);
 }
+*/
 
 /* Premium card hover — emerald glowing border */
 .glow-card { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }

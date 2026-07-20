@@ -12,7 +12,7 @@ import {
 
 // Define the Scene IDs and names
 const SCENES = [
-  { id: 1, name: "Scene 1: Microsoft SSO Login & Portal Selector" },
+  { id: 1, name: "Scene 1: Login & Portal Selector" },
   { id: 2, name: "Scene 2: Employee Portal (Consolidated Chat & Tabs)" },
   { id: 3, name: "Scene 3: Voice Assistant Simulation" },
   { id: 4, name: "Scene 4: AI Requisition Extraction Form" },
@@ -87,21 +87,27 @@ export default function App() {
     const sc = Number(params?.get('scene'));
     return sc >= 1 && sc <= 15 ? sc : 1;
   });
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
-    const q = params?.get('theme');
-    if (q === 'light') return false;
-    if (q === 'dark') return true;
-    try {
-      const saved = localStorage.getItem('smartspend-theme-v2');
-      if (saved) return saved === 'dark';
-    } catch { /* ignore */ }
-    return false; // default to the light theme
-  });
+  // --- Dark theme temporarily disabled: light theme only for now. ---
+  // Preserved for future use. To re-enable the theme toggle, restore the
+  // stateful darkMode block below, un-comment the "Appearance" toggle in the
+  // sidebar, and un-comment the `.dark { ... }` rules in index.css.
+  // const [darkMode, setDarkMode] = useState<boolean>(() => {
+  //   const q = params?.get('theme');
+  //   if (q === 'light') return false;
+  //   if (q === 'dark') return true;
+  //   try {
+  //     const saved = localStorage.getItem('smartspend-theme-v2');
+  //     if (saved) return saved === 'dark';
+  //   } catch { /* ignore */ }
+  //   return false; // default to the light theme
+  // });
+  const darkMode = false; // force light theme
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<string>("Employee"); // Employee, Manager, SCM Buyer, Vendor, CEO
 
-  // Apply the active theme by toggling the `dark` class on <html> so every
-  // CSS-variable-backed token switches at once, and persist the choice.
+  // Apply the active theme by toggling the `dark` class on <html>. With dark
+  // mode disabled this always resolves to light and also clears any stale
+  // `dark` class / preference left in localStorage from a previous session.
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
     try { localStorage.setItem('smartspend-theme-v2', darkMode ? 'dark' : 'light'); } catch { /* ignore */ }
@@ -611,25 +617,12 @@ export default function App() {
               <div>
                 <h2 className="font-outfit text-3xl font-extrabold text-primary tracking-tight">Sign In</h2>
                 <p className="mt-3 text-sm text-textSecondary">
-                  Authenticate via your corporate SSO portal to test each interactive role.
+                  Select a role portal below to test each interactive role.
                 </p>
               </div>
               
               <div className="space-y-4">
-                <button
-                  onClick={() => handleSsoLogin("Employee")}
-                  className="w-full flex items-center justify-center space-x-3 py-3.5 px-4 rounded-xl border border-line2 bg-secondary hover:bg-raised text-primary font-medium shadow-sm transition-all"
-                >
-                  <svg className="h-5 w-5" viewBox="0 0 23 23" fill="currentColor">
-                    <path fill="#f35325" d="M1 1h10v10H1z" />
-                    <path fill="#81bc06" d="M12 1h10v10H12z" />
-                    <path fill="#05a6f0" d="M1 12h10v10H1z" />
-                    <path fill="#ffba08" d="M12 12h10v10H12z" />
-                  </svg>
-                  <span>Log in with Microsoft SSO</span>
-                </button>
-                
-                <div className="relative flex py-4 items-center">
+                <div className="relative flex pb-2 items-center">
                   <div className="flex-grow border-t border-borderTheme"></div>
                   <span className="flex-shrink mx-4 text-textFaint text-xs font-semibold uppercase tracking-wider">Select Demo Role Portal</span>
                   <div className="flex-grow border-t border-borderTheme"></div>
@@ -808,6 +801,9 @@ export default function App() {
               
               {/* Bottom Quick Controls */}
               <div className="p-4 space-y-3 border-t border-borderTheme">
+                {/* Dark/light theme toggle temporarily disabled — light theme only.
+                    Preserved for future use; re-enable together with the darkMode
+                    state (App.tsx) and the `.dark` rules in index.css.
                 <div className="flex items-center justify-between text-[11px] text-textFaint px-2">
                   <span className="font-semibold uppercase tracking-wider">Appearance</span>
                   <button
@@ -822,7 +818,8 @@ export default function App() {
                     </span>
                   </button>
                 </div>
-                
+                */}
+
                 <button
                   onClick={() => {
                     setActiveScene(1);
