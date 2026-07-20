@@ -596,7 +596,7 @@ export default function App() {
               </span>
               <h1 className="font-outfit text-4xl lg:text-6xl font-extrabold tracking-tight mt-6 leading-tight">
                 Request Anything.<br />
-                <span className="bg-gradient-to-r from-white via-[#EEE9FF] to-[#FFD6EC] bg-clip-text text-transparent">Track Everything.</span>
+                <span className="holo-text-light">Track Everything.</span>
               </h1>
               <p className="text-white/75 text-lg mt-6 leading-relaxed">
                 Experience corporate procurement simplified. SmartSpend abstracts complex Odoo ERP processes into a single, intelligent workspace. No forms, no jargon, no training required.
@@ -670,7 +670,7 @@ export default function App() {
                     <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-brand to-gold flex items-center justify-center">
                       <Sparkles className="h-4.5 w-4.5 text-onbrand" />
                     </div>
-                    <span className="font-outfit font-bold text-lg tracking-tight">SmartSpend</span>
+                    <span className="holo-text font-outfit font-bold text-lg tracking-tight">SmartSpend</span>
                   </div>
                 </div>
                 
