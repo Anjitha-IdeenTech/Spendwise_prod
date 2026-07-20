@@ -13,8 +13,24 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        outfit: ['Outfit', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        outfit: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+      },
+      // Soft violet "aurora" shadows — replace Tailwind's grey shadows so every
+      // existing shadow-sm/lg/xl/2xl reads as a premium, low-opacity purple lift.
+      boxShadow: {
+        sm:     '0 2px 8px rgba(60,40,120,0.05)',
+        DEFAULT:'0 8px 24px rgba(60,40,120,0.07)',
+        md:     '0 10px 30px rgba(60,40,120,0.08)',
+        lg:     '0 16px 40px rgba(60,40,120,0.10)',
+        xl:     '0 20px 50px rgba(60,40,120,0.10)',
+        '2xl':  '0 28px 60px rgba(60,40,120,0.12)',
+      },
+      // Softer corners across the board (no sharp borders) — cards land at 22px.
+      borderRadius: {
+        lg:    '12px',
+        xl:    '16px',
+        '2xl': '22px',
       },
       colors: {
         // neutral canvas
@@ -43,6 +59,14 @@ export default {
           approvals: ch('--accent-approvals'),
           analytics: ch('--accent-analytics'),
           alerts:    ch('--accent-alerts'),
+        },
+        // soft pastel accent palette (for chart series / decorative fills)
+        pastel: {
+          pink:   '#FFB6D9',
+          purple: '#CDBDFF',
+          sky:    '#D9F2FF',
+          peach:  '#FFE4D4',
+          mint:   '#DDF7EC',
         },
       },
     },

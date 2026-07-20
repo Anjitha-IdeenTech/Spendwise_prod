@@ -1,74 +1,73 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /*
-  SmartSpend — "Emerald Treasury" theme
-  All colors are stored as raw RGB channels (e.g. "15 157 110") so that Tailwind
+  SmartSpend — "Aurora" theme (2026 premium AI-SaaS aesthetic)
+  Inspired by Vercel AI / Framer AI / Linear: soft white canvas, floating
+  blurred aurora gradients, frosted glass, a violet primary, and pastel accents.
+
+  All colors are stored as raw RGB channels (e.g. "124 108 246") so Tailwind
   utilities can apply opacity modifiers, e.g. bg-brand/10, border-line2/60.
   In config each token is wrapped as rgb(var(--token) / <alpha-value>).
+
+  Status/accent tokens are tuned one notch deeper than the pastel spec values
+  so colored TEXT and icons stay WCAG-legible on white; the app derives the
+  soft pastel *fills* automatically from the same token via /10 /15 opacity.
 */
 
 :root {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 
-  /* Light theme — warm alabaster + deep emerald ink */
-  --bg-app:        251 250 247;   /* #FBFAF7 warm stone   */
-  --bg-surface:    255 255 255;   /* #FFFFFF card         */
-  --bg-secondary:  244 242 236;   /* #F4F2EC inset panel  */
-  --bg-raised:     234 231 222;   /* #EAE7DE hover/raised */
-  --border-color:  229 225 214;   /* #E5E1D6 hairline     */
-  --border-strong: 214 209 196;   /* #D6D1C4 strong line  */
-  --text-primary:   22  32  27;   /* #16201B ink          */
-  --text-secondary: 90 101  96;   /* #5A6560 muted        */
-  --text-faint:    139 148 142;   /* #8B948E faint        */
-  --onbrand:       255 255 255;   /* text on colored fills */
+  /* Light theme — soft white canvas + violet ink */
+  --bg-app:        247 247 252;   /* #F7F7FC soft white     */
+  --bg-surface:    255 255 255;   /* #FFFFFF card           */
+  --bg-secondary:  239 235 251;   /* #EFEBFB light lavender  */
+  --bg-raised:     231 225 250;   /* #E7E1FA raised lavender */
+  --border-color:  229 225 245;   /* #E5E1F5 soft hairline   */
+  --border-strong: 214 208 238;   /* #D6D0EE stronger line   */
+  --text-primary:   26  26  26;   /* #1A1A1A near-black      */
+  --text-secondary: 95 100 117;   /* #5F6475 body            */
+  --text-faint:    156 163 175;   /* #9CA3AF muted           */
+  --onbrand:       255 255 255;   /* text on colored fills   */
 
-  --accent-budget:     10 125  88;   /* #0A7D58 emerald brand   */
-  --accent-savings:    11 138  90;   /* #0B8A5A positive green  */
-  --accent-expenses:  200  45  69;   /* #C82D45 expense rose    */
-  --accent-approvals: 176 120  20;   /* #B07814 warm gold       */
-  --accent-analytics:  14 116 144;   /* #0E7490 analytics cyan  */
-  --accent-alerts:    190  30  45;   /* #BE1E2D alert red       */
+  --accent-budget:    124 108 246;   /* #7C6CF6 violet primary       */
+  --accent-savings:    67 193 133;   /* #43C185 success (pastel-lean)*/
+  --accent-expenses:  249 124 124;   /* #F97C7C danger  (pastel-lean)*/
+  --accent-approvals: 230 169  78;   /* #E6A94E warning (pastel-lean)*/
+  --accent-analytics:  98 172 236;   /* #62ACEC info    (pastel-lean)*/
+  --accent-alerts:    232  80  85;   /* #E85055 alert red            */
 
-  /* raw decorative colors (theme-tinted) */
-  --glow-brand: 15 157 110;
-  --glow-gold:  224 168 46;
+  /* raw decorative colors for glows / grid */
+  --glow-brand: 141 125 255;      /* #8D7DFF */
+  --glow-gold:  255 182 217;      /* #FFB6D9 */
 }
-
-/*
-  Dark theme temporarily disabled — light theme only for now.
-  The `.dark` rules below are preserved for future use. The `dark` class is
-  never added to <html> while the toggle is disabled in App.tsx, so these rules
-  are inert; keeping them commented documents the intent. To re-enable, remove
-  the surrounding comment markers here and restore the toggle in App.tsx.
 
 .dark {
-  Dark theme — deep forest-black + luminous emerald
-  --bg-app:          6  17  13;      #06110D deep forest-black
-  --bg-surface:     12  26  21;      #0C1A15 card
-  --bg-secondary:   17  38  32;      #112620 inset panel
-  --bg-raised:      23  51  43;      #17332B hover/raised
-  --border-color:   40  66  56;      #284238 hairline
-  --border-strong:  56  88  76;      #38584C strong line
-  --text-primary:  232 240 236;      #E8F0EC
-  --text-secondary:157 176 168;      #9DB0A8
-  --text-faint:    110 131 123;      #6E837B
+  /* Dark theme — deep space canvas + luminous violet, same aurora concept */
+  --bg-app:         15  17  23;      /* #0F1117 */
+  --bg-surface:     27  30  42;      /* #1B1E2A card         */
+  --bg-secondary:   35  40  56;      /* #232838 inset panel  */
+  --bg-raised:      44  50  69;      /* #2C3245 hover/raised */
+  --border-color:   49  55  73;      /* #313749 hairline     */
+  --border-strong:  62  70  92;      /* #3E465C strong line  */
+  --text-primary:  243 244 246;      /* #F3F4F6 */
+  --text-secondary:166 169 184;      /* #A6A9B8 */
+  --text-faint:    123 129 148;      /* #7B8194 */
   --onbrand:       255 255 255;
 
-  --accent-budget:     18 184 134;      #12B886 emerald brand
-  --accent-savings:    52 211 153;      #34D399 positive green
-  --accent-expenses:  251 113 133;      #FB7185 expense rose
-  --accent-approvals: 224 168  46;      #E0A82E warm gold
-  --accent-analytics:  34 211 238;      #22D3EE analytics cyan
-  --accent-alerts:    248 113 113;      #F87171 alert red
+  --accent-budget:    169 151 255;   /* #A997FF violet primary       */
+  --accent-savings:   123 216 143;   /* #7BD88F success (exact spec) */
+  --accent-expenses:  255 138 138;   /* #FF8A8A danger  (exact spec) */
+  --accent-approvals: 255 200 112;   /* #FFC870 warning (exact spec) */
+  --accent-analytics: 142 201 255;   /* #8EC9FF info    (exact spec) */
+  --accent-alerts:    255 118 123;   /* #FF767B alert red            */
 
-  --glow-brand: 16 185 129;
-  --glow-gold:  224 168 46;
+  --glow-brand: 169 151 255;
+  --glow-gold:  255 182 217;
 }
-*/
 
 body {
   margin: 0;
@@ -77,61 +76,127 @@ body {
   background-color: rgb(var(--bg-app));
   color: rgb(var(--text-primary));
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Subtle grid texture on the app canvas */
+/* Very faint lavender grid texture — keeps the canvas from feeling empty */
 .bg-grid-pattern {
-  background-size: 34px 34px;
+  background-size: 40px 40px;
   background-image:
-    linear-gradient(to right, rgb(var(--glow-brand) / 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(var(--glow-brand) / 0.035) 1px, transparent 1px);
+    linear-gradient(to right, rgb(var(--glow-brand) / 0.028) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--glow-brand) / 0.028) 1px, transparent 1px);
 }
-/* Dark theme disabled — preserved for future use.
 .dark .bg-grid-pattern {
   background-image:
-    linear-gradient(to right, rgb(var(--glow-brand) / 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(var(--glow-brand) / 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgb(var(--glow-brand) / 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--glow-brand) / 0.045) 1px, transparent 1px);
 }
-*/
 
-/* Ambient decorative glows */
-.ambient-glow-1 { background: radial-gradient(circle, rgb(var(--glow-brand) / 0.07) 0%, transparent 70%); }
-/* Dark theme disabled — preserved for future use.
-.dark .ambient-glow-1 { background: radial-gradient(circle, rgb(var(--glow-brand) / 0.10) 0%, transparent 70%); }
+/*
+  Floating aurora blobs — large, heavily blurred, multi-hue radial gradients.
+  Rendered behind the app on the two decorative divs in App.tsx. Effective
+  opacity lands around 10–15% after the blur + the divs' own opacity-60.
 */
+.ambient-glow-1 {
+  background:
+    radial-gradient(closest-side at 35% 40%, rgba(201,184,255,0.55), transparent),
+    radial-gradient(closest-side at 65% 60%, rgba(191,167,255,0.42), transparent),
+    radial-gradient(closest-side at 50% 30%, rgba(221,244,255,0.32), transparent);
+}
+.dark .ambient-glow-1 {
+  background:
+    radial-gradient(closest-side at 40% 40%, rgba(169,151,255,0.22), transparent),
+    radial-gradient(closest-side at 62% 55%, rgba(142,201,255,0.16), transparent);
+}
 
-.ambient-glow-2 { background: radial-gradient(circle, rgb(var(--glow-gold) / 0.06) 0%, transparent 70%); }
-/* Dark theme disabled — preserved for future use.
-.dark .ambient-glow-2 { background: radial-gradient(circle, rgb(var(--glow-gold) / 0.07) 0%, transparent 70%); }
-*/
+.ambient-glow-2 {
+  background:
+    radial-gradient(closest-side at 60% 50%, rgba(255,214,236,0.50), transparent),
+    radial-gradient(closest-side at 40% 65%, rgba(255,226,209,0.38), transparent),
+    radial-gradient(closest-side at 72% 70%, rgba(205,189,255,0.30), transparent);
+}
+.dark .ambient-glow-2 {
+  background:
+    radial-gradient(closest-side at 55% 55%, rgba(255,182,217,0.16), transparent),
+    radial-gradient(closest-side at 66% 66%, rgba(169,151,255,0.16), transparent);
+}
 
-/* Frosted glass panels */
+/* Frosted glass panels (spec values) */
 .glass-panel {
   background: rgb(var(--bg-surface) / 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgb(var(--border-color) / 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 20px 50px rgba(60, 40, 120, 0.08);
+  border-radius: 22px;
 }
-/* Dark theme disabled — preserved for future use.
 .dark .glass-panel {
-  background: rgb(var(--bg-surface) / 0.7);
-  border: 1px solid rgb(var(--border-color) / 0.7);
+  background: rgba(35, 40, 55, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
 }
-*/
 
-/* Premium card hover — emerald glowing border */
-.glow-card { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+/* Premium card hover — soft aurora lift */
+.glow-card { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s; }
 .glow-card:hover {
-  border-color: rgb(var(--accent-budget));
-  box-shadow: 0 0 26px rgb(var(--glow-brand) / 0.12);
-  transform: translateY(-1px);
+  transform: translateY(-4px);
+  border-color: rgb(var(--accent-budget) / 0.4);
+  box-shadow: 0 28px 60px rgba(60, 40, 120, 0.14);
+}
+.dark .glow-card:hover {
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
 }
 
-/* Global transitions for theme-affected properties */
+/*
+  Primary solid fills render as a soft violet gradient for a premium button /
+  pill look. Opacity variants (bg-brand/10, /20 …) are separate classes and
+  keep their flat pastel tint, so this only upgrades the solid fills.
+*/
+.bg-brand { background-image: linear-gradient(135deg, #8D7DFF 0%, #B59EFF 100%); }
+.dark .bg-brand { background-image: linear-gradient(135deg, #A997FF 0%, #8B7BFF 100%); }
+
+/*
+  Frost every solid surface into glass (cards, sidebar, chat bar). The
+  bg-surface/NN opacity variants (header, hero image panel, selectable rows)
+  are separate classes and keep their own tuned values, so this only upgrades
+  the plain solid surfaces to the spec frosted-glass look:
+    background rgba(255,255,255,0.72) + blur(20px).
+*/
+.bg-surface {
+  background-color: rgb(var(--bg-surface) / 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.dark .bg-surface {
+  background-color: rgb(var(--bg-surface) / 0.65);
+}
+
+/* Buttons: subtle lift + soft aurora shadow on the primary action buttons */
+button.bg-brand:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px rgba(124, 108, 246, 0.28);
+}
+
+/* Inputs: soft violet focus glow (purely visual — no size/layout change) */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: rgb(139 124 255) !important;
+  box-shadow: 0 0 0 3px rgba(139, 124, 255, 0.18);
+}
+
+/* Tables: quiet zebra striping + soft lavender row hover */
+tbody tr { transition: background-color 0.2s ease; }
+tbody tr:nth-child(even) { background-color: rgb(var(--bg-secondary) / 0.5); }
+tbody tr:hover { background-color: rgb(var(--accent-budget) / 0.06); }
+
+/* Global transitions for theme-affected properties (250ms, spec) */
 *, *::before, *::after {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, box-shadow, transform, opacity;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
+  transition-duration: 250ms;
 }
 
 /* Custom soundwave animation */

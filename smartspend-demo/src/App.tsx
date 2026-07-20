@@ -87,21 +87,18 @@ export default function App() {
     const sc = Number(params?.get('scene'));
     return sc >= 1 && sc <= 15 ? sc : 1;
   });
-  // --- Dark theme temporarily disabled: light theme only for now. ---
-  // Preserved for future use. To re-enable the theme toggle, restore the
-  // stateful darkMode block below, un-comment the "Appearance" toggle in the
-  // sidebar, and un-comment the `.dark { ... }` rules in index.css.
-  // const [darkMode, setDarkMode] = useState<boolean>(() => {
-  //   const q = params?.get('theme');
-  //   if (q === 'light') return false;
-  //   if (q === 'dark') return true;
-  //   try {
-  //     const saved = localStorage.getItem('smartspend-theme-v2');
-  //     if (saved) return saved === 'dark';
-  //   } catch { /* ignore */ }
-  //   return false; // default to the light theme
-  // });
-  const darkMode = false; // force light theme
+  // Aurora theme — light by default, with an elegant dark mode using the same
+  // aurora concept. Respects ?theme=light|dark and a saved preference.
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    const q = params?.get('theme');
+    if (q === 'light') return false;
+    if (q === 'dark') return true;
+    try {
+      const saved = localStorage.getItem('smartspend-theme-v2');
+      if (saved) return saved === 'dark';
+    } catch { /* ignore */ }
+    return false; // default to the light theme
+  });
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<string>("Employee"); // Employee, Manager, SCM Buyer, Vendor, CEO
 
@@ -583,9 +580,9 @@ export default function App() {
       {/* --- SCENE 1: Microsoft SSO & Role Portal Login --- */}
       {activeScene === 1 && (
         <div className="flex-grow flex flex-col lg:flex-row min-h-screen">
-          <div className="lg:w-7/12 bg-gradient-to-tr from-[#04120c] via-[#08201a] to-[#0c2b20] flex flex-col justify-between p-8 lg:p-16 text-onbrand relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(16,185,129,0.16),transparent)] pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(224,168,46,0.10),transparent)] pointer-events-none" />
+          <div className="lg:w-7/12 bg-gradient-to-tr from-[#3A2E7E] via-[#5B4BD6] to-[#7C6CF6] flex flex-col justify-between p-8 lg:p-16 text-onbrand relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,182,217,0.20),transparent)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(221,244,255,0.14),transparent)] pointer-events-none" />
             <div className="z-10 flex items-center space-x-2">
               <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand to-gold flex items-center justify-center shadow-lg">
                 <Sparkles className="h-5 w-5 text-onbrand" />
@@ -594,19 +591,19 @@ export default function App() {
             </div>
             
             <div className="z-10 my-auto py-12 max-w-xl">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-brand/10 border border-brand/20 text-brand uppercase tracking-widest">
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 border border-white/25 text-white uppercase tracking-widest">
                 AI Orchestration Gateway
               </span>
               <h1 className="font-outfit text-4xl lg:text-6xl font-extrabold tracking-tight mt-6 leading-tight">
                 Request Anything.<br />
-                <span className="bg-gradient-to-r from-brand via-brand to-gold bg-clip-text text-transparent">Track Everything.</span>
+                <span className="bg-gradient-to-r from-white via-[#EEE9FF] to-[#FFD6EC] bg-clip-text text-transparent">Track Everything.</span>
               </h1>
-              <p className="text-textSecondary text-lg mt-6 leading-relaxed">
+              <p className="text-white/75 text-lg mt-6 leading-relaxed">
                 Experience corporate procurement simplified. SmartSpend abstracts complex Odoo ERP processes into a single, intelligent workspace. No forms, no jargon, no training required.
               </p>
             </div>
             
-            <div className="z-10 flex items-center justify-between text-xs text-textFaint">
+            <div className="z-10 flex items-center justify-between text-xs text-white/55">
               <span>Powered by Odoo ERP Backend</span>
               <span>CONFIDENTIAL PROTOTYPE V2</span>
             </div>
@@ -701,14 +698,14 @@ export default function App() {
                     <>
                       <button 
                         onClick={() => { setActiveScene(2); setEmployeeTab('chat'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'chat' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'chat' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
                       >
                         <MessageSquare className="h-4 w-4" />
                         <span>Conversational Agent</span>
                       </button>
                       <button 
                         onClick={() => { setActiveScene(2); setEmployeeTab('list'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'list' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'list' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
                       >
                         <FileText className="h-4 w-4" />
                         <span>My Requests</span>
@@ -716,14 +713,14 @@ export default function App() {
                       </button>
                       <button 
                         onClick={() => { setActiveScene(2); setEmployeeTab('tracking'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'tracking' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'tracking' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
                       >
                         <History className="h-4 w-4" />
                         <span>Request Tracking</span>
                       </button>
                       <button 
                         onClick={() => { setActiveScene(2); setEmployeeTab('clarify'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'clarify' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'clarify' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
                       >
                         <AlertTriangle className="h-4 w-4" />
                         <span>Clarification Inbox</span>
@@ -740,7 +737,7 @@ export default function App() {
                     <>
                       <button 
                         onClick={() => setActiveScene(10)}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 10 ? 'bg-gold text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 10 ? 'bg-gold text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
                       >
                         <CheckCircle2 className="h-4 w-4" />
                         <span>Approval Queue</span>
@@ -755,7 +752,7 @@ export default function App() {
                     <>
                       <button 
                         onClick={() => { setActiveScene(6); setScmTab('requests'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 6 && scmTab === 'requests' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 6 && scmTab === 'requests' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
                       >
                         <Briefcase className="h-4 w-4" />
                         <span>Contract Requests</span>
@@ -765,7 +762,7 @@ export default function App() {
                       </button>
                       <button 
                         onClick={() => { setActiveScene(6); setScmTab('discovery'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 6 && scmTab === 'discovery' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 6 && scmTab === 'discovery' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
                       >
                         <Search className="h-4 w-4" />
                         <span>AI Vendor Discovery</span>
@@ -789,7 +786,7 @@ export default function App() {
                     <>
                       <button 
                         onClick={() => setActiveScene(15)}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 15 ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-secondary/40 hover:text-onbrand'}`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 15 ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
                       >
                         <TrendingUp className="h-4 w-4" />
                         <span>Spend Analytics</span>
@@ -801,9 +798,6 @@ export default function App() {
               
               {/* Bottom Quick Controls */}
               <div className="p-4 space-y-3 border-t border-borderTheme">
-                {/* Dark/light theme toggle temporarily disabled — light theme only.
-                    Preserved for future use; re-enable together with the darkMode
-                    state (App.tsx) and the `.dark` rules in index.css.
                 <div className="flex items-center justify-between text-[11px] text-textFaint px-2">
                   <span className="font-semibold uppercase tracking-wider">Appearance</span>
                   <button
@@ -818,7 +812,6 @@ export default function App() {
                     </span>
                   </button>
                 </div>
-                */}
 
                 <button
                   onClick={() => {
