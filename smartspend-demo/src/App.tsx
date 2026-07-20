@@ -87,18 +87,21 @@ export default function App() {
     const sc = Number(params?.get('scene'));
     return sc >= 1 && sc <= 15 ? sc : 1;
   });
-  // Aurora theme — light by default, with an elegant dark mode using the same
-  // aurora concept. Respects ?theme=light|dark and a saved preference.
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
-    const q = params?.get('theme');
-    if (q === 'light') return false;
-    if (q === 'dark') return true;
-    try {
-      const saved = localStorage.getItem('smartspend-theme-v2');
-      if (saved) return saved === 'dark';
-    } catch { /* ignore */ }
-    return false; // default to the light theme
-  });
+  // --- Dark theme disabled — light (Aurora) theme only for now. ---
+  // To re-enable: restore the stateful darkMode block (see git history) and
+  // un-comment the "Appearance" toggle in the sidebar below. The `.dark` rules
+  // in index.css stay inert while this is false.
+  // const [darkMode, setDarkMode] = useState<boolean>(() => {
+  //   const q = params?.get('theme');
+  //   if (q === 'light') return false;
+  //   if (q === 'dark') return true;
+  //   try {
+  //     const saved = localStorage.getItem('smartspend-theme-v2');
+  //     if (saved) return saved === 'dark';
+  //   } catch { /* ignore */ }
+  //   return false; // default to the light theme
+  // });
+  const darkMode = false; // force light theme
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<string>("Employee"); // Employee, Manager, SCM Buyer, Vendor, CEO
 
@@ -798,6 +801,8 @@ export default function App() {
               
               {/* Bottom Quick Controls */}
               <div className="p-4 space-y-3 border-t border-borderTheme">
+                {/* Dark/light theme toggle disabled — light theme only for now.
+                    Re-enable together with the darkMode state (App.tsx) above.
                 <div className="flex items-center justify-between text-[11px] text-textFaint px-2">
                   <span className="font-semibold uppercase tracking-wider">Appearance</span>
                   <button
@@ -812,6 +817,7 @@ export default function App() {
                     </span>
                   </button>
                 </div>
+                */}
 
                 <button
                   onClick={() => {
