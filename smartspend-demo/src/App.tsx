@@ -579,6 +579,8 @@ export default function App() {
       {/* Background ambient decorative glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full ambient-glow-1 filter blur-[120px] pointer-events-none opacity-60 z-0" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full ambient-glow-2 filter blur-[120px] pointer-events-none opacity-60 z-0" />
+      {/* Rotating prismatic holographic sweep (same as the login) */}
+      <div className="login-sweep absolute inset-[-50%] z-0 pointer-events-none opacity-70" />
 
       {/* --- SCENE 1: Microsoft SSO & Role Portal Login --- */}
       {activeScene === 1 && (
@@ -586,7 +588,6 @@ export default function App() {
           {/* Holographic decorative layers span the whole login page */}
           <div className="login-sweep absolute inset-[-50%] z-0 pointer-events-none" />
           <div className="login-wash absolute inset-0 z-0 pointer-events-none" />
-          <div className="login-grid absolute inset-0 z-0 pointer-events-none" />
           <div className="absolute -top-24 -left-20 w-96 h-96 rounded-full bg-[#FFB6D9]/25 blur-[90px] z-0 pointer-events-none" />
           <div className="absolute top-1/3 right-1/3 w-[34rem] h-[34rem] rounded-full bg-[#8EC9FF]/18 blur-[110px] z-0 pointer-events-none" />
           <div className="absolute bottom-[-6rem] left-1/4 w-[28rem] h-[28rem] rounded-full bg-[#CDBDFF]/20 blur-[100px] z-0 pointer-events-none" />
@@ -669,7 +670,7 @@ export default function App() {
       
       {/* --- SCENES 2 - 12: INTEGRATED DEMO DASHBOARD LAYOUT --- */}
       {activeScene > 1 && (
-        <div className="flex-grow flex overflow-hidden h-screen">
+        <div className="flex-grow flex overflow-hidden h-screen relative z-10">
           
           {/* LEFT SIDEBAR */}
           {sidebarOpen && (
