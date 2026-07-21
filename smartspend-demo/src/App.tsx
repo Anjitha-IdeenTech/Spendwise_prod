@@ -583,18 +583,25 @@ export default function App() {
       {/* --- SCENE 1: Microsoft SSO & Role Portal Login --- */}
       {activeScene === 1 && (
         <div className="flex-grow flex flex-col lg:flex-row min-h-screen">
-          <div className="lg:w-7/12 bg-gradient-to-tr from-[#3A2E7E] via-[#5B4BD6] to-[#7C6CF6] flex flex-col justify-between p-8 lg:p-16 text-onbrand relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,182,217,0.20),transparent)] pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(221,244,255,0.14),transparent)] pointer-events-none" />
-            <div className="z-10 flex items-center space-x-2">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand to-gold flex items-center justify-center shadow-lg">
+          <div className="lg:w-7/12 login-aurora flex flex-col justify-between p-8 lg:p-16 text-onbrand relative overflow-hidden">
+            {/* Holographic decorative layers */}
+            <div className="login-sweep absolute inset-[-50%] z-0 pointer-events-none" />
+            <div className="login-wash absolute inset-0 z-0 pointer-events-none" />
+            <div className="login-grid absolute inset-0 z-0 pointer-events-none" />
+            <div className="absolute -top-24 -left-20 w-96 h-96 rounded-full bg-[#FFB6D9]/25 blur-[90px] z-0 pointer-events-none" />
+            <div className="absolute top-1/2 -right-28 w-[32rem] h-[32rem] rounded-full bg-[#8EC9FF]/20 blur-[100px] z-0 pointer-events-none" />
+            <div className="absolute bottom-[-6rem] left-1/3 w-[26rem] h-[26rem] rounded-full bg-[#CDBDFF]/20 blur-[90px] z-0 pointer-events-none" />
+
+            <div className="relative z-10 flex items-center space-x-2">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand to-gold flex items-center justify-center shadow-lg ring-1 ring-white/25">
                 <Sparkles className="h-5 w-5 text-onbrand" />
               </div>
               <span className="font-outfit text-2xl font-bold tracking-tight">SmartSpend</span>
             </div>
             
-            <div className="z-10 my-auto py-12 max-w-xl">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 border border-white/25 text-white uppercase tracking-widest">
+            <div className="relative z-10 my-auto py-12 max-w-xl">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/10 backdrop-blur-md border border-white/25 text-white uppercase tracking-widest shadow-lg shadow-black/10">
+                <span className="mr-2 h-1.5 w-1.5 rounded-full bg-white/90 shadow-[0_0_8px_2px_rgba(255,255,255,0.6)]" />
                 AI Orchestration Gateway
               </span>
               <h1 className="font-outfit text-4xl lg:text-6xl font-extrabold tracking-tight mt-6 leading-tight">
@@ -606,7 +613,7 @@ export default function App() {
               </p>
             </div>
             
-            <div className="z-10 flex items-center justify-between text-xs text-white/55">
+            <div className="relative z-10 flex items-center justify-between text-xs text-white/55">
               <span>Powered by Odoo ERP Backend</span>
               <span>CONFIDENTIAL PROTOTYPE V2</span>
             </div>
@@ -631,25 +638,25 @@ export default function App() {
                 <div className="grid grid-cols-2 gap-3">
                   <button 
                     onClick={() => handleSsoLogin("Employee")}
-                    className="p-3 bg-secondary/50 hover:bg-brand/20 border border-borderTheme hover:border-brand/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all"
+                    className="p-3 bg-secondary/50 hover:bg-brand/20 border border-borderTheme hover:border-brand/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
                   >
                     Employee Portal
                   </button>
                   <button 
                     onClick={() => handleSsoLogin("Manager")}
-                    className="p-3 bg-secondary/50 hover:bg-gold/20 border border-borderTheme hover:border-gold/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all"
+                    className="p-3 bg-secondary/50 hover:bg-gold/20 border border-borderTheme hover:border-gold/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
                   >
                     Manager Inbox
                   </button>
                   <button 
                     onClick={() => handleSsoLogin("SCM Buyer")}
-                    className="p-3 bg-secondary/50 hover:bg-brand/20 border border-borderTheme hover:border-brand/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all"
+                    className="p-3 bg-secondary/50 hover:bg-brand/20 border border-borderTheme hover:border-brand/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
                   >
                     SCM Buyer Portal
                   </button>
                   <button 
                     onClick={() => handleSsoLogin("Vendor")}
-                    className="p-3 bg-secondary/50 hover:bg-pos/20 border border-borderTheme hover:border-pos/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all"
+                    className="p-3 bg-secondary/50 hover:bg-pos/20 border border-borderTheme hover:border-pos/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
                   >
                     Vendor Portal
                   </button>

@@ -272,13 +272,52 @@ body {
 .holo-text       { background-image: var(--holo-text); }
 .holo-text-light { background-image: var(--holo-light); }
 
+/* ===== Login hero — extraordinary holographic backdrop ===== */
+.login-aurora {
+  background:
+    radial-gradient(120% 120% at 12% 18%, #4A38A6 0%, transparent 55%),
+    radial-gradient(120% 120% at 88% 12%, #6E3AB2 0%, transparent 50%),
+    radial-gradient(130% 130% at 84% 90%, #3B54D6 0%, transparent 55%),
+    radial-gradient(130% 120% at 6% 90%, #6E5CF2 0%, transparent 55%),
+    linear-gradient(140deg, #221852 0%, #33266C 45%, #3E2D8E 100%);
+}
+/* slow-rotating prismatic light sweep */
+.login-sweep {
+  background: conic-gradient(from 0deg,
+    transparent 0deg,   rgba(255,182,217,0.15) 40deg,
+    transparent 95deg,  rgba(142,201,255,0.16) 165deg,
+    transparent 215deg, rgba(221,247,236,0.12) 285deg,
+    transparent 335deg);
+  animation: spinSlow 28s linear infinite;
+}
+/* drifting soft aurora wash */
+.login-wash {
+  background:
+    radial-gradient(closest-side at 25% 30%, rgba(255,182,217,0.22), transparent),
+    radial-gradient(closest-side at 80% 72%, rgba(142,201,255,0.20), transparent),
+    radial-gradient(closest-side at 62% 18%, rgba(205,189,255,0.18), transparent);
+  animation: auroraDrift 22s ease-in-out infinite;
+}
+/* fine holographic grid, faded toward the edges */
+.login-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(120% 100% at 50% 35%, #000 0%, transparent 80%);
+          mask-image: radial-gradient(120% 100% at 50% 35%, #000 0%, transparent 80%);
+}
+@keyframes spinSlow { to { transform: rotate(360deg); } }
+
 /* Respect reduced-motion: keep the iridescence, drop the movement */
 @media (prefers-reduced-motion: reduce) {
   .bg-brand,
   .holo-text,
   .holo-text-light,
   .ambient-glow-1,
-  .ambient-glow-2 { animation: none !important; }
+  .ambient-glow-2,
+  .login-sweep,
+  .login-wash { animation: none !important; }
 }
 
 /* Buttons: subtle lift + soft aurora shadow on the primary action buttons */
