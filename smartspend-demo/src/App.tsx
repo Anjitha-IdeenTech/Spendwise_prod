@@ -1083,7 +1083,7 @@ export default function App() {
                     className="bg-secondary border border-line2 rounded-lg px-2.5 py-1 text-primary font-bold"
                   >
                     {SCENES.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
+                      <option key={s.id} value={s.id}>{s.name.replace(/^Scene \d+:\s*/, '')}</option>
                     ))}
                   </select>
                 </div>
@@ -1701,7 +1701,7 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Scene 9: Smart Budget Verification &amp; Allocation</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Smart Budget Verification &amp; Allocation</h2>
                       <p className="text-xs text-textSecondary">The platform cross-references available cost center funds in real-time after contract pricing is resolved.</p>
                     </div>
                     
@@ -1815,7 +1815,7 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Scene 5: Active Contract Search</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Active Contract Search</h2>
                       <p className="text-xs text-textSecondary">AI queries the Odoo registry for valid Rate Contracts or pricing agreements.</p>
                     </div>
                     
@@ -2211,7 +2211,7 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Scene 7: Side-by-Side RFQ Comparison</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Side-by-Side RFQ Comparison</h2>
                       <p className="text-xs text-textSecondary">Value scorecard compiled from active vendor bids in local Odoo database.</p>
                     </div>
                   </div>
@@ -2279,7 +2279,7 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Scene 8: AI Autonomous Negotiation</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-primary">AI Autonomous Negotiation</h2>
                       <p className="text-xs text-textSecondary">Watch the AI agent negotiate rates and terms directly with the supplier bot.</p>
                     </div>
                     
@@ -2392,7 +2392,7 @@ export default function App() {
                 <div className="max-w-5xl mx-auto py-8 animate-fadeIn">
                   <div className="flex items-center justify-between mb-5">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Scene 10: Unified Approval Panel</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Unified Approval Panel</h2>
                       <p className="text-xs text-textSecondary">Simplifying decision metrics for managers. No complex ERP menus.</p>
                     </div>
                     <span className="px-3 py-1 bg-accent-approvals/10 text-accent-approvals border border-accent-approvals/20 rounded-full text-xs font-bold font-outfit">
@@ -2601,7 +2601,7 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Scene 11: Request Tracking Milestone</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Request Tracking Milestone</h2>
                       <p className="text-xs text-textSecondary">Amazon-style simple progress tracker hiding deep transactional ERP states.</p>
                     </div>
                   </div>
@@ -2791,7 +2791,7 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Scene 12: Product Receiving &amp; Goods Receipt Note</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Product Receiving &amp; Goods Receipt Note</h2>
                       <p className="text-xs text-textSecondary">Simulate warehouse operations. Inspect the delivered items and generate the GRN in Odoo.</p>
                     </div>
                   </div>
@@ -2927,7 +2927,7 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Scene 13: Automated 3-Way Match Verification</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Automated 3-Way Match Verification</h2>
                       <p className="text-xs text-textSecondary">Audit and reconcile PO details, Goods Receipt note, and Vendor Invoice side-by-side.</p>
                     </div>
                   </div>
@@ -3056,7 +3056,7 @@ export default function App() {
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Scene 14: Payment Disbursement &amp; Reconciliation</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Payment Disbursement &amp; Reconciliation</h2>
                       <p className="text-xs text-textSecondary">Authorize the cash disbursement and auto-reconcile bank statements in Odoo.</p>
                     </div>
                   </div>
@@ -3180,7 +3180,7 @@ export default function App() {
                 <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Scene 15: Spend Intelligence Dashboard</h2>
+                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Spend Intelligence Dashboard</h2>
                       <p className="text-xs text-textSecondary">High-level capital monitoring and automated fraud detection audits.</p>
                     </div>
                   </div>
