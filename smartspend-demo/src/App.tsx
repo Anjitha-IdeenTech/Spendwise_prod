@@ -582,16 +582,16 @@ export default function App() {
 
       {/* --- SCENE 1: Microsoft SSO & Role Portal Login --- */}
       {activeScene === 1 && (
-        <div className="flex-grow flex flex-col lg:flex-row min-h-screen">
-          <div className="lg:w-7/12 login-aurora flex flex-col justify-between p-8 lg:p-16 text-onbrand relative overflow-hidden">
-            {/* Holographic decorative layers */}
-            <div className="login-sweep absolute inset-[-50%] z-0 pointer-events-none" />
-            <div className="login-wash absolute inset-0 z-0 pointer-events-none" />
-            <div className="login-grid absolute inset-0 z-0 pointer-events-none" />
-            <div className="absolute -top-24 -left-20 w-96 h-96 rounded-full bg-[#FFB6D9]/25 blur-[90px] z-0 pointer-events-none" />
-            <div className="absolute top-1/2 -right-28 w-[32rem] h-[32rem] rounded-full bg-[#8EC9FF]/20 blur-[100px] z-0 pointer-events-none" />
-            <div className="absolute bottom-[-6rem] left-1/3 w-[26rem] h-[26rem] rounded-full bg-[#CDBDFF]/20 blur-[90px] z-0 pointer-events-none" />
+        <div className="flex-grow flex flex-col lg:flex-row min-h-screen login-aurora relative overflow-hidden">
+          {/* Holographic decorative layers span the whole login page */}
+          <div className="login-sweep absolute inset-[-50%] z-0 pointer-events-none" />
+          <div className="login-wash absolute inset-0 z-0 pointer-events-none" />
+          <div className="login-grid absolute inset-0 z-0 pointer-events-none" />
+          <div className="absolute -top-24 -left-20 w-96 h-96 rounded-full bg-[#FFB6D9]/25 blur-[90px] z-0 pointer-events-none" />
+          <div className="absolute top-1/3 right-1/3 w-[34rem] h-[34rem] rounded-full bg-[#8EC9FF]/18 blur-[110px] z-0 pointer-events-none" />
+          <div className="absolute bottom-[-6rem] left-1/4 w-[28rem] h-[28rem] rounded-full bg-[#CDBDFF]/20 blur-[100px] z-0 pointer-events-none" />
 
+          <div className="lg:w-7/12 flex flex-col justify-between p-8 lg:p-16 text-onbrand relative z-10">
             <div className="relative z-10 flex items-center space-x-2">
               <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand to-gold flex items-center justify-center shadow-lg ring-1 ring-white/25">
                 <Sparkles className="h-5 w-5 text-onbrand" />
@@ -619,8 +619,8 @@ export default function App() {
             </div>
           </div>
           
-          <div className="lg:w-5/12 flex flex-col justify-center px-6 py-12 md:px-16 lg:px-20 bg-surface border-l border-borderTheme">
-            <div className="max-w-md w-full mx-auto space-y-8">
+          <div className="lg:w-5/12 flex flex-col justify-center px-6 py-12 md:px-10 lg:px-14 relative z-10">
+            <div className="max-w-md w-full mx-auto space-y-8 bg-white/85 backdrop-blur-2xl border border-white/60 rounded-[24px] shadow-2xl shadow-black/20 p-8 lg:p-10">
               <div>
                 <h2 className="font-outfit text-3xl font-extrabold text-primary tracking-tight">Sign In</h2>
                 <p className="mt-3 text-sm text-textSecondary">
