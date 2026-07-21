@@ -620,43 +620,43 @@ export default function App() {
           </div>
           
           <div className="lg:w-5/12 flex flex-col justify-center px-6 py-12 md:px-10 lg:px-14 relative z-10">
-            <div className="max-w-md w-full mx-auto space-y-8 bg-white/85 backdrop-blur-2xl border border-white/60 rounded-[24px] shadow-2xl shadow-black/20 p-8 lg:p-10">
+            <div className="max-w-md w-full mx-auto space-y-8 bg-[#241A54]/30 backdrop-blur-2xl border border-white/15 rounded-[24px] shadow-2xl shadow-black/30 p-8 lg:p-10">
               <div>
-                <h2 className="font-outfit text-3xl font-extrabold text-primary tracking-tight">Sign In</h2>
-                <p className="mt-3 text-sm text-textSecondary">
+                <h2 className="font-outfit text-3xl font-extrabold text-white tracking-tight">Sign In</h2>
+                <p className="mt-3 text-sm text-white/70">
                   Select a role portal below to test each interactive role.
                 </p>
               </div>
               
               <div className="space-y-4">
                 <div className="relative flex pb-2 items-center">
-                  <div className="flex-grow border-t border-borderTheme"></div>
-                  <span className="flex-shrink mx-4 text-textFaint text-xs font-semibold uppercase tracking-wider">Select Demo Role Portal</span>
-                  <div className="flex-grow border-t border-borderTheme"></div>
+                  <div className="flex-grow border-t border-white/15"></div>
+                  <span className="flex-shrink mx-4 text-white/55 text-xs font-semibold uppercase tracking-wider">Select Demo Role Portal</span>
+                  <div className="flex-grow border-t border-white/15"></div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
                   <button 
                     onClick={() => handleSsoLogin("Employee")}
-                    className="p-3 bg-secondary/50 hover:bg-brand/20 border border-borderTheme hover:border-brand/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
+                    className="p-3 bg-white/5 hover:bg-brand/20 border border-white/15 hover:border-brand/30 rounded-xl text-center text-xs text-white/80 font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
                   >
                     Employee Portal
                   </button>
                   <button 
                     onClick={() => handleSsoLogin("Manager")}
-                    className="p-3 bg-secondary/50 hover:bg-gold/20 border border-borderTheme hover:border-gold/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
+                    className="p-3 bg-white/5 hover:bg-gold/20 border border-white/15 hover:border-gold/30 rounded-xl text-center text-xs text-white/80 font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
                   >
                     Manager Inbox
                   </button>
                   <button 
                     onClick={() => handleSsoLogin("SCM Buyer")}
-                    className="p-3 bg-secondary/50 hover:bg-brand/20 border border-borderTheme hover:border-brand/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
+                    className="p-3 bg-white/5 hover:bg-brand/20 border border-white/15 hover:border-brand/30 rounded-xl text-center text-xs text-white/80 font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
                   >
                     SCM Buyer Portal
                   </button>
                   <button 
                     onClick={() => handleSsoLogin("Vendor")}
-                    className="p-3 bg-secondary/50 hover:bg-pos/20 border border-borderTheme hover:border-pos/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
+                    className="p-3 bg-white/5 hover:bg-pos/20 border border-white/15 hover:border-pos/30 rounded-xl text-center text-xs text-white/80 font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
                   >
                     Vendor Portal
                   </button>
