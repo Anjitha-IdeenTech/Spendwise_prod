@@ -1101,6 +1101,10 @@ video {
   animation: spin 1s linear infinite;
 }
 
+.cursor-grab{
+  cursor: grab;
+}
+
 .cursor-not-allowed{
   cursor: not-allowed;
 }
@@ -1661,6 +1665,10 @@ video {
   background-color: transparent;
 }
 
+.bg-white\/20{
+  background-color: rgb(255 255 255 / 0.2);
+}
+
 .bg-white\/70{
   background-color: rgb(255 255 255 / 0.7);
 }
@@ -1722,6 +1730,11 @@ video {
 .px-1{
   padding-left: 0.25rem;
   padding-right: 0.25rem;
+}
+
+.px-1\.5{
+  padding-left: 0.375rem;
+  padding-right: 0.375rem;
 }
 
 .px-2{
@@ -1910,6 +1923,10 @@ video {
   font-size: 11px;
 }
 
+.text-\[8px\]{
+  font-size: 8px;
+}
+
 .text-\[9px\]{
   font-size: 9px;
 }
@@ -2032,6 +2049,10 @@ video {
   color: rgb(var(--onbrand) / var(--tw-text-opacity, 1));
 }
 
+.text-onbrand\/70{
+  color: rgb(var(--onbrand) / 0.7);
+}
+
 .text-pos{
   --tw-text-opacity: 1;
   color: rgb(var(--accent-savings) / var(--tw-text-opacity, 1));
@@ -2073,6 +2094,10 @@ video {
 .placeholder-textFaint::placeholder{
   --tw-placeholder-opacity: 1;
   color: rgb(var(--text-faint) / var(--tw-placeholder-opacity, 1));
+}
+
+.opacity-40{
+  opacity: 0.4;
 }
 
 .opacity-60{
@@ -2789,8 +2814,16 @@ tbody tr:hover { background-color: rgb(var(--accent-budget) / 0.06); }
   --tw-ring-color: rgb(var(--accent-savings) / var(--tw-ring-opacity, 1));
 }
 
+.active\:cursor-grabbing:active{
+  cursor: grabbing;
+}
+
 .disabled\:opacity-30:disabled{
   opacity: 0.3;
+}
+
+.group:hover .group-hover\:opacity-100{
+  opacity: 1;
 }
 
 @media (min-width: 640px){

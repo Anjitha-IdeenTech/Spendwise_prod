@@ -399,6 +399,34 @@ export default function App() {
 
   // Employee Portal Local States
   const [employeeTab, setEmployeeTab] = useState<'chat' | 'list' | 'tracking' | 'clarify'>('chat');
+
+  // Drag-to-reorder Employee nav; first tab = landing screen on login (#5)
+  type EmpTab = 'chat' | 'list' | 'tracking' | 'clarify';
+  const [empTabOrder, setEmpTabOrder] = useState<EmpTab[]>(() => {
+    try {
+      const saved = localStorage.getItem('smartspend-emptab-order');
+      if (saved) {
+        const arr = JSON.parse(saved) as EmpTab[];
+        const valid: EmpTab[] = ['chat', 'list', 'tracking', 'clarify'];
+        if (Array.isArray(arr) && arr.length === 4 && valid.every(v => arr.includes(v))) return arr;
+      }
+    } catch { /* ignore */ }
+    return ['chat', 'list', 'tracking', 'clarify'];
+  });
+  const [dragTab, setDragTab] = useState<EmpTab | null>(null);
+  useEffect(() => {
+    try { localStorage.setItem('smartspend-emptab-order', JSON.stringify(empTabOrder)); } catch { /* ignore */ }
+  }, [empTabOrder]);
+  const reorderEmpTabs = (from: EmpTab, to: EmpTab) => {
+    if (from === to) return;
+    setEmpTabOrder(prev => {
+      const next = [...prev];
+      const fi = next.indexOf(from), ti = next.indexOf(to);
+      next.splice(fi, 1);
+      next.splice(ti, 0, from);
+      return next;
+    });
+  };
   const [chatInputText, setChatInputText] = useState<string>("");
   const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
   const [showFileAttachedAlert, setShowFileAttachedAlert] = useState<boolean>(false);
@@ -527,7 +555,7 @@ export default function App() {
   const handleSsoLogin = (role: string) => {
     setUserRole(role);
     if (role === "Employee") {
-      setEmployeeTab('chat');
+      setEmployeeTab(empTabOrder[0]);
       setActiveScene(2);
     } else if (role === "Manager") {
       setActiveScene(10);
@@ -922,40 +950,38 @@ export default function App() {
                   
                   {userRole === "Employee" && (
                     <>
-                      <button 
-                        onClick={() => { setActiveScene(2); setEmployeeTab('chat'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'chat' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
-                      >
-                        <MessageSquare className="h-4 w-4" />
-                        <span>Conversational Agent</span>
-                      </button>
-                      <button 
-                        onClick={() => { setActiveScene(2); setEmployeeTab('list'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'list' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
-                      >
-                        <FileText className="h-4 w-4" />
-                        <span>My Requests</span>
-                        <span className="ml-auto bg-secondary text-textSecondary text-[10px] px-2 py-0.5 rounded-full font-bold">{requests.length}</span>
-                      </button>
-                      <button 
-                        onClick={() => { setActiveScene(2); setEmployeeTab('tracking'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'tracking' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
-                      >
-                        <History className="h-4 w-4" />
-                        <span>Request Tracking</span>
-                      </button>
-                      <button 
-                        onClick={() => { setActiveScene(2); setEmployeeTab('clarify'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 2 && employeeTab === 'clarify' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
-                      >
-                        <AlertTriangle className="h-4 w-4" />
-                        <span>Clarification Inbox</span>
-                        {requests.filter(r => r.status === 'Needs Clarification').length > 0 && (
-                          <span className="ml-auto bg-gold/20 text-gold border border-gold/30 text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">
-                            {requests.filter(r => r.status === 'Needs Clarification').length}
-                          </span>
-                        )}
-                      </button>
+                      <span className="text-[9px] text-textFaint px-3 flex items-center gap-1 mb-1"><Layers className="h-3 w-3" /> Drag to reorder · top tab loads first on login</span>
+                      {empTabOrder.map((tab, idx) => {
+                        const meta = {
+                          chat:     { icon: <MessageSquare className="h-4 w-4" />, label: 'Conversational Agent' },
+                          list:     { icon: <FileText className="h-4 w-4" />, label: 'My Requests' },
+                          tracking: { icon: <History className="h-4 w-4" />, label: 'Request Tracking' },
+                          clarify:  { icon: <AlertTriangle className="h-4 w-4" />, label: 'Clarification Inbox' },
+                        }[tab];
+                        const active = activeScene === 2 && employeeTab === tab;
+                        const clarifyCount = requests.filter(r => r.status === 'Needs Clarification').length;
+                        return (
+                          <button
+                            key={tab}
+                            draggable
+                            onDragStart={() => setDragTab(tab)}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={() => { if (dragTab) reorderEmpTabs(dragTab, tab); setDragTab(null); }}
+                            onDragEnd={() => setDragTab(null)}
+                            onClick={() => { setActiveScene(2); setEmployeeTab(tab); }}
+                            className={`group w-full flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-grab active:cursor-grabbing ${active ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'} ${dragTab === tab ? 'opacity-40' : ''}`}
+                          >
+                            <span className={`text-[10px] leading-none ${active ? 'text-onbrand/70' : 'text-textFaint'} group-hover:opacity-100 opacity-60`}>⠿</span>
+                            {meta.icon}
+                            <span>{meta.label}</span>
+                            {idx === 0 && <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded ${active ? 'bg-white/20 text-onbrand' : 'bg-brand/10 text-brand'}`}>Home</span>}
+                            {tab === 'list' && <span className="ml-auto bg-secondary text-textSecondary text-[10px] px-2 py-0.5 rounded-full font-bold">{requests.length}</span>}
+                            {tab === 'clarify' && clarifyCount > 0 && (
+                              <span className="ml-auto bg-gold/20 text-gold border border-gold/30 text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">{clarifyCount}</span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </>
                   )}
 
