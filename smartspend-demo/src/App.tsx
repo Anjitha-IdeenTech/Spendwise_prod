@@ -400,32 +400,98 @@ export default function App() {
   // Employee Portal Local States
   const [employeeTab, setEmployeeTab] = useState<'chat' | 'list' | 'tracking' | 'clarify'>('chat');
 
-  // Drag-to-reorder Employee nav; first tab = landing screen on login (#5)
-  type EmpTab = 'chat' | 'list' | 'tracking' | 'clarify';
-  const [empTabOrder, setEmpTabOrder] = useState<EmpTab[]>(() => {
+  // Drag-to-reorder role nav; first item = landing screen on login (#5).
+  // Role-keyed so Employee, SCM Buyer, Manager and CEO each persist their own order.
+  const DEFAULT_NAV_ORDER: Record<string, string[]> = {
+    Employee: ['chat', 'list', 'tracking', 'clarify'],
+    Manager: ['queue', 'tracking'],
+    'SCM Buyer': ['requests', 'discovery'],
+    CEO: ['analytics', 'tracking'],
+  };
+  const [navOrder, setNavOrder] = useState<Record<string, string[]>>(() => {
     try {
-      const saved = localStorage.getItem('smartspend-emptab-order');
+      const saved = localStorage.getItem('smartspend-nav-order-v1');
       if (saved) {
-        const arr = JSON.parse(saved) as EmpTab[];
-        const valid: EmpTab[] = ['chat', 'list', 'tracking', 'clarify'];
-        if (Array.isArray(arr) && arr.length === 4 && valid.every(v => arr.includes(v))) return arr;
+        const parsed = JSON.parse(saved) as Record<string, string[]>;
+        const merged: Record<string, string[]> = {};
+        for (const role of Object.keys(DEFAULT_NAV_ORDER)) {
+          const def = DEFAULT_NAV_ORDER[role];
+          const s = parsed[role];
+          merged[role] = Array.isArray(s) && s.length === def.length && def.every(v => s.includes(v)) ? s : def;
+        }
+        return merged;
       }
     } catch { /* ignore */ }
-    return ['chat', 'list', 'tracking', 'clarify'];
+    return DEFAULT_NAV_ORDER;
   });
-  const [dragTab, setDragTab] = useState<EmpTab | null>(null);
+  const [dragKey, setDragKey] = useState<string | null>(null);
   useEffect(() => {
-    try { localStorage.setItem('smartspend-emptab-order', JSON.stringify(empTabOrder)); } catch { /* ignore */ }
-  }, [empTabOrder]);
-  const reorderEmpTabs = (from: EmpTab, to: EmpTab) => {
+    try { localStorage.setItem('smartspend-nav-order-v1', JSON.stringify(navOrder)); } catch { /* ignore */ }
+  }, [navOrder]);
+  const reorderNav = (role: string, from: string, to: string) => {
     if (from === to) return;
-    setEmpTabOrder(prev => {
-      const next = [...prev];
+    setNavOrder(prev => {
+      const next = [...(prev[role] || [])];
       const fi = next.indexOf(from), ti = next.indexOf(to);
+      if (fi < 0 || ti < 0) return prev;
       next.splice(fi, 1);
       next.splice(ti, 0, from);
-      return next;
+      return { ...prev, [role]: next };
     });
+  };
+  // Navigate to a nav item's screen (shared by click + login landing).
+  const applyNav = (role: string, key: string | undefined) => {
+    if (!key) return;
+    if (role === 'Employee') { setActiveScene(2); setEmployeeTab(key as 'chat' | 'list' | 'tracking' | 'clarify'); }
+    else if (role === 'Manager') { setActiveScene(key === 'tracking' ? 11 : 10); }
+    else if (role === 'SCM Buyer') { setActiveScene(6); setScmTab(key === 'discovery' ? 'discovery' : 'requests'); }
+    else if (role === 'CEO') { setActiveScene(key === 'tracking' ? 11 : 15); }
+  };
+  const navActive = (role: string, key: string): boolean => {
+    if (role === 'Employee') return activeScene === 2 && employeeTab === key;
+    if (role === 'Manager') return key === 'tracking' ? activeScene === 11 : activeScene === 10;
+    if (role === 'SCM Buyer') return activeScene === 6 && scmTab === (key === 'discovery' ? 'discovery' : 'requests');
+    if (role === 'CEO') return key === 'tracking' ? activeScene === 11 : activeScene === 15;
+    return false;
+  };
+  const navMeta = (role: string, key: string): { icon: React.ReactNode; label: string; badge?: React.ReactNode } => {
+    const pill = (n: number, cls: string, pulse = false) => n > 0
+      ? <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full font-bold ${cls} ${pulse ? 'animate-pulse' : ''}`}>{n}</span> : undefined;
+    const m: Record<string, { icon: React.ReactNode; label: string; badge?: React.ReactNode }> = {
+      'Employee/chat': { icon: <MessageSquare className="h-4 w-4" />, label: 'Conversational Agent' },
+      'Employee/list': { icon: <FileText className="h-4 w-4" />, label: 'My Requests', badge: <span className="ml-auto bg-secondary text-textSecondary text-[10px] px-2 py-0.5 rounded-full font-bold">{requests.length}</span> },
+      'Employee/tracking': { icon: <History className="h-4 w-4" />, label: 'Request Tracking' },
+      'Employee/clarify': { icon: <AlertTriangle className="h-4 w-4" />, label: 'Clarification Inbox', badge: pill(requests.filter(r => r.status === 'Needs Clarification').length, 'bg-gold/20 text-gold border border-gold/30', true) },
+      'Manager/queue': { icon: <CheckCircle2 className="h-4 w-4" />, label: 'Approval Queue', badge: pill(requests.filter(r => r.status === 'Pending Approval').length, 'bg-gold/20 text-gold border border-gold/30') },
+      'Manager/tracking': { icon: <History className="h-4 w-4" />, label: 'Request Tracking' },
+      'SCM Buyer/requests': { icon: <Briefcase className="h-4 w-4" />, label: 'Contract Requests', badge: pill(requests.filter(r => r.status === 'Sourcing').length, 'bg-brand/20 text-brand border border-brand/30') },
+      'SCM Buyer/discovery': { icon: <Search className="h-4 w-4" />, label: 'AI Vendor Discovery' },
+      'CEO/analytics': { icon: <TrendingUp className="h-4 w-4" />, label: 'Spend Analytics' },
+      'CEO/tracking': { icon: <History className="h-4 w-4" />, label: 'Request Tracking' },
+    };
+    return m[`${role}/${key}`] ?? { icon: <FileText className="h-4 w-4" />, label: key };
+  };
+  const renderNavItem = (role: string, key: string, idx: number) => {
+    const meta = navMeta(role, key);
+    const active = navActive(role, key);
+    return (
+      <button
+        key={key}
+        draggable
+        onDragStart={() => setDragKey(key)}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={() => { if (dragKey) reorderNav(role, dragKey, key); setDragKey(null); }}
+        onDragEnd={() => setDragKey(null)}
+        onClick={() => applyNav(role, key)}
+        className={`group w-full flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-grab active:cursor-grabbing ${active ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'} ${dragKey === key ? 'opacity-40' : ''}`}
+      >
+        <span className={`text-[10px] leading-none ${active ? 'text-onbrand/70' : 'text-textFaint'} opacity-60 group-hover:opacity-100`}>⠿</span>
+        {meta.icon}
+        <span>{meta.label}</span>
+        {idx === 0 && <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded ${active ? 'bg-white/20 text-onbrand' : 'bg-brand/10 text-brand'}`}>Home</span>}
+        {meta.badge}
+      </button>
+    );
   };
   const [chatInputText, setChatInputText] = useState<string>("");
   const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
@@ -554,18 +620,11 @@ export default function App() {
 
   const handleSsoLogin = (role: string) => {
     setUserRole(role);
-    if (role === "Employee") {
-      setEmployeeTab(empTabOrder[0]);
-      setActiveScene(2);
-    } else if (role === "Manager") {
-      setActiveScene(10);
-    } else if (role === "SCM Buyer") {
-      setScmTab('requests');
-      setActiveScene(6);
-    } else if (role === "Vendor") {
-      setActiveScene(6); // Redirect to show bidding/interaction
-    } else if (role === "CEO") {
-      setActiveScene(15);
+    if (role === "Vendor") {
+      setActiveScene(6); // single-function external portal
+    } else {
+      // Land on the role's first (drag-ordered) nav item.
+      applyNav(role, (navOrder[role] || DEFAULT_NAV_ORDER[role])?.[0]);
     }
   };
 
@@ -948,102 +1007,20 @@ export default function App() {
                 <nav className="p-4 space-y-1.5">
                   <span className="text-[10px] text-textFaint font-bold uppercase tracking-wider block px-3 mb-2">Portal Navigation</span>
                   
-                  {userRole === "Employee" && (
-                    <>
-                      <span className="text-[9px] text-textFaint px-3 flex items-center gap-1 mb-1"><Layers className="h-3 w-3" /> Drag to reorder · top tab loads first on login</span>
-                      {empTabOrder.map((tab, idx) => {
-                        const meta = {
-                          chat:     { icon: <MessageSquare className="h-4 w-4" />, label: 'Conversational Agent' },
-                          list:     { icon: <FileText className="h-4 w-4" />, label: 'My Requests' },
-                          tracking: { icon: <History className="h-4 w-4" />, label: 'Request Tracking' },
-                          clarify:  { icon: <AlertTriangle className="h-4 w-4" />, label: 'Clarification Inbox' },
-                        }[tab];
-                        const active = activeScene === 2 && employeeTab === tab;
-                        const clarifyCount = requests.filter(r => r.status === 'Needs Clarification').length;
-                        return (
-                          <button
-                            key={tab}
-                            draggable
-                            onDragStart={() => setDragTab(tab)}
-                            onDragOver={(e) => e.preventDefault()}
-                            onDrop={() => { if (dragTab) reorderEmpTabs(dragTab, tab); setDragTab(null); }}
-                            onDragEnd={() => setDragTab(null)}
-                            onClick={() => { setActiveScene(2); setEmployeeTab(tab); }}
-                            className={`group w-full flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-grab active:cursor-grabbing ${active ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'} ${dragTab === tab ? 'opacity-40' : ''}`}
-                          >
-                            <span className={`text-[10px] leading-none ${active ? 'text-onbrand/70' : 'text-textFaint'} group-hover:opacity-100 opacity-60`}>⠿</span>
-                            {meta.icon}
-                            <span>{meta.label}</span>
-                            {idx === 0 && <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded ${active ? 'bg-white/20 text-onbrand' : 'bg-brand/10 text-brand'}`}>Home</span>}
-                            {tab === 'list' && <span className="ml-auto bg-secondary text-textSecondary text-[10px] px-2 py-0.5 rounded-full font-bold">{requests.length}</span>}
-                            {tab === 'clarify' && clarifyCount > 0 && (
-                              <span className="ml-auto bg-gold/20 text-gold border border-gold/30 text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">{clarifyCount}</span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </>
+                  {/* Role-adaptive nav — drag to reorder; top item is the login landing (#5) */}
+                  {userRole !== "Vendor" && (navOrder[userRole]?.length ?? 0) > 1 && (
+                    <span className="text-[9px] text-textFaint px-3 flex items-center gap-1 mb-1"><Layers className="h-3 w-3" /> Drag to reorder · top tab loads first on login</span>
                   )}
-
-                  {userRole === "Manager" && (
-                    <>
-                      <button 
-                        onClick={() => setActiveScene(10)}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 10 ? 'bg-gold text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
-                      >
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span>Approval Queue</span>
-                        <span className="ml-auto bg-gold/20 text-gold border border-gold/30 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                          {requests.filter(r => r.status === 'Pending Approval').length}
-                        </span>
-                      </button>
-                    </>
-                  )}
-
-                   {userRole === "SCM Buyer" && (
-                    <>
-                      <button 
-                        onClick={() => { setActiveScene(6); setScmTab('requests'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 6 && scmTab === 'requests' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
-                      >
-                        <Briefcase className="h-4 w-4" />
-                        <span>Contract Requests</span>
-                        <span className="ml-auto bg-brand/20 text-brand border border-brand/30 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                          {requests.filter(r => r.status === 'Sourcing').length}
-                        </span>
-                      </button>
-                      <button 
-                        onClick={() => { setActiveScene(6); setScmTab('discovery'); }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 6 && scmTab === 'discovery' ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
-                      >
-                        <Search className="h-4 w-4" />
-                        <span>AI Vendor Discovery</span>
-                      </button>
-                    </>
-                  )}
+                  {userRole !== "Vendor" && navOrder[userRole]?.map((key, idx) => renderNavItem(userRole, key, idx))}
 
                   {userRole === "Vendor" && (
-                    <>
-                      <button 
-                        onClick={() => { setActiveScene(6); setScmTab('bidding'); }}
-                        className="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium text-pos bg-secondary border border-line2/60"
-                      >
-                        <FileSpreadsheet className="h-4 w-4" />
-                        <span>Active RFQs to Quote</span>
-                      </button>
-                    </>
-                  )}
-
-                  {userRole === "CEO" && (
-                    <>
-                      <button 
-                        onClick={() => setActiveScene(15)}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeScene === 15 ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
-                      >
-                        <TrendingUp className="h-4 w-4" />
-                        <span>Spend Analytics</span>
-                      </button>
-                    </>
+                    <button
+                      onClick={() => { setActiveScene(6); setScmTab('bidding'); }}
+                      className="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium text-pos bg-secondary border border-line2/60"
+                    >
+                      <FileSpreadsheet className="h-4 w-4" />
+                      <span>Active RFQs to Quote</span>
+                    </button>
                   )}
                 </nav>
               </div>
