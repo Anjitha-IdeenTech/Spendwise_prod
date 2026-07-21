@@ -970,12 +970,8 @@ video {
   max-width: 48rem;
 }
 
-.max-w-4xl{
-  max-width: 56rem;
-}
-
-.max-w-5xl{
-  max-width: 64rem;
+.max-w-6xl{
+  max-width: 72rem;
 }
 
 .max-w-lg{
@@ -2879,13 +2875,14 @@ tbody tr:hover { background-color: rgb(var(--accent-budget) / 0.06); }
     align-items: center;
   }
 
-  .md\:p-8{
-    padding: 2rem;
-  }
-
   .md\:px-10{
     padding-left: 2.5rem;
     padding-right: 2.5rem;
+  }
+
+  .md\:px-6{
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
 }
 

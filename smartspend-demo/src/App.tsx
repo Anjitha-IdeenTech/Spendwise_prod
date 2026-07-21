@@ -1109,10 +1109,10 @@ export default function App() {
             </header>
             
             {/* WORKSPACE AREA */}
-            <div className="p-6 md:p-8 flex-grow">
+            <div className="px-4 md:px-6 py-6 flex-grow">
               {/* Poke reminders targeted at the current role (#10) */}
               {pokes.some(p => p.to === userRole) && (
-                <div className="mb-6 space-y-2 max-w-5xl mx-auto">
+                <div className="mb-6 space-y-2 max-w-6xl mx-auto">
                   {pokes.map((p, i) => p.to !== userRole ? null : (
                     <div key={i} className="flex items-center gap-3 p-3 rounded-xl border shadow-sm animate-fadeIn" style={{ background: '#7C6CF610', borderColor: '#7C6CF640' }}>
                       <span className="h-8 w-8 rounded-full bg-brand/15 flex items-center justify-center flex-shrink-0"><Bell className="h-4 w-4 text-brand" /></span>
@@ -1166,7 +1166,7 @@ export default function App() {
 
                   {/* Tab 1: Raise Request (ChatGPT/WhatsApp Consolidated Search Style) */}
                   {employeeTab === 'chat' && (
-                    <div className="max-w-3xl mx-auto space-y-12 py-10">
+                    <div className="max-w-6xl mx-auto space-y-12 py-10">
                       <div className="text-center space-y-3">
                         <h2 className="font-outfit text-4xl font-extrabold tracking-tight text-primary">What's on the agenda today?</h2>
                         <p className="text-sm text-textSecondary">Request any item or service. The AI orchestration layer maps the compliance rules in Odoo.</p>
@@ -1186,7 +1186,7 @@ export default function App() {
                       )}
 
                       {/* Unified Input Bar (Matching user's attachment screenshot exactly) */}
-                      <form onSubmit={handleChatSubmit} className="relative flex items-center bg-surface border border-borderTheme/70 rounded-full px-5 py-3.5 focus-within:border-brand/60 shadow-xl transition-all">
+                      <form onSubmit={handleChatSubmit} className="relative flex items-center bg-surface border border-borderTheme/70 rounded-full px-5 py-3.5 focus-within:border-brand/60 shadow-xl transition-all max-w-3xl mx-auto w-full">
                         {/* Attach button */}
                         <button 
                           type="button"
@@ -1230,13 +1230,13 @@ export default function App() {
                         </div>
                       </form>
 
-                      <p className="text-[11px] text-textFaint mt-3 flex items-center gap-1.5 px-1">
+                      <p className="text-[11px] text-textFaint mt-3 flex items-center gap-1.5 px-1 max-w-3xl mx-auto">
                         <HelpCircle className="h-3.5 w-3.5 flex-shrink-0" />
                         Tip: mention the <span className="text-textSecondary font-semibold">product</span>, <span className="text-textSecondary font-semibold">branch</span>, <span className="text-textSecondary font-semibold">quantity</span> and <span className="text-textSecondary font-semibold">expected delivery date</span> — the AI structures the rest.
                       </p>
 
                       {/* Suggested Prompts */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6 max-w-3xl mx-auto">
                         <div 
                           onClick={() => setChatInputText("I need 20 Dell Latitude laptops for the Bangalore office")}
                           className="cursor-pointer p-4 rounded-xl bg-surface/60 border border-borderTheme hover:border-line2 transition-all text-left text-xs space-y-1"
@@ -1259,7 +1259,7 @@ export default function App() {
                           <h3 className="font-outfit font-bold text-textPrimary">My Requests <span className="text-textFaint font-medium">({requests.length})</span></h3>
                           <button onClick={() => setEmployeeTab('list')} className="text-xs font-semibold text-brand hover:underline">View all</button>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                           {requests.map(r => {
                             const last = r.history[r.history.length - 1];
                             const stage = statusStage(r.status);
@@ -1578,7 +1578,7 @@ export default function App() {
               
               {/* --- SCENE 4: PARSED REQUISITION FORM --- */}
               {activeScene === 4 && (
-                <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="font-outfit text-2xl font-extrabold text-primary">AI Parsed Requisition Form</h2>
@@ -1698,7 +1698,7 @@ export default function App() {
               
               {/* --- SCENE 9: BUDGET VALIDATION --- */}
               {activeScene === 9 && (
-                <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="font-outfit text-2xl font-extrabold text-primary">Smart Budget Verification &amp; Allocation</h2>
@@ -1812,7 +1812,7 @@ export default function App() {
               
               {/* --- SCENE 5: RATE CONTRACT CHECK --- */}
               {activeScene === 5 && (
-                <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="font-outfit text-2xl font-extrabold text-primary">Active Contract Search</h2>
@@ -1914,7 +1914,7 @@ export default function App() {
               
               {/* --- SCENE 6: SCM BUYER PORTAL (RFQ & BIDDING MANAGEMENT) --- */}
               {activeScene === 6 && (
-                <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn">
+                <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   
                   {/* SCM Sourcing Tab Selector */}
                   <div className="flex border-b border-borderTheme">
@@ -2208,7 +2208,7 @@ export default function App() {
               
               {/* --- SCENE 7: RFQ COMPARISON MATRIX --- */}
               {activeScene === 7 && (
-                <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="font-outfit text-2xl font-extrabold text-primary">Side-by-Side RFQ Comparison</h2>
@@ -2276,7 +2276,7 @@ export default function App() {
               
               {/* --- SCENE 8: AI NEGOTIATION LOUNGE --- */}
               {activeScene === 8 && (
-                <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="font-outfit text-2xl font-extrabold text-primary">AI Autonomous Negotiation</h2>
@@ -2389,7 +2389,7 @@ export default function App() {
               
               {/* --- SCENE 10: MANAGER APPROVAL INBOX --- */}
               {activeScene === 10 && (
-                <div className="max-w-5xl mx-auto py-8 animate-fadeIn">
+                <div className="max-w-6xl mx-auto py-8 animate-fadeIn">
                   <div className="flex items-center justify-between mb-5">
                     <div>
                       <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Unified Approval Panel</h2>
@@ -2598,7 +2598,7 @@ export default function App() {
 
               {/* --- SCENE 11: REQUEST TRACKING TIMELINE --- */}
               {activeScene === 11 && (
-                <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Request Tracking Milestone</h2>
@@ -2788,7 +2788,7 @@ export default function App() {
 
               {/* --- SCENE 12: PRODUCT RECEIVING & INSPECTION (GRN) --- */}
               {activeScene === 12 && (
-                <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Product Receiving &amp; Goods Receipt Note</h2>
@@ -2924,7 +2924,7 @@ export default function App() {
 
               {/* --- SCENE 13: VENDOR BILL 3-WAY MATCHING --- */}
               {activeScene === 13 && (
-                <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Automated 3-Way Match Verification</h2>
@@ -3053,7 +3053,7 @@ export default function App() {
 
               {/* --- SCENE 14: PAYMENT PROCESSING & RECONCILIATION --- */}
               {activeScene === 14 && (
-                <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Payment Disbursement &amp; Reconciliation</h2>
@@ -3177,7 +3177,7 @@ export default function App() {
 
               {/* --- SCENE 15: spend INTELLIGENCE ANALYTICS --- */}
               {activeScene === 15 && (
-                <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn">
+                <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Spend Intelligence Dashboard</h2>
