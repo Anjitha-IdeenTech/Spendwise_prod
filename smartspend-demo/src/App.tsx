@@ -1722,8 +1722,8 @@ export default function App() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-2 p-6 rounded-2xl bg-surface border border-borderTheme space-y-6">
+                  <div className="grid grid-cols-1 gap-6">
+                    <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-6">
                       <h3 className="font-outfit text-base font-bold text-textPrimary border-b border-borderTheme pb-2">{currentRequest.expenseCategory} Budget Allocation</h3>
                       
                       <div className="space-y-4">
@@ -2796,8 +2796,8 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-2 p-6 rounded-2xl bg-surface border border-borderTheme space-y-6 shadow-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div className="md:col-span-3 p-6 rounded-2xl bg-surface border border-borderTheme space-y-6 shadow-sm">
                       <div className="flex items-center space-x-3 text-accent-budget">
                         <Truck className="h-5 w-5" />
                         <h3 className="font-outfit text-lg font-bold text-textPrimary">Goods Receipt Portal</h3>
@@ -3061,8 +3061,8 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-2 p-6 rounded-2xl bg-surface border border-borderTheme space-y-6 shadow-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div className="md:col-span-3 p-6 rounded-2xl bg-surface border border-borderTheme space-y-6 shadow-sm">
                       <div className="flex items-center space-x-3 text-accent-budget">
                         <CreditCard className="h-5 w-5" />
                         <h3 className="font-outfit text-lg font-bold text-textPrimary">Disbursement Voucher</h3>

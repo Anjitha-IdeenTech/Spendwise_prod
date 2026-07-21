@@ -2851,6 +2851,10 @@ tbody tr:hover { background-color: rgb(var(--accent-budget) / 0.06); }
     grid-column: span 2 / span 2;
   }
 
+  .md\:col-span-3{
+    grid-column: span 3 / span 3;
+  }
+
   .md\:grid-cols-2{
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
