@@ -620,7 +620,7 @@ export default function App() {
           </div>
           
           <div className="lg:w-5/12 flex flex-col justify-center px-6 py-12 md:px-10 lg:px-14 relative z-10">
-            <div className="max-w-md w-full mx-auto space-y-8 bg-[#241A54]/30 backdrop-blur-2xl border border-white/15 rounded-[24px] shadow-2xl shadow-black/30 p-8 lg:p-10">
+            <div className="max-w-md w-full mx-auto space-y-8 bg-[#241A54]/20 backdrop-blur-2xl border border-white/15 rounded-[24px] shadow-2xl shadow-black/30 p-8 lg:p-10">
               <div>
                 <h2 className="font-outfit text-3xl font-extrabold text-white tracking-tight">Sign In</h2>
                 <p className="mt-3 text-sm text-white/70">
