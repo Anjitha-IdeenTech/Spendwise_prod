@@ -7,7 +7,7 @@ import {
   HelpCircle, Volume2, ShieldCheck, Landmark, Briefcase, FileInput, 
   Calendar, Layers, Clock, Users, ArrowUpRight, ArrowDownRight, Menu,
   Paperclip, MessageSquare, History, Search, Eye, Filter,
-  Truck, Package, Receipt, CreditCard, Moon, Sun
+  Truck, Package, Receipt, CreditCard, Moon, Sun, Bell
 } from 'lucide-react';
 
 // Define the Scene IDs and names
@@ -56,6 +56,7 @@ interface RequestItem {
   vendorBids: Array<{ vendorName: string; price: number; leadTime: string; warranty: string; status: string }>;
   selectedSourcingMethod: 'Direct' | 'RFQ' | 'Auction';
   attachments: string[];
+  lineItems?: Array<{ productName: string; productQty: number; targetPrice: number }>;
 }
 
 const getContractPrice = (name: string) => {
@@ -416,6 +417,14 @@ export default function App() {
   const [editDepartment, setEditDepartment] = useState<string>("IT & Infrastructure");
   const [editExpenseCategory, setEditExpenseCategory] = useState<string>("IT Hardware & Laptops");
   const [editDeliveryDate, setEditDeliveryDate] = useState<string>("Jul 25, 2026");
+  const [editExpenseType, setEditExpenseType] = useState<string>("Capital Expenditure (CapEx)");
+  const [extraItems, setExtraItems] = useState<Array<{ productName: string; productQty: number; targetPrice: number }>>([]);
+
+  // Poke / reminders (#10)
+  const [pokes, setPokes] = useState<Array<{ to: string; from: string; message: string; reqId: string }>>([
+    { to: 'Manager', from: 'Anjitha V', message: 'PR-2026-089 · Dell Latitude Laptops is awaiting your approval.', reqId: 'PR-2026-089' },
+  ]);
+  const [pokeToast, setPokeToast] = useState<string>('');
 
   // Budget validation States
   const [budgetBreach, setBudgetBreach] = useState<boolean>(false);
@@ -548,17 +557,34 @@ export default function App() {
   };
 
   // Convert Extraction Form to Live Request
+  // Poke: nudge whoever owns the next action for a request.
+  const pokeTargetRole = (status: string) => {
+    if (status === 'Pending Approval' || status === 'Needs Clarification') return 'Manager';
+    if (status === 'Sourcing' || status === 'Approved') return 'SCM Buyer';
+    if (status === 'PO Confirmed') return 'Vendor';
+    return 'Manager';
+  };
+  const handlePoke = (req: RequestItem) => {
+    const to = pokeTargetRole(req.status);
+    setPokes(prev => [...prev, { to, from: userRole, message: `${req.id} · ${req.productName} needs your attention.`, reqId: req.id }]);
+    setPokeToast(`🔔 Reminder poked to ${to}`);
+    setTimeout(() => setPokeToast(''), 2800);
+  };
+
   const createRequisitionFromForm = () => {
     const newId = `PR-2026-0${90 + requests.length}`;
+    const allItems = [{ productName: editProductName, productQty: editProductQty, targetPrice: editTargetPrice }, ...extraItems.filter(it => it.productName.trim())];
+    const total = allItems.reduce((s, it) => s + it.productQty * it.targetPrice, 0);
     const newReq: RequestItem = {
       id: newId,
-      productName: editProductName,
-      productQty: editProductQty,
-      targetPrice: 0,
-      totalCost: 0,
+      productName: allItems.length > 1 ? `${editProductName} + ${allItems.length - 1} more` : editProductName,
+      productQty: allItems.reduce((s, it) => s + it.productQty, 0),
+      targetPrice: editTargetPrice,
+      totalCost: total,
       location: editLocation,
       department: editDepartment,
       expenseCategory: editExpenseCategory,
+      lineItems: allItems.length > 1 ? allItems : undefined,
       status: budgetBreach ? "Needs Clarification" : "Pending Approval",
       urgency: "High",
       deliveryDate: editDeliveryDate || undefined,
@@ -578,7 +604,8 @@ export default function App() {
     setRequests(prev => [newReq, ...prev]);
     setSelectedRequestId(newId);
     setAttachedFiles([]);
-    
+    setExtraItems([]);
+
     // Go to next step in demo
     setActiveScene(5);
   };
@@ -1080,6 +1107,27 @@ export default function App() {
             
             {/* WORKSPACE AREA */}
             <div className="p-6 md:p-8 flex-grow">
+              {/* Poke reminders targeted at the current role (#10) */}
+              {pokes.some(p => p.to === userRole) && (
+                <div className="mb-6 space-y-2 max-w-5xl mx-auto">
+                  {pokes.map((p, i) => p.to !== userRole ? null : (
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl border shadow-sm animate-fadeIn" style={{ background: '#7C6CF610', borderColor: '#7C6CF640' }}>
+                      <span className="h-8 w-8 rounded-full bg-brand/15 flex items-center justify-center flex-shrink-0"><Bell className="h-4 w-4 text-brand" /></span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-textPrimary">Reminder from {p.from}</p>
+                        <p className="text-[11px] text-textSecondary truncate">{p.message}</p>
+                      </div>
+                      <button onClick={() => { setSelectedRequestId(p.reqId); if (userRole === 'Manager') setActiveScene(10); else if (userRole === 'SCM Buyer') setActiveScene(6); }} className="text-[11px] font-semibold text-brand hover:underline flex-shrink-0 px-1">View</button>
+                      <button onClick={() => setPokes(prev => prev.filter((_, idx) => idx !== i))} className="text-textFaint hover:text-textPrimary flex-shrink-0"><X className="h-4 w-4" /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {pokeToast && (
+                <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl bg-surface border border-brand/30 shadow-xl text-sm font-semibold text-textPrimary animate-fadeIn">
+                  {pokeToast}
+                </div>
+              )}
               
               {/* --- SCENE 2: EMPLOYEE PORTAL (CONSOLIDATED INPUT & TABS) --- */}
               {activeScene === 2 && (
@@ -1179,6 +1227,11 @@ export default function App() {
                         </div>
                       </form>
 
+                      <p className="text-[11px] text-textFaint mt-3 flex items-center gap-1.5 px-1">
+                        <HelpCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                        Tip: mention the <span className="text-textSecondary font-semibold">product</span>, <span className="text-textSecondary font-semibold">branch</span>, <span className="text-textSecondary font-semibold">quantity</span> and <span className="text-textSecondary font-semibold">expected delivery date</span> — the AI structures the rest.
+                      </p>
+
                       {/* Suggested Prompts */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6">
                         <div 
@@ -1224,7 +1277,12 @@ export default function App() {
                                     </React.Fragment>
                                   ))}
                                 </div>
-                                <p className="text-[10px] text-textFaint mt-2 flex items-center gap-1"><Clock className="h-3 w-3" /> {last?.title} · {last?.date}</p>
+                                <div className="flex items-center justify-between mt-2">
+                                  <p className="text-[10px] text-textFaint flex items-center gap-1 min-w-0"><Clock className="h-3 w-3 flex-shrink-0" /> <span className="truncate">{last?.title}</span></p>
+                                  {r.status !== 'Paid' && r.status !== 'PO Confirmed' && (
+                                    <button onClick={(e) => { e.stopPropagation(); handlePoke(r); }} className="text-[10px] font-bold text-brand hover:bg-brand/10 px-2 py-0.5 rounded-md flex items-center gap-1 flex-shrink-0"><Bell className="h-3 w-3" /> Poke</button>
+                                  )}
+                                </div>
                               </div>
                             );
                           })}
@@ -1532,48 +1590,75 @@ export default function App() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Left Form: Editable details */}
                     <div className="md:col-span-2 p-6 rounded-2xl bg-surface border border-borderTheme space-y-4">
-                      <h3 className="font-outfit text-base font-bold text-textPrimary border-b border-borderTheme pb-2">Extracted Parameters</h3>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-2">
-                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Product Description</label>
-                          <input 
-                            type="text" 
-                            value={editProductName}
-                            onChange={(e) => setEditProductName(e.target.value)}
-                            className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand"
-                          />
+                      <div className="flex items-center justify-between border-b border-borderTheme pb-2">
+                        <h3 className="font-outfit text-base font-bold text-textPrimary">Extracted Parameters</h3>
+                        <span className="text-[11px] text-textFaint">{1 + extraItems.length} line item{extraItems.length ? 's' : ''}</span>
+                      </div>
+
+                      {/* Products — multi-line (#9) */}
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-12 gap-2 text-[10px] text-textFaint font-bold uppercase tracking-wider">
+                          <span className="col-span-6">Product</span><span className="col-span-2">Qty</span><span className="col-span-3">Unit ₹</span><span className="col-span-1" />
+                        </div>
+                        <div className="grid grid-cols-12 gap-2 items-center">
+                          <input type="text" value={editProductName} onChange={(e) => setEditProductName(e.target.value)} placeholder="Product description"
+                            className="col-span-6 bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand" />
+                          <input type="number" value={editProductQty} onChange={(e) => setEditProductQty(Number(e.target.value))}
+                            className="col-span-2 bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand" />
+                          <input type="number" value={editTargetPrice} onChange={(e) => setEditTargetPrice(Number(e.target.value))}
+                            className="col-span-3 bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand" />
+                          <span className="col-span-1 text-center text-brand" title="Primary item">★</span>
+                        </div>
+                        {extraItems.map((it, idx) => (
+                          <div key={idx} className="grid grid-cols-12 gap-2 items-center">
+                            <input type="text" value={it.productName} onChange={(e) => setExtraItems(prev => prev.map((x, i) => i === idx ? { ...x, productName: e.target.value } : x))} placeholder="Product description"
+                              className="col-span-6 bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand" />
+                            <input type="number" value={it.productQty} onChange={(e) => setExtraItems(prev => prev.map((x, i) => i === idx ? { ...x, productQty: Number(e.target.value) } : x))}
+                              className="col-span-2 bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand" />
+                            <input type="number" value={it.targetPrice} onChange={(e) => setExtraItems(prev => prev.map((x, i) => i === idx ? { ...x, targetPrice: Number(e.target.value) } : x))}
+                              className="col-span-3 bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand" />
+                            <button onClick={() => setExtraItems(prev => prev.filter((_, i) => i !== idx))} className="col-span-1 flex justify-center text-neg" title="Remove line"><X className="h-4 w-4" /></button>
+                          </div>
+                        ))}
+                        <button onClick={() => setExtraItems(prev => [...prev, { productName: '', productQty: 1, targetPrice: 0 }])}
+                          className="text-xs font-semibold text-brand hover:underline flex items-center gap-1"><span className="text-base leading-none">+</span> Add another product</button>
+                      </div>
+
+                      {/* Editable meta fields (#3, #8) */}
+                      <div className="grid grid-cols-2 gap-4 pt-2">
+                        <div>
+                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Branch</label>
+                          <select value={editLocation} onChange={(e) => setEditLocation(e.target.value)} className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand">
+                            {['Bangalore Office', 'Kochi Head Office', 'Mumbai Office', 'Delhi Office', 'Chennai Office', 'Hyderabad Office'].map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>
                         </div>
                         <div>
-                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Quantity</label>
-                          <input 
-                            type="number" 
-                            value={editProductQty}
-                            onChange={(e) => setEditProductQty(Number(e.target.value))}
-                            className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand"
-                          />
+                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Department</label>
+                          <select value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand">
+                            {['IT & Infrastructure', 'Operations', 'Facilities', 'Marketing', 'Finance', 'R&D'].map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>
                         </div>
                         <div>
-                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Target Price (per unit)</label>
-                          <span className="w-full bg-secondary/50 border border-borderTheme rounded-lg p-2 text-sm text-brand block font-semibold">
-                            TBD (Determined Post-Contract / Sourcing)
-                          </span>
+                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Category</label>
+                          <input type="text" value={editExpenseCategory} onChange={(e) => setEditExpenseCategory(e.target.value)} className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand" />
                         </div>
                         <div>
-                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Category (Mapped)</label>
-                          <input 
-                            type="text" 
-                            value={editExpenseCategory}
-                            onChange={(e) => setEditExpenseCategory(e.target.value)}
-                            className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand"
-                          />
+                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Expected Delivery Date</label>
+                          <input type="text" value={editDeliveryDate} onChange={(e) => setEditDeliveryDate(e.target.value)} placeholder="e.g. Jul 25, 2026" className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand" />
                         </div>
                         <div>
                           <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Expense Type</label>
-                          <span className="w-full bg-secondary/50 border border-borderTheme rounded-lg p-2 text-sm text-textSecondary block">Capital Expenditure (CapEx)</span>
+                          <select value={editExpenseType} onChange={(e) => setEditExpenseType(e.target.value)} className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand">
+                            <option>Capital Expenditure (CapEx)</option>
+                            <option>Operating Expenditure (OpEx)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Estimated Total</label>
+                          <span className="w-full bg-secondary/50 border border-borderTheme rounded-lg p-2 text-sm text-brand block font-bold">₹{[{ productQty: editProductQty, targetPrice: editTargetPrice }, ...extraItems].reduce((s, it) => s + it.productQty * it.targetPrice, 0).toLocaleString()}</span>
                         </div>
                       </div>
-                      
+
                       <div className="pt-4 flex justify-end space-x-3">
                         <button onClick={() => setActiveScene(2)} className="px-4 py-2 text-xs text-textSecondary hover:text-primary transition-all font-semibold">Cancel</button>
                         <button onClick={createRequisitionFromForm} className="px-5 py-2 bg-brand hover:bg-brand text-xs font-bold rounded-lg text-onbrand transition-all">Submit for Validation</button>
