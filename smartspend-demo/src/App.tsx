@@ -42,10 +42,12 @@ interface RequestItem {
   targetPrice: number;
   totalCost: number;
   location: string;
+  department: string;
   expenseCategory: string;
   status: 'Draft' | 'Pending Approval' | 'Needs Clarification' | 'Sourcing' | 'Approved' | 'PO Confirmed' | 'Rejected' | 'Paid';
   urgency: 'High' | 'Medium' | 'Low';
   createdDate: string;
+  deliveryDate?: string;
   buyer: string;
   vendor: string;
   savings: number;
@@ -78,6 +80,127 @@ const getNegotiatedTargetPrice = (name: string) => {
   if (lower.includes("chair") || lower.includes("furniture")) return 7800;
   if (lower.includes("server") || lower.includes("rack")) return 115000;
   return 55000;
+};
+
+// ---- Lightweight SVG charts (categorical palette validated CVD-safe on light) ----
+const CHART_COLORS = ['#6D5AE0', '#0E8F6A', '#C77E00', '#2E7FC7', '#C43D7E', '#8A8F9C'];
+
+// Status colors — theme-blended, used for status tiles / dense request cards.
+const STATUS_META: Record<string, { color: string; short: string }> = {
+  'Draft': { color: '#8A8F9C', short: 'Draft' },
+  'Pending Approval': { color: '#D99A3C', short: 'Pending' },
+  'Needs Clarification': { color: '#E06C4E', short: 'Clarify' },
+  'Sourcing': { color: '#4F9EE8', short: 'Sourcing' },
+  'Approved': { color: '#2FB574', short: 'Approved' },
+  'PO Confirmed': { color: '#7C6CF6', short: 'PO Confirmed' },
+  'Rejected': { color: '#E5484D', short: 'Rejected' },
+  'Paid': { color: '#0E8F6A', short: 'Paid' },
+};
+const statusColor = (s: string) => STATUS_META[s]?.color ?? '#8A8F9C';
+
+// Compact request lifecycle stages (for inline mini-trackers on tiles).
+const STAGE_LABELS = ['Submitted', 'Approved', 'Sourcing', 'PO', 'Received', 'Paid'];
+const STATUS_STAGE: Record<string, number> = {
+  'Draft': 0, 'Pending Approval': 0, 'Needs Clarification': 0, 'Rejected': 0,
+  'Approved': 1, 'Sourcing': 2, 'PO Confirmed': 3, 'Paid': 5,
+};
+const statusStage = (s: string) => STATUS_STAGE[s] ?? 0;
+
+interface Datum { label: string; value: number; }
+
+// Donut for composition/identity (branch share of spend) + legend with values.
+function DonutChart({ data, prefix = '', suffix = '' }: { data: Datum[]; prefix?: string; suffix?: string }) {
+  const total = data.reduce((s, d) => s + d.value, 0) || 1;
+  const R = 56, C = 2 * Math.PI * R, GAP = 3;
+  let offset = 0;
+  return (
+    <div className="flex items-center gap-5 flex-wrap">
+      <div className="relative flex-shrink-0">
+        <svg viewBox="0 0 140 140" className="h-36 w-36 -rotate-90">
+          <circle cx="70" cy="70" r={R} fill="none" stroke="rgb(var(--bg-secondary))" strokeWidth="15" />
+          {data.map((d, i) => {
+            const frac = d.value / total;
+            const len = Math.max(frac * C - GAP, 0);
+            const el = (
+              <circle key={i} cx="70" cy="70" r={R} fill="none" stroke={CHART_COLORS[i % CHART_COLORS.length]}
+                strokeWidth="15" strokeDasharray={`${len} ${C - len}`} strokeDashoffset={-offset} />
+            );
+            offset += frac * C;
+            return el;
+          })}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-[10px] text-textFaint font-semibold uppercase tracking-wider">Total</span>
+          <span className="text-lg font-extrabold text-textPrimary font-outfit">{prefix}{total.toFixed(2)}{suffix}</span>
+        </div>
+      </div>
+      <div className="space-y-1.5 min-w-[9rem]">
+        {data.map((d, i) => (
+          <div key={i} className="flex items-center gap-2 text-xs">
+            <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
+            <span className="text-textSecondary font-medium w-24 truncate">{d.label}</span>
+            <span className="text-textPrimary font-bold tabular-nums ml-auto">{prefix}{d.value}{suffix}</span>
+            <span className="text-textFaint tabular-nums w-8 text-right">{Math.round((d.value / total) * 100)}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Horizontal magnitude bars — single hue, sorted, direct-labeled.
+function BarList({ data, color = '#7C6CF6', prefix = '', suffix = '' }: { data: Datum[]; color?: string; prefix?: string; suffix?: string }) {
+  const max = Math.max(...data.map(d => d.value), 1);
+  return (
+    <div className="space-y-3">
+      {[...data].sort((a, b) => b.value - a.value).map((d, i) => (
+        <div key={i}>
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="text-textSecondary font-medium truncate pr-2">{d.label}</span>
+            <span className="text-textPrimary font-bold tabular-nums">{prefix}{d.value}{suffix}</span>
+          </div>
+          <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
+            <div className="h-full rounded-full transition-all duration-700 ease-out"
+              style={{ width: `${(d.value / max) * 100}%`, background: `linear-gradient(90deg, ${color}, ${color}bb)` }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Company-wide spend analytics for the CEO / consolidated dashboards (₹ Crore).
+const spendAnalytics = {
+  byBranch: [
+    { label: 'Bangalore', value: 1.62 },
+    { label: 'Mumbai', value: 1.18 },
+    { label: 'Kochi', value: 0.86 },
+    { label: 'Delhi', value: 0.58 },
+    { label: 'Chennai', value: 0.34 },
+  ] as Datum[],
+  byDepartment: [
+    { label: 'IT & Infrastructure', value: 1.94 },
+    { label: 'Operations', value: 1.12 },
+    { label: 'Facilities', value: 0.72 },
+    { label: 'Marketing', value: 0.48 },
+    { label: 'Finance', value: 0.32 },
+  ] as Datum[],
+  byCategory: [
+    { label: 'IT Hardware', value: 1.48 },
+    { label: 'Datacenter Equipment', value: 0.92 },
+    { label: 'Software Licenses', value: 0.74 },
+    { label: 'Office Furniture', value: 0.56 },
+    { label: 'Professional Services', value: 0.44 },
+    { label: 'MRO Supplies', value: 0.44 },
+  ] as Datum[],
+  byMonth: [
+    { label: 'Feb', value: 0.52 },
+    { label: 'Mar', value: 0.61 },
+    { label: 'Apr', value: 0.74 },
+    { label: 'May', value: 0.69 },
+    { label: 'Jun', value: 0.88 },
+    { label: 'Jul', value: 1.14 },
+  ] as Datum[],
 };
 
 export default function App() {
@@ -130,10 +253,12 @@ export default function App() {
       targetPrice: 70000,
       totalCost: 1300000,
       location: "Bangalore Office",
+      department: "IT & Infrastructure",
       expenseCategory: "IT Hardware & Laptops",
       status: "Pending Approval",
       urgency: "High",
       createdDate: "July 08, 08:30",
+      deliveryDate: "Jul 18, 2026",
       buyer: "SCM-IT-14",
       vendor: "Primus Technologies",
       savings: 60000,
@@ -156,10 +281,12 @@ export default function App() {
       targetPrice: 8000,
       totalCost: 80000,
       location: "Kochi Head Office",
+      department: "Facilities",
       expenseCategory: "Office Furniture",
       status: "PO Confirmed",
       urgency: "Medium",
       createdDate: "July 05, 11:20",
+      deliveryDate: "Jul 12, 2026",
       buyer: "SCM-FUR-03",
       vendor: "Apex Systems",
       savings: 5000,
@@ -182,10 +309,12 @@ export default function App() {
       targetPrice: 120000,
       totalCost: 240000,
       location: "Mumbai Office",
+      department: "IT & Infrastructure",
       expenseCategory: "Datacenter Equipment",
       status: "Sourcing",
       urgency: "High",
       createdDate: "July 09, 09:15",
+      deliveryDate: "Jul 20, 2026",
       buyer: "SCM-IT-14",
       vendor: "Pending Sourcing",
       savings: 0,
@@ -200,6 +329,61 @@ export default function App() {
       ],
       selectedSourcingMethod: "RFQ",
       attachments: []
+    },
+    {
+      id: "PR-2026-095", productName: "Adobe Creative Cloud Licenses", productQty: 25, targetPrice: 4200,
+      totalCost: 105000, location: "Delhi Office", department: "Marketing", expenseCategory: "Software Licenses",
+      status: "Approved", urgency: "Medium", createdDate: "Jul 10, 10:05", deliveryDate: "Jul 15, 2026",
+      buyer: "SCM-SW-08", vendor: "Adobe India", savings: 12000,
+      history: [{ title: "Request Submitted", date: "Jul 10, 10:05" }, { title: "Approved by Manager", date: "Jul 10, 13:20", desc: "Approved by Marketing Head" }],
+      clarificationComments: [], vendorBids: [{ vendorName: "Adobe India", price: 4200, leadTime: "Instant", warranty: "1 Year", status: "Selected" }],
+      selectedSourcingMethod: "Direct", attachments: ["license_quote.pdf"]
+    },
+    {
+      id: "PR-2026-101", productName: "Industrial UPS Units", productQty: 4, targetPrice: 85000,
+      totalCost: 340000, location: "Mumbai Office", department: "Operations", expenseCategory: "Datacenter Equipment",
+      status: "Pending Approval", urgency: "High", createdDate: "Jul 11, 09:40", deliveryDate: "Jul 25, 2026",
+      buyer: "SCM-IT-14", vendor: "PowerGrid Solutions", savings: 22000,
+      history: [{ title: "Request Submitted", date: "Jul 11, 09:40" }, { title: "Budget Checked", date: "Jul 11, 09:42", desc: "Verified against Ops capex" }],
+      clarificationComments: [], vendorBids: [{ vendorName: "PowerGrid Solutions", price: 83000, leadTime: "8 Days", warranty: "3 Years", status: "Recommended" }, { vendorName: "VoltEdge", price: 88000, leadTime: "6 Days", warranty: "2 Years", status: "Qualified" }],
+      selectedSourcingMethod: "RFQ", attachments: ["ups_specs.pdf", "site_layout.pdf"]
+    },
+    {
+      id: "PR-2026-104", productName: "Marketing Event Booth Setup", productQty: 1, targetPrice: 180000,
+      totalCost: 180000, location: "Bangalore Office", department: "Marketing", expenseCategory: "Professional Services",
+      status: "Sourcing", urgency: "Medium", createdDate: "Jul 12, 14:20", deliveryDate: "Aug 02, 2026",
+      buyer: "SCM-MKT-02", vendor: "Pending Sourcing", savings: 0,
+      history: [{ title: "Request Submitted", date: "Jul 12, 14:20" }, { title: "Sourcing Triggered", date: "Jul 12, 14:25", desc: "Routed to SCM buyer for RFQ" }],
+      clarificationComments: [], vendorBids: [{ vendorName: "EventCraft", price: 178000, leadTime: "15 Days", warranty: "NA", status: "Submitted" }],
+      selectedSourcingMethod: "RFQ", attachments: ["booth_brief.pdf"]
+    },
+    {
+      id: "PR-2026-108", productName: "Pantry & Housekeeping Supplies (Q3)", productQty: 1, targetPrice: 65000,
+      totalCost: 65000, location: "Chennai Office", department: "Facilities", expenseCategory: "MRO Supplies",
+      status: "PO Confirmed", urgency: "Low", createdDate: "Jul 06, 16:10", deliveryDate: "Jul 14, 2026",
+      buyer: "SCM-FUR-03", vendor: "CleanServe", savings: 4000,
+      history: [{ title: "Request Submitted", date: "Jul 06, 16:10" }, { title: "PO Created: PO-2026-011", date: "Jul 06, 17:30", desc: "Sent to CleanServe" }],
+      clarificationComments: [], vendorBids: [{ vendorName: "CleanServe", price: 65000, leadTime: "4 Days", warranty: "NA", status: "Selected" }],
+      selectedSourcingMethod: "Direct", attachments: []
+    },
+    {
+      id: "PR-2026-112", productName: "Standing Desks (Ergonomic)", productQty: 15, targetPrice: 22000,
+      totalCost: 330000, location: "Kochi Head Office", department: "Facilities", expenseCategory: "Office Furniture",
+      status: "Pending Approval", urgency: "Medium", createdDate: "Jul 13, 11:00", deliveryDate: "Jul 28, 2026",
+      buyer: "SCM-FUR-03", vendor: "ErgoWorks", savings: 18000,
+      history: [{ title: "Request Submitted", date: "Jul 13, 11:00" }, { title: "Budget Checked", date: "Jul 13, 11:03", desc: "Verified against Facilities budget" }],
+      clarificationComments: [], vendorBids: [{ vendorName: "ErgoWorks", price: 21500, leadTime: "12 Days", warranty: "5 Years", status: "Recommended" }, { vendorName: "DeskPro", price: 23000, leadTime: "9 Days", warranty: "3 Years", status: "Qualified" }],
+      selectedSourcingMethod: "RFQ", attachments: ["ergo_catalog.pdf"]
+    },
+    {
+      id: "PR-2026-115", productName: "Next-Gen Firewall Appliances", productQty: 3, targetPrice: 145000,
+      totalCost: 435000, location: "Bangalore Office", department: "IT & Infrastructure", expenseCategory: "Datacenter Equipment",
+      status: "Needs Clarification", urgency: "High", createdDate: "Jul 14, 08:50", deliveryDate: "Jul 30, 2026",
+      buyer: "SCM-IT-14", vendor: "SecureNet", savings: 0,
+      history: [{ title: "Request Submitted", date: "Jul 14, 08:50" }, { title: "Info Requested", date: "Jul 14, 10:15", desc: "Manager asked for clarification" }],
+      clarificationComments: [{ role: "manager", text: "Do these replace the existing units or are they additions to capacity?", date: "Jul 14, 10:15" }],
+      vendorBids: [{ vendorName: "SecureNet", price: 143000, leadTime: "10 Days", warranty: "3 Years", status: "Submitted" }],
+      selectedSourcingMethod: "RFQ", attachments: ["network_diagram.pdf"]
     }
   ]);
 
@@ -229,7 +413,9 @@ export default function App() {
   const [editProductQty, setEditProductQty] = useState<number>(20);
   const [editTargetPrice, setEditTargetPrice] = useState<number>(70000);
   const [editLocation, setEditLocation] = useState<string>("Bangalore Office");
+  const [editDepartment, setEditDepartment] = useState<string>("IT & Infrastructure");
   const [editExpenseCategory, setEditExpenseCategory] = useState<string>("IT Hardware & Laptops");
+  const [editDeliveryDate, setEditDeliveryDate] = useState<string>("Jul 25, 2026");
 
   // Budget validation States
   const [budgetBreach, setBudgetBreach] = useState<boolean>(false);
@@ -371,9 +557,11 @@ export default function App() {
       targetPrice: 0,
       totalCost: 0,
       location: editLocation,
+      department: editDepartment,
       expenseCategory: editExpenseCategory,
       status: budgetBreach ? "Needs Clarification" : "Pending Approval",
       urgency: "High",
+      deliveryDate: editDeliveryDate || undefined,
       createdDate: new Date().toLocaleDateString([], { month: 'short', day: '2-digit' }) + ", " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       buyer: "SCM-IT-14",
       vendor: "Pending Sourcing",
@@ -1006,6 +1194,40 @@ export default function App() {
                         >
                           <span className="font-semibold text-textPrimary block">🪑 Request Office Furniture</span>
                           <span className="text-textSecondary">"Requesting 10 ergonomic conference chairs for Mumbai..."</span>
+                        </div>
+                      </div>
+
+                      {/* My Requests + inline tracking (#2) */}
+                      <div className="pt-8">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="font-outfit font-bold text-textPrimary">My Requests <span className="text-textFaint font-medium">({requests.length})</span></h3>
+                          <button onClick={() => setEmployeeTab('list')} className="text-xs font-semibold text-brand hover:underline">View all</button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {requests.map(r => {
+                            const last = r.history[r.history.length - 1];
+                            const stage = statusStage(r.status);
+                            return (
+                              <div key={r.id} onClick={() => { setSelectedRequestId(r.id); setEmployeeTab('tracking'); }}
+                                className="cursor-pointer p-4 rounded-xl bg-surface border border-borderTheme shadow-sm hover:-translate-y-0.5 transition-all" style={{ borderLeft: `3px solid ${statusColor(r.status)}` }}>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[11px] font-bold text-textSecondary tabular-nums">{r.id}</span>
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: statusColor(r.status), background: `${statusColor(r.status)}1a` }}>{STATUS_META[r.status]?.short ?? r.status}</span>
+                                </div>
+                                <p className="text-sm font-bold text-textPrimary mt-1.5 truncate">{r.productQty}× {r.productName}</p>
+                                <p className="text-[11px] text-textFaint mt-0.5 truncate">{r.location.replace(' Office', '')} · {r.department} · <span className="font-semibold text-textSecondary">₹{r.totalCost.toLocaleString()}</span></p>
+                                <div className="flex items-center gap-1 mt-3">
+                                  {STAGE_LABELS.map((lab, si) => (
+                                    <React.Fragment key={si}>
+                                      {si > 0 && <div className="h-0.5 flex-1 rounded" style={{ background: si <= stage ? statusColor(r.status) : 'rgb(var(--border-color))' }} />}
+                                      <div className="h-2 w-2 rounded-full flex-shrink-0" title={lab} style={{ background: si <= stage ? statusColor(r.status) : 'rgb(var(--border-color))' }} />
+                                    </React.Fragment>
+                                  ))}
+                                </div>
+                                <p className="text-[10px] text-textFaint mt-2 flex items-center gap-1"><Clock className="h-3 w-3" /> {last?.title} · {last?.date}</p>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -2079,16 +2301,48 @@ export default function App() {
               
               {/* --- SCENE 10: MANAGER APPROVAL INBOX --- */}
               {activeScene === 10 && (
-                <div className="max-w-2xl mx-auto py-8 animate-fadeIn">
-                  <div className="flex items-center justify-between mb-4">
+                <div className="max-w-5xl mx-auto py-8 animate-fadeIn">
+                  <div className="flex items-center justify-between mb-5">
                     <div>
                       <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Scene 10: Unified Approval Panel</h2>
                       <p className="text-xs text-textSecondary">Simplifying decision metrics for managers. No complex ERP menus.</p>
                     </div>
-                    
                     <span className="px-3 py-1 bg-accent-approvals/10 text-accent-approvals border border-accent-approvals/20 rounded-full text-xs font-bold font-outfit">
                       Pending Approvals: {requests.filter(r => r.status === 'Pending Approval').length}
                     </span>
+                  </div>
+
+                  {/* Status-wise approval counts (#7) */}
+                  <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-5">
+                    {(['Pending Approval', 'Approved', 'Sourcing', 'PO Confirmed', 'Needs Clarification', 'Rejected']).map(st => {
+                      const n = requests.filter(r => r.status === st).length;
+                      const c = statusColor(st);
+                      return (
+                        <div key={st} className="p-3 rounded-xl bg-surface border border-borderTheme shadow-sm" style={{ borderTop: `3px solid ${c}` }}>
+                          <p className="text-2xl font-extrabold text-textPrimary font-outfit leading-none">{n}</p>
+                          <p className="text-[10px] font-bold uppercase tracking-wider mt-1.5" style={{ color: c }}>{STATUS_META[st].short}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Consolidated snapshot (#4) */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div className="p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <span className="text-[11px] text-textFaint font-bold uppercase tracking-wider">Awaiting your approval</span>
+                      <p className="text-2xl font-extrabold text-textPrimary mt-1 font-outfit">₹{requests.filter(r => r.status === 'Pending Approval').reduce((s, r) => s + r.totalCost, 0).toLocaleString()}</p>
+                      <p className="text-[11px] text-accent-savings mt-0.5">₹{requests.filter(r => r.status === 'Pending Approval').reduce((s, r) => s + r.savings, 0).toLocaleString()} AI savings on the table</p>
+                    </div>
+                    <div className="md:col-span-2 p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <span className="text-[11px] text-textFaint font-bold uppercase tracking-wider">Live request value by department (₹K)</span>
+                      <div className="mt-3">
+                        {(() => {
+                          const agg = requests.reduce((a, r) => { a[r.department] = (a[r.department] || 0) + r.totalCost; return a; }, {} as Record<string, number>);
+                          const data = Object.entries(agg).map(([label, value]) => ({ label, value: Math.round(value / 1000) }));
+                          return <BarList data={data} color="#7C6CF6" prefix="₹" suffix="K" />;
+                        })()}
+                      </div>
+                    </div>
                   </div>
                   
                   {requests.filter(r => r.status === 'Pending Approval').length === 0 ? (
@@ -2132,7 +2386,32 @@ export default function App() {
                                 <span className="text-textSecondary block">Vendor Assigned:</span>
                                 <span className="font-bold text-textPrimary">{req.vendor}</span>
                               </div>
+                              <div>
+                                <span className="text-textSecondary block">Branch · Department:</span>
+                                <span className="font-bold text-textPrimary">{req.location} · {req.department}</span>
+                              </div>
+                              <div>
+                                <span className="text-textSecondary block">Expected Delivery:</span>
+                                <span className="font-bold text-textPrimary">{req.deliveryDate || '—'}</span>
+                              </div>
                             </div>
+
+                            {/* Attachments viewer (#11) */}
+                            {req.attachments.length > 0 && (
+                              <details className="text-xs">
+                                <summary className="cursor-pointer list-none flex items-center gap-1.5 text-textSecondary hover:text-brand font-semibold w-fit">
+                                  <Paperclip className="h-3.5 w-3.5" /> {req.attachments.length} attachment{req.attachments.length > 1 ? 's' : ''}
+                                  <ChevronRight className="h-3.5 w-3.5" />
+                                </summary>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                  {req.attachments.map((f, ai) => (
+                                    <a key={ai} href="#" onClick={(e) => e.preventDefault()} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary border border-borderTheme text-[11px] text-textPrimary hover:border-brand transition-all">
+                                      <FileText className="h-3.5 w-3.5 text-brand" /> {f}
+                                    </a>
+                                  ))}
+                                </div>
+                              </details>
+                            )}
 
                             {/* Manager clarification comments history */}
                             {req.clarificationComments.length > 0 && (
@@ -2207,9 +2486,28 @@ export default function App() {
                       ))}
                     </div>
                   )}
+                  {/* All requests — dense tile grid (#1) */}
+                  <div className="mt-8">
+                    <h3 className="font-outfit font-bold text-textPrimary mb-3">All Requests <span className="text-textFaint font-medium">({requests.length})</span></h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {requests.map(r => (
+                        <div key={r.id} className="p-3.5 rounded-xl bg-surface border border-borderTheme shadow-sm" style={{ borderLeft: `3px solid ${statusColor(r.status)}` }}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-textSecondary tabular-nums">{r.id}</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: statusColor(r.status), background: `${statusColor(r.status)}1a` }}>{STATUS_META[r.status]?.short ?? r.status}</span>
+                          </div>
+                          <p className="text-sm font-bold text-textPrimary mt-1.5 truncate">{r.productQty}× {r.productName}</p>
+                          <div className="flex items-center justify-between mt-2 text-[11px]">
+                            <span className="text-textFaint truncate pr-2">{r.location.replace(' Office', '').replace(' Head', '')} · {r.department.split(' ')[0]}</span>
+                            <span className="font-bold text-textPrimary tabular-nums">₹{r.totalCost.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
-              
+
               {/* --- SCENE 11: REQUEST TRACKING TIMELINE --- */}
               {activeScene === 11 && (
                 <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
@@ -2799,23 +3097,58 @@ export default function App() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-outfit">
-                    <div className="p-6 bg-surface border border-borderTheme rounded-2xl flex items-center justify-between shadow-sm">
-                      <div>
-                        <span className="text-xs text-textSecondary font-bold uppercase tracking-wider block">Total Capital Audited</span>
-                        <p className="text-3xl font-extrabold text-textPrimary mt-1">₹4.58 Crore</p>
-                      </div>
+                  {/* KPI row */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-outfit">
+                    <div className="p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <div className="flex items-center gap-2 text-brand mb-2"><Landmark className="h-4 w-4" /><span className="text-[11px] font-bold uppercase tracking-wider">Total Audited</span></div>
+                      <p className="text-2xl font-extrabold text-textPrimary">₹4.58 Cr</p>
+                      <p className="text-[11px] text-textFaint mt-0.5">FY 2026 · 5 branches</p>
                     </div>
-                    <div className="p-6 bg-surface border border-borderTheme rounded-2xl flex items-center justify-between shadow-sm">
-                      <div>
-                        <span className="text-xs text-accent-savings font-bold uppercase tracking-wider block">Autonomous AI Savings</span>
-                        <p className="text-3xl font-extrabold text-accent-savings mt-1">₹28.45 Lakhs</p>
-                      </div>
+                    <div className="p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <div className="flex items-center gap-2 text-pos mb-2"><TrendingUp className="h-4 w-4" /><span className="text-[11px] font-bold uppercase tracking-wider">AI Savings</span></div>
+                      <p className="text-2xl font-extrabold text-pos">₹28.45 L</p>
+                      <p className="text-[11px] text-textFaint mt-0.5">6.2% of total spend</p>
                     </div>
-                    <div className="p-6 bg-surface border border-borderTheme rounded-2xl flex items-center justify-between shadow-sm">
-                      <div>
-                        <span className="text-xs text-accent-alerts font-bold uppercase tracking-wider block">Blocked Anomalies</span>
-                        <p className="text-3xl font-extrabold text-accent-alerts mt-1">4 Breaches</p>
+                    <div className="p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <div className="flex items-center gap-2 text-info mb-2"><Layers className="h-4 w-4" /><span className="text-[11px] font-bold uppercase tracking-wider">Active Requests</span></div>
+                      <p className="text-2xl font-extrabold text-textPrimary">{requests.length}</p>
+                      <p className="text-[11px] text-textFaint mt-0.5">{requests.filter(r => r.status === 'Pending Approval').length} awaiting approval</p>
+                    </div>
+                    <div className="p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <div className="flex items-center gap-2 text-neg mb-2"><ShieldAlert className="h-4 w-4" /><span className="text-[11px] font-bold uppercase tracking-wider">Blocked Anomalies</span></div>
+                      <p className="text-2xl font-extrabold text-neg">4</p>
+                      <p className="text-[11px] text-textFaint mt-0.5">fraud audits this quarter</p>
+                    </div>
+                  </div>
+
+                  {/* Analytics charts */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <h3 className="font-outfit font-bold text-textPrimary">Spend by Branch</h3>
+                      <p className="text-[11px] text-textFaint mb-4">Where capital is deployed (₹ Crore)</p>
+                      <DonutChart data={spendAnalytics.byBranch} prefix="₹" />
+                    </div>
+                    <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <h3 className="font-outfit font-bold text-textPrimary">Spend by Department</h3>
+                      <p className="text-[11px] text-textFaint mb-4">Cost-center concentration (₹ Crore)</p>
+                      <BarList data={spendAnalytics.byDepartment} color="#7C6CF6" prefix="₹" />
+                    </div>
+                    <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <h3 className="font-outfit font-bold text-textPrimary">Spend by Category</h3>
+                      <p className="text-[11px] text-textFaint mb-4">Procurement categories (₹ Crore)</p>
+                      <BarList data={spendAnalytics.byCategory} color="#0E8F6A" prefix="₹" />
+                    </div>
+                    <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <h3 className="font-outfit font-bold text-textPrimary">Monthly Spend Trend</h3>
+                      <p className="text-[11px] text-textFaint mb-4">Rolling 6 months (₹ Crore)</p>
+                      <div className="flex items-end gap-2 h-36">
+                        {spendAnalytics.byMonth.map((m, i) => (
+                          <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
+                            <span className="text-[10px] font-bold text-textSecondary tabular-nums mb-1">₹{m.value}</span>
+                            <div className="w-full rounded-t-lg transition-all duration-700" style={{ height: `${(m.value / Math.max(...spendAnalytics.byMonth.map(x => x.value))) * 74}%`, background: 'linear-gradient(180deg,#8D7DFF,#C9B8FF)' }} />
+                            <span className="text-[10px] text-textFaint mt-1.5">{m.label}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
