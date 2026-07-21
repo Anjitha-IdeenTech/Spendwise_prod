@@ -1407,11 +1407,6 @@ video {
   background-color: rgb(var(--accent-savings) / 0.15);
 }
 
-.bg-app{
-  --tw-bg-opacity: 1;
-  background-color: rgb(var(--bg-app) / var(--tw-bg-opacity, 1));
-}
-
 .bg-borderTheme{
   --tw-bg-opacity: 1;
   background-color: rgb(var(--border-color) / var(--tw-bg-opacity, 1));
@@ -2410,6 +2405,25 @@ body {
 button.bg-brand:hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 30px rgba(124, 108, 246, 0.28);
+}
+
+/*
+  Universal hover feedback for buttons & tab controls — a soft violet "shade"
+  that blends with the aurora theme, plus a gentle press on click. Primary
+  (bg-brand) buttons keep their own holographic hover above.
+*/
+
+button:not(:disabled) {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease,
+              background-color 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
+}
+
+button:not(:disabled):not(.bg-brand):hover {
+  box-shadow: 0 6px 18px rgba(124, 108, 246, 0.16);
+}
+
+button:not(:disabled):active {
+  transform: scale(0.98);
 }
 
 /* Inputs: soft violet focus glow (purely visual — no size/layout change) */

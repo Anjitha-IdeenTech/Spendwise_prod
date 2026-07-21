@@ -575,7 +575,7 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-hidden bg-app text-textPrimary bg-grid-pattern`}>
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-hidden login-aurora text-textPrimary`}>
       {/* Background ambient decorative glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full ambient-glow-1 filter blur-[120px] pointer-events-none opacity-60 z-0" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full ambient-glow-2 filter blur-[120px] pointer-events-none opacity-60 z-0" />
