@@ -1193,10 +1193,6 @@ video {
   border-radius: 22px;
 }
 
-.rounded-\[24px\]{
-  border-radius: 24px;
-}
-
 .rounded-full{
   border-radius: 9999px;
 }
@@ -1360,20 +1356,12 @@ video {
   border-color: transparent;
 }
 
-.border-white\/15{
-  border-color: rgb(255 255 255 / 0.15);
-}
-
-.border-white\/25{
-  border-color: rgb(255 255 255 / 0.25);
+.border-white\/60{
+  border-color: rgb(255 255 255 / 0.6);
 }
 
 .border-t-transparent{
   border-top-color: transparent;
-}
-
-.bg-\[\#241A54\]\/20{
-  background-color: rgb(36 26 84 / 0.2);
 }
 
 .bg-\[\#CDBDFF\]\/20{
@@ -1557,16 +1545,8 @@ video {
   background-color: transparent;
 }
 
-.bg-white\/10{
-  background-color: rgb(255 255 255 / 0.1);
-}
-
-.bg-white\/5{
-  background-color: rgb(255 255 255 / 0.05);
-}
-
-.bg-white\/90{
-  background-color: rgb(255 255 255 / 0.9);
+.bg-white\/70{
+  background-color: rgb(255 255 255 / 0.7);
 }
 
 .bg-gradient-to-tr{
@@ -1948,27 +1928,6 @@ video {
   color: rgb(var(--text-secondary) / 0.6);
 }
 
-.text-white{
-  --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-
-.text-white\/55{
-  color: rgb(255 255 255 / 0.55);
-}
-
-.text-white\/70{
-  color: rgb(255 255 255 / 0.7);
-}
-
-.text-white\/75{
-  color: rgb(255 255 255 / 0.75);
-}
-
-.text-white\/80{
-  color: rgb(255 255 255 / 0.8);
-}
-
 .placeholder-textFaint::-moz-placeholder{
   --tw-placeholder-opacity: 1;
   color: rgb(var(--text-faint) / var(--tw-placeholder-opacity, 1));
@@ -1999,8 +1958,8 @@ video {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
-.shadow-\[0_0_8px_2px_rgba\(255\2c 255\2c 255\2c 0\.6\)\]{
-  --tw-shadow: 0 0 8px 2px rgba(255,255,255,0.6);
+.shadow-\[0_0_8px_2px_rgba\(124\2c 108\2c 246\2c 0\.45\)\]{
+  --tw-shadow: 0 0 8px 2px rgba(124,108,246,0.45);
   --tw-shadow-colored: 0 0 8px 2px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
@@ -2021,16 +1980,6 @@ video {
   --tw-shadow: 0 20px 50px rgba(60,40,120,0.10);
   --tw-shadow-colored: 0 20px 50px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-
-.shadow-black\/10{
-  --tw-shadow-color: rgb(0 0 0 / 0.1);
-  --tw-shadow: var(--tw-shadow-colored);
-}
-
-.shadow-black\/30{
-  --tw-shadow-color: rgb(0 0 0 / 0.3);
-  --tw-shadow: var(--tw-shadow-colored);
 }
 
 .ring-1{
@@ -2403,11 +2352,11 @@ body {
 
 .login-aurora {
   background:
-    radial-gradient(120% 120% at 12% 18%, #4A38A6 0%, transparent 55%),
-    radial-gradient(120% 120% at 88% 12%, #6E3AB2 0%, transparent 50%),
-    radial-gradient(130% 130% at 84% 90%, #3B54D6 0%, transparent 55%),
-    radial-gradient(130% 120% at 6% 90%, #6E5CF2 0%, transparent 55%),
-    linear-gradient(140deg, #221852 0%, #33266C 45%, #3E2D8E 100%);
+    radial-gradient(120% 120% at 12% 18%, rgba(201,184,255,0.45) 0%, transparent 55%),
+    radial-gradient(120% 120% at 88% 12%, rgba(255,198,230,0.42) 0%, transparent 50%),
+    radial-gradient(130% 130% at 84% 90%, rgba(190,220,255,0.42) 0%, transparent 55%),
+    radial-gradient(130% 120% at 6% 90%, rgba(210,196,255,0.45) 0%, transparent 55%),
+    linear-gradient(140deg, #FBFAFF 0%, #F4F1FE 45%, #EFEAFD 100%);
 }
 
 /* slow-rotating prismatic light sweep */
@@ -2435,8 +2384,8 @@ body {
 
 .login-grid {
   background-image:
-    linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+    linear-gradient(rgba(124,108,246,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,108,246,0.06) 1px, transparent 1px);
   background-size: 46px 46px;
   -webkit-mask-image: radial-gradient(120% 100% at 50% 35%, #000 0%, transparent 80%);
           mask-image: radial-gradient(120% 100% at 50% 35%, #000 0%, transparent 80%);

@@ -591,7 +591,7 @@ export default function App() {
           <div className="absolute top-1/3 right-1/3 w-[34rem] h-[34rem] rounded-full bg-[#8EC9FF]/18 blur-[110px] z-0 pointer-events-none" />
           <div className="absolute bottom-[-6rem] left-1/4 w-[28rem] h-[28rem] rounded-full bg-[#CDBDFF]/20 blur-[100px] z-0 pointer-events-none" />
 
-          <div className="lg:w-7/12 flex flex-col justify-between p-8 lg:p-16 text-onbrand relative z-10">
+          <div className="lg:w-7/12 flex flex-col justify-between p-8 lg:p-16 text-textPrimary relative z-10">
             <div className="relative z-10 flex items-center space-x-2">
               <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand to-gold flex items-center justify-center shadow-lg ring-1 ring-white/25">
                 <Sparkles className="h-5 w-5 text-onbrand" />
@@ -600,63 +600,63 @@ export default function App() {
             </div>
             
             <div className="relative z-10 my-auto py-12 max-w-xl">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/10 backdrop-blur-md border border-white/25 text-white uppercase tracking-widest shadow-lg shadow-black/10">
-                <span className="mr-2 h-1.5 w-1.5 rounded-full bg-white/90 shadow-[0_0_8px_2px_rgba(255,255,255,0.6)]" />
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand/10 backdrop-blur-md border border-brand/20 text-brand uppercase tracking-widest shadow-sm">
+                <span className="mr-2 h-1.5 w-1.5 rounded-full bg-brand shadow-[0_0_8px_2px_rgba(124,108,246,0.45)]" />
                 AI Orchestration Gateway
               </span>
               <h1 className="font-outfit text-4xl lg:text-6xl font-extrabold tracking-tight mt-6 leading-tight">
                 Request Anything.<br />
-                <span className="holo-text-light">Track Everything.</span>
+                <span className="holo-text">Track Everything.</span>
               </h1>
-              <p className="text-white/75 text-lg mt-6 leading-relaxed">
+              <p className="text-textSecondary text-lg mt-6 leading-relaxed">
                 Experience corporate procurement simplified. SmartSpend abstracts complex Odoo ERP processes into a single, intelligent workspace. No forms, no jargon, no training required.
               </p>
             </div>
             
-            <div className="relative z-10 flex items-center justify-between text-xs text-white/55">
+            <div className="relative z-10 flex items-center justify-between text-xs text-textFaint">
               <span>Powered by Odoo ERP Backend</span>
               <span>CONFIDENTIAL PROTOTYPE V2</span>
             </div>
           </div>
           
           <div className="lg:w-5/12 flex flex-col justify-center px-6 py-12 md:px-10 lg:px-14 relative z-10">
-            <div className="max-w-md w-full mx-auto space-y-8 bg-[#241A54]/20 backdrop-blur-2xl border border-white/15 rounded-[24px] shadow-2xl shadow-black/30 p-8 lg:p-10">
+            <div className="max-w-md w-full mx-auto space-y-8 bg-white/70 backdrop-blur-2xl border border-white/60 rounded-2xl shadow-xl p-8 lg:p-10">
               <div>
-                <h2 className="font-outfit text-3xl font-extrabold text-white tracking-tight">Sign In</h2>
-                <p className="mt-3 text-sm text-white/70">
+                <h2 className="font-outfit text-3xl font-extrabold text-textPrimary tracking-tight">Sign In</h2>
+                <p className="mt-3 text-sm text-textSecondary">
                   Select a role portal below to test each interactive role.
                 </p>
               </div>
               
               <div className="space-y-4">
                 <div className="relative flex pb-2 items-center">
-                  <div className="flex-grow border-t border-white/15"></div>
-                  <span className="flex-shrink mx-4 text-white/55 text-xs font-semibold uppercase tracking-wider">Select Demo Role Portal</span>
-                  <div className="flex-grow border-t border-white/15"></div>
+                  <div className="flex-grow border-t border-borderTheme"></div>
+                  <span className="flex-shrink mx-4 text-textFaint text-xs font-semibold uppercase tracking-wider">Select Demo Role Portal</span>
+                  <div className="flex-grow border-t border-borderTheme"></div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
                   <button 
                     onClick={() => handleSsoLogin("Employee")}
-                    className="p-3 bg-white/5 hover:bg-brand/20 border border-white/15 hover:border-brand/30 rounded-xl text-center text-xs text-white/80 font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
+                    className="p-3 bg-secondary/50 hover:bg-brand/20 border border-borderTheme hover:border-brand/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
                   >
                     Employee Portal
                   </button>
                   <button 
                     onClick={() => handleSsoLogin("Manager")}
-                    className="p-3 bg-white/5 hover:bg-gold/20 border border-white/15 hover:border-gold/30 rounded-xl text-center text-xs text-white/80 font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
+                    className="p-3 bg-secondary/50 hover:bg-gold/20 border border-borderTheme hover:border-gold/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
                   >
                     Manager Inbox
                   </button>
                   <button 
                     onClick={() => handleSsoLogin("SCM Buyer")}
-                    className="p-3 bg-white/5 hover:bg-brand/20 border border-white/15 hover:border-brand/30 rounded-xl text-center text-xs text-white/80 font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
+                    className="p-3 bg-secondary/50 hover:bg-brand/20 border border-borderTheme hover:border-brand/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
                   >
                     SCM Buyer Portal
                   </button>
                   <button 
                     onClick={() => handleSsoLogin("Vendor")}
-                    className="p-3 bg-white/5 hover:bg-pos/20 border border-white/15 hover:border-pos/30 rounded-xl text-center text-xs text-white/80 font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
+                    className="p-3 bg-secondary/50 hover:bg-pos/20 border border-borderTheme hover:border-pos/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
                   >
                     Vendor Portal
                   </button>
