@@ -4,7 +4,7 @@ import {
   TrendingUp, DollarSign, ShieldAlert, Award, FileSpreadsheet, 
   ArrowRight, User, Settings, CheckCircle2, ChevronRight, 
   Play, RefreshCw, X, AlertTriangle, AlertCircle, Check, 
-  HelpCircle, Volume2, ShieldCheck, Landmark, Briefcase, FileInput, 
+  Volume2, ShieldCheck, Landmark, Briefcase, FileInput,
   Calendar, Layers, Clock, Users, ArrowUpRight, ArrowDownRight, Menu,
   Paperclip, MessageSquare, History, Search, Eye, Filter,
   Truck, Package, Receipt, CreditCard, Moon, Sun, Bell
@@ -35,6 +35,12 @@ interface ChatMessage {
   timestamp: string;
 }
 
+interface LineItem {
+  productName: string;
+  productQty: number;
+  targetPrice: number;
+}
+
 interface RequestItem {
   id: string;
   productName: string;
@@ -56,31 +62,59 @@ interface RequestItem {
   vendorBids: Array<{ vendorName: string; price: number; leadTime: string; warranty: string; status: string }>;
   selectedSourcingMethod: 'Direct' | 'RFQ' | 'Auction';
   attachments: string[];
-  lineItems?: Array<{ productName: string; productQty: number; targetPrice: number }>;
+  lineItems?: LineItem[];
 }
 
-const getContractPrice = (name: string) => {
-  const lower = name.toLowerCase();
-  if (lower.includes("laptop") || lower.includes("dell")) return 70000;
-  if (lower.includes("chair") || lower.includes("furniture")) return 8000;
-  if (lower.includes("server") || lower.includes("rack")) return 120000;
-  return 50000;
-};
+// Catalog price book — contract rate, opening vendor bid, AI negotiation target (per unit).
+const PRICE_BOOK: Array<{ re: RegExp; contract: number; baseline: number; target: number }> = [
+  { re: /dock/i, contract: 8500, baseline: 9200, target: 8000 },
+  { re: /monitor|display/i, contract: 11000, baseline: 12500, target: 10400 },
+  { re: /keyboard|mouse/i, contract: 2200, baseline: 2600, target: 2050 },
+  { re: /backpack|carry ?case|laptop bag/i, contract: 1800, baseline: 2100, target: 1700 },
+  { re: /licen[cs]e|office 365|antivirus|software/i, contract: 8200, baseline: 8900, target: 7700 },
+  { re: /headset|headphone/i, contract: 3400, baseline: 3900, target: 3200 },
+  { re: /laptop|latitude|macbook|notebook/i, contract: 70000, baseline: 72000, target: 67000 },
+  { re: /chair|furniture/i, contract: 8000, baseline: 9000, target: 7800 },
+  { re: /desk|workstation|table/i, contract: 12500, baseline: 14000, target: 11800 },
+  { re: /cabinet|storage unit|pedestal/i, contract: 9500, baseline: 10500, target: 8900 },
+  { re: /server|rack/i, contract: 120000, baseline: 130000, target: 115000 },
+  { re: /switch|router/i, contract: 45000, baseline: 49000, target: 42500 },
+  { re: /ups|power supply/i, contract: 38000, baseline: 41000, target: 35500 },
+  { re: /patch panel|cabling|cable/i, contract: 4500, baseline: 5200, target: 4200 },
+];
+const priceEntry = (name: string) => PRICE_BOOK.find(p => p.re.test(name));
+const getContractPrice = (name: string) => priceEntry(name)?.contract ?? 50000;
+const getNegotiationBaselinePrice = (name: string) => priceEntry(name)?.baseline ?? 60000;
+const getNegotiatedTargetPrice = (name: string) => priceEntry(name)?.target ?? 55000;
 
-const getNegotiationBaselinePrice = (name: string) => {
-  const lower = name.toLowerCase();
-  if (lower.includes("laptop") || lower.includes("dell")) return 72000;
-  if (lower.includes("chair") || lower.includes("furniture")) return 9000;
-  if (lower.includes("server") || lower.includes("rack")) return 130000;
-  return 60000;
-};
+// Sub-product suggestions surfaced above the chat bar once the AI recognises a category.
+const SUB_CATALOG: Array<{ re: RegExp; category: string; items: string[] }> = [
+  {
+    re: /laptop|latitude|macbook|notebook|it hardware|computer/i,
+    category: 'IT Hardware',
+    items: ['USB-C Docking Station', '24" Full-HD Monitor', 'Wireless Keyboard & Mouse Combo', 'Laptop Backpack', 'MS Office 365 Business License', 'Noise-Cancelling Headset'],
+  },
+  {
+    re: /chair|furniture|desk|workstation|seating/i,
+    category: 'Office Furniture',
+    items: ['Height-Adjustable Desk', 'Ergonomic Office Chair', 'Storage Pedestal Cabinet', 'Conference Table', 'Monitor Arm Mount'],
+  },
+  {
+    re: /server|rack|datacenter|data center|network/i,
+    category: 'Datacenter Equipment',
+    items: ['19-Inch Data Server Rack', '48-Port Network Switch', 'Rack-Mount UPS 5kVA', 'CAT-6A Patch Panel', 'Structured Cabling Kit'],
+  },
+];
+const subCatalogFor = (text: string) => (text.trim() ? SUB_CATALOG.find(c => c.re.test(text)) : undefined);
 
-const getNegotiatedTargetPrice = (name: string) => {
-  const lower = name.toLowerCase();
-  if (lower.includes("laptop") || lower.includes("dell")) return 67000;
-  if (lower.includes("chair") || lower.includes("furniture")) return 7800;
-  if (lower.includes("server") || lower.includes("rack")) return 115000;
-  return 55000;
+// Line-item helpers — every request behaves as a multi-line requisition.
+const reqLines = (r: { productName: string; productQty: number; targetPrice: number; lineItems?: LineItem[] }): LineItem[] =>
+  r.lineItems && r.lineItems.length ? r.lineItems : [{ productName: r.productName, productQty: r.productQty, targetPrice: r.targetPrice }];
+const linesTotal = (lines: LineItem[]) => lines.reduce((s, l) => s + l.productQty * l.targetPrice, 0);
+const linesQty = (lines: LineItem[]) => lines.reduce((s, l) => s + l.productQty, 0);
+const reqSummary = (r: { productName: string; productQty: number; targetPrice: number; lineItems?: LineItem[] }) => {
+  const lines = reqLines(r);
+  return lines.length > 1 ? `${lines[0].productName} +${lines.length - 1} more` : lines[0].productName;
 };
 
 // ---- Lightweight SVG charts (categorical palette validated CVD-safe on light) ----
@@ -106,6 +140,47 @@ const STATUS_STAGE: Record<string, number> = {
   'Approved': 1, 'Sourcing': 2, 'PO Confirmed': 3, 'Paid': 5,
 };
 const statusStage = (s: string) => STATUS_STAGE[s] ?? 0;
+
+// Read-only requisition line table — reused by every downstream scene so multi-product
+// requests keep their full detail from sourcing through payment.
+function LineItemsTable({ lines, title = 'Line Items', totalLabel = 'Total' }: { lines: LineItem[]; title?: string; totalLabel?: string }) {
+  return (
+    <div className="rounded-xl border border-borderTheme overflow-hidden">
+      <div className="flex items-center justify-between px-3 py-2 bg-secondary/60 border-b border-borderTheme">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-textFaint">{title}</span>
+        <span className="text-[10px] font-bold text-textSecondary">{lines.length} product{lines.length > 1 ? 's' : ''} · {linesQty(lines)} units</span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs min-w-[420px]">
+          <thead>
+            <tr className="text-[10px] uppercase tracking-wider text-textFaint">
+              <th className="text-left font-bold px-3 py-2">Product</th>
+              <th className="text-right font-bold px-3 py-2">Qty</th>
+              <th className="text-right font-bold px-3 py-2">Unit ₹</th>
+              <th className="text-right font-bold px-3 py-2">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lines.map((l, i) => (
+              <tr key={i} className="border-t border-borderTheme/60">
+                <td className="px-3 py-2 text-textPrimary font-semibold">{l.productName}</td>
+                <td className="px-3 py-2 text-right text-textSecondary tabular-nums">{l.productQty}</td>
+                <td className="px-3 py-2 text-right text-textSecondary tabular-nums">{l.targetPrice ? `₹${l.targetPrice.toLocaleString()}` : 'TBD'}</td>
+                <td className="px-3 py-2 text-right text-textPrimary font-bold tabular-nums">{l.targetPrice ? `₹${(l.productQty * l.targetPrice).toLocaleString()}` : '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="border-t border-borderTheme bg-secondary/40">
+              <td className="px-3 py-2 font-bold text-textSecondary" colSpan={3}>{totalLabel}</td>
+              <td className="px-3 py-2 text-right font-extrabold text-brand tabular-nums">₹{linesTotal(lines).toLocaleString()}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 interface Datum { label: string; value: number; }
 
@@ -250,9 +325,14 @@ export default function App() {
     {
       id: "PR-2026-089",
       productName: "Dell Latitude 5440 Laptops",
-      productQty: 20,
+      productQty: 60,
       targetPrice: 70000,
-      totalCost: 1300000,
+      totalCost: 1606000,
+      lineItems: [
+        { productName: "Dell Latitude 5440 Laptop", productQty: 20, targetPrice: 70000 },
+        { productName: "USB-C Docking Station", productQty: 20, targetPrice: 8500 },
+        { productName: "Laptop Backpack", productQty: 20, targetPrice: 1800 },
+      ],
       location: "Bangalore Office",
       department: "IT & Infrastructure",
       expenseCategory: "IT Hardware & Laptops",
@@ -391,9 +471,15 @@ export default function App() {
   const [selectedRequestId, setSelectedRequestId] = useState<string>("PR-2026-089");
   const currentRequest = requests.find(r => r.id === selectedRequestId) || requests[0];
 
+  // Received quantity per requisition line (GRN) — keyed to the current request.
+  const [deliveredQtys, setDeliveredQtys] = useState<number[]>([]);
+  const currentLines = currentRequest ? reqLines(currentRequest) : [];
+  const receivedLines: LineItem[] = currentLines.map((l, i) => ({ ...l, productQty: deliveredQtys[i] ?? l.productQty }));
+
   useEffect(() => {
     if (currentRequest) {
       setDeliveredQty(currentRequest.productQty);
+      setDeliveredQtys(reqLines(currentRequest).map(l => l.productQty));
     }
   }, [selectedRequestId, currentRequest]);
 
@@ -512,7 +598,9 @@ export default function App() {
   const [editExpenseCategory, setEditExpenseCategory] = useState<string>("IT Hardware & Laptops");
   const [editDeliveryDate, setEditDeliveryDate] = useState<string>("Jul 25, 2026");
   const [editExpenseType, setEditExpenseType] = useState<string>("Capital Expenditure (CapEx)");
-  const [extraItems, setExtraItems] = useState<Array<{ productName: string; productQty: number; targetPrice: number }>>([]);
+  const [extraItems, setExtraItems] = useState<LineItem[]>([]);
+  // Products staged directly in the Scene 2 chat composer, before the AI extraction step.
+  const [chatItems, setChatItems] = useState<LineItem[]>([]);
 
   // Poke / reminders (#10)
   const [pokes, setPokes] = useState<Array<{ to: string; from: string; message: string; reqId: string }>>([
@@ -589,33 +677,50 @@ export default function App() {
       setVoiceState('done');
     }, 1500);
   };
-  const parseSpeechText = (text: string) => {
+  const parseSpeechText = (text: string, staged: LineItem[] = []) => {
     const lower = text.toLowerCase();
     let name = "Dell Latitude 5440 Laptops";
     let qty = 20;
-    let price = 0;
     let loc = "Bangalore Office";
     let cat = "IT Hardware & Laptops";
 
     if (lower.includes("chair") || lower.includes("furniture") || lower.includes("chairs")) {
       name = "Ergonomic Office Chairs";
       qty = 10;
-      price = 0;
       loc = "Kochi Head Office";
       cat = "Office Furniture";
     } else if (lower.includes("server") || lower.includes("rack") || lower.includes("racks")) {
       name = "19-Inch Data Server Racks";
       qty = 2;
-      price = 0;
       loc = "Mumbai Office";
       cat = "Datacenter Equipment";
     }
-    
+
+    // Pull an explicit quantity and branch out of the sentence when the user gave one.
+    const qtyMatch = lower.match(/(\d+)\s*(units?|nos?|pcs?|pieces?)?\s/);
+    if (qtyMatch) qty = Number(qtyMatch[1]);
+    const branch = ['Bangalore', 'Kochi', 'Mumbai', 'Delhi', 'Chennai', 'Hyderabad'].find(b => lower.includes(b.toLowerCase()));
+    if (branch) loc = branch === 'Kochi' ? 'Kochi Head Office' : `${branch} Office`;
+
+    // Products staged in the chat composer flow straight into the extraction form.
+    let rest = staged.filter(it => it.productName.trim());
+    if (!text.trim() && rest.length) {
+      // Staged products only, no sentence — the first staged product becomes the primary line.
+      name = rest[0].productName;
+      qty = rest[0].productQty;
+      cat = subCatalogFor(name)?.category ?? cat;
+      rest = rest.slice(1);
+    } else {
+      rest = rest.filter(it => it.productName !== name);
+    }
+
     setEditProductName(name);
     setEditProductQty(qty);
-    setEditTargetPrice(price);
+    // Indicative catalog rate so the requisition carries a value from the very first step.
+    setEditTargetPrice(getContractPrice(name));
     setEditLocation(loc);
     setEditExpenseCategory(cat);
+    setExtraItems(rest.map(it => ({ ...it, targetPrice: it.targetPrice || getContractPrice(it.productName) })));
   };
 
   const handleSsoLogin = (role: string) => {
@@ -630,10 +735,11 @@ export default function App() {
 
   const handleChatSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!chatInputText.trim()) return;
+    if (!chatInputText.trim() && chatItems.length === 0) return;
 
-    parseSpeechText(chatInputText);
+    parseSpeechText(chatInputText, chatItems);
     setChatInputText("");
+    setChatItems([]);
     setActiveScene(4); // Go to extraction form
   };
 
@@ -660,18 +766,17 @@ export default function App() {
 
   const createRequisitionFromForm = () => {
     const newId = `PR-2026-0${90 + requests.length}`;
-    const allItems = [{ productName: editProductName, productQty: editProductQty, targetPrice: editTargetPrice }, ...extraItems.filter(it => it.productName.trim())];
-    const total = allItems.reduce((s, it) => s + it.productQty * it.targetPrice, 0);
+    const allItems: LineItem[] = [{ productName: editProductName, productQty: editProductQty, targetPrice: editTargetPrice }, ...extraItems.filter(it => it.productName.trim())];
     const newReq: RequestItem = {
       id: newId,
-      productName: allItems.length > 1 ? `${editProductName} + ${allItems.length - 1} more` : editProductName,
-      productQty: allItems.reduce((s, it) => s + it.productQty, 0),
+      productName: editProductName,
+      productQty: linesQty(allItems),
       targetPrice: editTargetPrice,
-      totalCost: total,
+      totalCost: linesTotal(allItems),
       location: editLocation,
       department: editDepartment,
       expenseCategory: editExpenseCategory,
-      lineItems: allItems.length > 1 ? allItems : undefined,
+      lineItems: allItems,
       status: budgetBreach ? "Needs Clarification" : "Pending Approval",
       urgency: "High",
       deliveryDate: editDeliveryDate || undefined,
@@ -1185,55 +1290,121 @@ export default function App() {
                         </div>
                       )}
 
-                      {/* Unified Input Bar (Matching user's attachment screenshot exactly) */}
-                      <form onSubmit={handleChatSubmit} className="relative flex items-center bg-surface border border-borderTheme/70 rounded-full px-5 py-3.5 focus-within:border-brand/60 shadow-xl transition-all max-w-3xl mx-auto w-full">
-                        {/* Attach button */}
-                        <button 
-                          type="button"
-                          onClick={handleAttachmentAdd}
-                          className="p-1.5 rounded-full hover:bg-secondary text-textSecondary hover:text-textPrimary transition-all mr-3"
-                          title="Add attachment"
-                        >
-                          <Paperclip className="h-5 w-5" />
-                        </button>
+                      {/* Multi-product composer + AI sub-category suggestions, stacked above the bar */}
+                      <div className="max-w-3xl mx-auto w-full space-y-3">
+                        {chatItems.length > 0 && (
+                          <div className="p-3 rounded-2xl bg-surface border border-borderTheme shadow-sm space-y-2 animate-fadeIn">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-textFaint">Products in this request ({chatItems.length})</span>
+                              <button type="button" onClick={() => setChatItems([])} className="text-[10px] font-semibold text-textSecondary hover:text-neg">Clear all</button>
+                            </div>
+                            {chatItems.map((it, idx) => (
+                              <div key={idx} className="grid grid-cols-12 gap-2 items-center">
+                                <input
+                                  type="text"
+                                  value={it.productName}
+                                  onChange={(e) => setChatItems(prev => prev.map((x, i) => i === idx ? { ...x, productName: e.target.value } : x))}
+                                  placeholder="Product description"
+                                  className="col-span-8 bg-secondary border border-line2 rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-brand"
+                                />
+                                <div className="col-span-3 flex items-center gap-1.5">
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    value={it.productQty}
+                                    onChange={(e) => setChatItems(prev => prev.map((x, i) => i === idx ? { ...x, productQty: Number(e.target.value) } : x))}
+                                    className="w-full bg-secondary border border-line2 rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-brand"
+                                  />
+                                  <span className="text-[10px] text-textFaint">qty</span>
+                                </div>
+                                <button type="button" onClick={() => setChatItems(prev => prev.filter((_, i) => i !== idx))} className="col-span-1 flex justify-center text-textFaint hover:text-neg" title="Remove product">
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                            <div className="flex items-center justify-between pt-1">
+                              <button type="button" onClick={() => setChatItems(prev => [...prev, { productName: '', productQty: 1, targetPrice: 0 }])}
+                                className="text-[11px] font-semibold text-brand hover:underline flex items-center gap-1"><span className="text-sm leading-none">+</span> Add another product</button>
+                              <span className="text-[10px] text-textFaint">{linesQty(chatItems)} units staged</span>
+                            </div>
+                          </div>
+                        )}
 
-                        {/* Text input area */}
-                        <input 
-                          type="text"
-                          value={chatInputText}
-                          onChange={(e) => setChatInputText(e.target.value)}
-                          placeholder="Ask anything..."
-                          className="flex-grow bg-transparent text-sm text-primary placeholder-textFaint focus:outline-none pr-28"
-                        />
+                        {/* Sub-product categories the AI infers from what's being typed */}
+                        {(() => {
+                          const cat = subCatalogFor(chatInputText);
+                          if (!cat) return null;
+                          const staged = new Set(chatItems.map(i => i.productName));
+                          return (
+                            <div className="px-1 space-y-2 animate-fadeIn">
+                              <span className="text-[11px] text-textSecondary flex items-center gap-1.5">
+                                <Sparkles className="h-3.5 w-3.5 text-brand" />
+                                Detected <strong className="text-textPrimary">{cat.category}</strong> — commonly requested together:
+                              </span>
+                              <div className="flex flex-wrap gap-2">
+                                {cat.items.map(name => (
+                                  <button
+                                    key={name}
+                                    type="button"
+                                    disabled={staged.has(name)}
+                                    onClick={() => setChatItems(prev => [...prev, { productName: name, productQty: 1, targetPrice: 0 }])}
+                                    className={`px-3 py-1.5 rounded-full border text-[11px] font-semibold transition-all ${staged.has(name)
+                                      ? 'bg-brand/10 border-brand/30 text-brand cursor-default'
+                                      : 'bg-surface border-borderTheme text-textSecondary hover:border-brand hover:text-brand'}`}
+                                  >
+                                    {staged.has(name) ? '✓ ' : '+ '}{name}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
 
-                        {/* Integration Logos & Voice Action Group */}
-                        <div className="absolute right-3 flex items-center space-x-2">
-                          <span className="text-textFaint font-bold text-lg">|</span>
-
-                          {/* Voice Mic Icon */}
-                          <button
-                            type="button"
-                            onClick={() => setActiveScene(3)}
-                            className="p-1.5 rounded-full hover:bg-secondary text-textSecondary hover:text-primary transition-all"
-                            title="Voice Procurement"
-                          >
-                            <Mic className="h-4.5 w-4.5" />
-                          </button>
-
-                          {/* Send Button */}
+                        {/* Unified Input Bar (Matching user's attachment screenshot exactly) */}
+                        <form onSubmit={handleChatSubmit} className="relative flex items-center bg-surface border border-borderTheme/70 rounded-full px-5 py-3.5 focus-within:border-brand/60 shadow-xl transition-all w-full">
+                          {/* Attach button */}
                           <button 
-                            type="submit"
-                            className="p-2 rounded-full bg-brand hover:bg-brand text-onbrand transition-all"
+                            type="button"
+                            onClick={handleAttachmentAdd}
+                            className="p-1.5 rounded-full hover:bg-secondary text-textSecondary hover:text-textPrimary transition-all mr-3"
+                            title="Add attachment"
                           >
-                            <Send className="h-3.5 w-3.5" />
+                            <Paperclip className="h-5 w-5" />
                           </button>
-                        </div>
-                      </form>
 
-                      <p className="text-[11px] text-textFaint mt-3 flex items-center gap-1.5 px-1 max-w-3xl mx-auto">
-                        <HelpCircle className="h-3.5 w-3.5 flex-shrink-0" />
-                        Tip: mention the <span className="text-textSecondary font-semibold">product</span>, <span className="text-textSecondary font-semibold">branch</span>, <span className="text-textSecondary font-semibold">quantity</span> and <span className="text-textSecondary font-semibold">expected delivery date</span> — the AI structures the rest.
-                      </p>
+                          {/* Text input area */}
+                          <input 
+                            type="text"
+                            value={chatInputText}
+                            onChange={(e) => setChatInputText(e.target.value)}
+                            placeholder="Mention the product, branch, quantity and expected delivery date…"
+                            className="flex-grow bg-transparent text-sm text-primary placeholder-textFaint focus:outline-none pr-28"
+                          />
+
+                          {/* Integration Logos & Voice Action Group */}
+                          <div className="absolute right-3 flex items-center space-x-2">
+                            <span className="text-textFaint font-bold text-lg">|</span>
+
+                            {/* Voice Mic Icon */}
+                            <button
+                              type="button"
+                              onClick={() => setActiveScene(3)}
+                              className="p-1.5 rounded-full hover:bg-secondary text-textSecondary hover:text-primary transition-all"
+                              title="Voice Procurement"
+                            >
+                              <Mic className="h-4.5 w-4.5" />
+                            </button>
+
+                            {/* Send Button */}
+                            <button 
+                              type="submit"
+                              className="p-2 rounded-full bg-brand hover:bg-brand text-onbrand transition-all"
+                            >
+                              <Send className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </form>
+                      </div>
 
                       {/* Suggested Prompts */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6 max-w-3xl mx-auto">
@@ -1270,7 +1441,7 @@ export default function App() {
                                   <span className="text-[11px] font-bold text-textSecondary tabular-nums">{r.id}</span>
                                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: statusColor(r.status), background: `${statusColor(r.status)}1a` }}>{STATUS_META[r.status]?.short ?? r.status}</span>
                                 </div>
-                                <p className="text-sm font-bold text-textPrimary mt-1.5 truncate">{r.productQty}× {r.productName}</p>
+                                <p className="text-sm font-bold text-textPrimary mt-1.5 truncate">{r.productQty}× {reqSummary(r)}</p>
                                 <p className="text-[11px] text-textFaint mt-0.5 truncate">{r.location.replace(' Office', '')} · {r.department} · <span className="font-semibold text-textSecondary">₹{r.totalCost.toLocaleString()}</span></p>
                                 <div className="flex items-center gap-1 mt-3">
                                   {STAGE_LABELS.map((lab, si) => (
@@ -1321,7 +1492,7 @@ export default function App() {
                               </span>
                             </div>
                             
-                            <h4 className="font-outfit font-extrabold text-base text-primary">{req.productQty}x {req.productName}</h4>
+                            <h4 className="font-outfit font-extrabold text-base text-primary">{req.productQty}x {reqSummary(req)}</h4>
                             
                             <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-borderTheme/60 text-xs text-textSecondary">
                               <div>
@@ -1345,7 +1516,7 @@ export default function App() {
                       <div className="flex justify-between items-center border-b border-borderTheme pb-4">
                         <div>
                           <span className="text-xs text-brand font-bold block">{currentRequest.id} Tracking</span>
-                          <h3 className="font-outfit font-extrabold text-xl text-primary">{currentRequest.productQty}x {currentRequest.productName}</h3>
+                          <h3 className="font-outfit font-extrabold text-xl text-primary">{currentRequest.productQty}x {reqSummary(currentRequest)}</h3>
                         </div>
                         <span className="px-3 py-1 bg-secondary rounded-full border border-borderTheme text-xs font-bold text-textSecondary">
                           Status: {currentRequest.status}
@@ -1405,6 +1576,11 @@ export default function App() {
                         </div>
                       </div>
 
+                      {/* Requested products */}
+                      <div className="border-t border-borderTheme/80 pt-6">
+                        <LineItemsTable lines={reqLines(currentRequest)} title="Requested products" totalLabel="Request Value" />
+                      </div>
+
                       {/* Audit Log / History */}
                       <div className="border-t border-borderTheme/80 pt-6 max-w-xl mx-auto space-y-3">
                         <span className="text-xs font-bold text-textFaint uppercase tracking-wider block">Odoo Event Log</span>
@@ -1439,7 +1615,7 @@ export default function App() {
                               <div className="flex items-center justify-between border-b border-borderTheme pb-3">
                                 <div>
                                   <span className="text-xs text-gold font-bold block">{req.id}</span>
-                                  <h4 className="font-outfit font-extrabold text-lg text-primary">{req.productQty}x {req.productName}</h4>
+                                  <h4 className="font-outfit font-extrabold text-lg text-primary">{req.productQty}x {reqSummary(req)}</h4>
                                 </div>
                                 <span className="px-2 py-0.5 bg-gold/10 text-gold border border-gold/25 rounded-md text-[10px] font-bold">RFI PENDING</span>
                               </div>
@@ -1493,6 +1669,9 @@ export default function App() {
                     <div className="text-center space-y-2">
                       <h2 className="font-outfit text-2xl font-extrabold text-primary">SmartSpend Voice Assistant</h2>
                       <p className="text-sm text-textSecondary max-w-md mx-auto font-medium">Click the microphone to simulate recording your purchase request details.</p>
+                      <p className="text-xs text-textFaint max-w-md mx-auto">
+                        Mention the <span className="text-textSecondary font-semibold">product</span>, <span className="text-textSecondary font-semibold">branch</span>, <span className="text-textSecondary font-semibold">quantity</span> and <span className="text-textSecondary font-semibold">expected delivery date</span> — the AI structures the rest.
+                      </p>
                     </div>
                     
                     {/* Microphone Soundwave Visual Area */}
@@ -1736,10 +1915,12 @@ export default function App() {
                           <span className="font-bold text-textPrimary">₹12,00,000</span>
                         </div>
                         <div className="flex justify-between text-xs text-textSecondary">
-                          <span>Current Request ({currentRequest.productQty} units @ ₹{currentRequest.targetPrice.toLocaleString()}):</span>
-                          <span className="font-bold text-brand">₹{(currentRequest.productQty * currentRequest.targetPrice).toLocaleString()}</span>
+                          <span>Current Request ({currentLines.length} product{currentLines.length > 1 ? 's' : ''} · {linesQty(currentLines)} units):</span>
+                          <span className="font-bold text-brand">₹{linesTotal(currentLines).toLocaleString()}</span>
                         </div>
-                        
+
+                        <LineItemsTable lines={currentLines} title="Cost breakdown by line" totalLabel="Request Value" />
+
                         <div className="relative pt-2">
                           <div className="h-4 w-full bg-secondary rounded-full overflow-hidden flex">
                             <div className="h-full bg-raised" style={{ width: '40%' }} />
@@ -1760,7 +1941,7 @@ export default function App() {
                         <div className="p-4 bg-neg/20 border border-neg/40 rounded-xl flex items-start space-x-3 text-neg text-xs">
                           <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0 text-neg animate-pulse" />
                           <div>
-                            <p className="font-bold">Budget Limit Exceeded by ₹{(currentRequest.productQty * currentRequest.targetPrice + 1200000 - 3000000).toLocaleString()}</p>
+                            <p className="font-bold">Budget Limit Exceeded by ₹{(linesTotal(currentLines) + 1200000 - 3000000).toLocaleString()}</p>
                             <p className="mt-1 text-textSecondary">This requisition exceeds the remaining allocated budget threshold.</p>
                           </div>
                         </div>
@@ -1846,23 +2027,29 @@ export default function App() {
                           <div className="space-y-1">
                             <h3 className="font-outfit font-extrabold text-lg text-pos">Active Rate Contract Mapped</h3>
                             <p className="text-sm text-textSecondary">
-                              Found active agreement registered in Odoo for this product category: 
-                              <strong> ₹{getContractPrice(currentRequest.productName).toLocaleString()} / unit</strong>. 
-                              Total Allocation: 
-                              <strong> ₹{(currentRequest.productQty * getContractPrice(currentRequest.productName)).toLocaleString()}</strong>.
+                              Found active agreements registered in Odoo covering all {currentLines.length} requested product{currentLines.length > 1 ? 's' : ''}.
+                              Total Allocation:
+                              <strong> ₹{linesTotal(currentLines.map(l => ({ ...l, targetPrice: getContractPrice(l.productName) }))).toLocaleString()}</strong>.
                             </p>
                           </div>
                         </div>
-                        
+
+                        <LineItemsTable
+                          lines={currentLines.map(l => ({ ...l, targetPrice: getContractPrice(l.productName) }))}
+                          title="Contracted rates per line"
+                          totalLabel="Contract Value"
+                        />
+
                         <div className="flex justify-end space-x-3 pt-2">
                           <button onClick={() => {
-                            const contractRate = getContractPrice(currentRequest.productName);
                             setRequests(prev => prev.map(r => {
                               if (r.id === selectedRequestId) {
+                                const priced = reqLines(r).map(l => ({ ...l, targetPrice: getContractPrice(l.productName) }));
                                 return {
                                   ...r,
-                                  targetPrice: contractRate,
-                                  totalCost: r.productQty * contractRate,
+                                  lineItems: priced,
+                                  targetPrice: priced[0].targetPrice,
+                                  totalCost: linesTotal(priced),
                                   vendor: "Primus Technologies"
                                 };
                               }
@@ -1883,10 +2070,12 @@ export default function App() {
                           </div>
                           <div className="space-y-1">
                             <h3 className="font-outfit font-extrabold text-lg text-gold">No Active Contract Found</h3>
-                            <p className="text-sm text-textSecondary">The product category does not have a pre-negotiated volume contract. Sourcing is required.</p>
+                            <p className="text-sm text-textSecondary">The product category does not have a pre-negotiated volume contract. Sourcing is required for all {currentLines.length} line{currentLines.length > 1 ? 's' : ''}.</p>
                           </div>
                         </div>
-                        
+
+                        <LineItemsTable lines={currentLines} title="Lines to be sourced" totalLabel="Estimated Value" />
+
                         <div className="flex justify-end space-x-3 pt-2">
                           <button onClick={() => {
                             setRequests(prev => prev.map(r => {
@@ -1956,7 +2145,7 @@ export default function App() {
                                 <span className="text-xs font-bold text-textFaint">{req.id}</span>
                                 <span className="text-xs px-2.5 py-0.5 rounded bg-brand/20 text-brand border border-brand/20 font-bold uppercase">SOURCING FALLBACK</span>
                               </div>
-                              <h4 className="font-outfit font-extrabold text-lg text-primary">{req.productQty}x {req.productName}</h4>
+                              <h4 className="font-outfit font-extrabold text-lg text-primary">{req.productQty}x {reqSummary(req)}</h4>
                               <p className="text-xs text-textSecondary">Estimated Value: <strong>{req.totalCost > 0 ? `₹${req.totalCost.toLocaleString()}` : "TBD (Pending Sourcing Bids)"}</strong> | Mapped to: {req.expenseCategory}</p>
                             </div>
 
@@ -1995,7 +2184,7 @@ export default function App() {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-borderTheme pb-4">
                           <div>
                             <span className="text-xs text-brand font-bold block">{currentRequest.id} Bidding Management</span>
-                            <h3 className="font-outfit font-extrabold text-xl text-primary">{currentRequest.productQty}x {currentRequest.productName}</h3>
+                            <h3 className="font-outfit font-extrabold text-xl text-primary">{currentRequest.productQty}x {reqSummary(currentRequest)}</h3>
                           </div>
 
                           <div className="mt-2 sm:mt-0 flex items-center space-x-2">
@@ -2004,6 +2193,9 @@ export default function App() {
                             </span>
                           </div>
                         </div>
+
+                        {/* Full RFQ scope so vendors bid on every requested line */}
+                        <LineItemsTable lines={currentLines} title="RFQ scope" totalLabel="Estimated Value" />
 
                         {/* Bid submissions table */}
                         <div className="space-y-3">
@@ -2373,7 +2565,16 @@ export default function App() {
                       {negotiationComplete && (
                         <button 
                           onClick={() => {
-                            setRequests(prev => prev.map(r => r.id === selectedRequestId ? { ...r, targetPrice: currentOfferPrice, totalCost: currentOfferPrice * r.productQty, vendor: "Primus Technologies" } : r));
+                            setRequests(prev => prev.map(r => {
+                              if (r.id !== selectedRequestId) return r;
+                              // Apply the negotiated discount % across every line of the requisition.
+                              const discount = currentOfferPrice / getNegotiationBaselinePrice(r.productName);
+                              const priced = reqLines(r).map((l, i) => ({
+                                ...l,
+                                targetPrice: i === 0 ? currentOfferPrice : Math.round(getNegotiationBaselinePrice(l.productName) * discount / 50) * 50,
+                              }));
+                              return { ...r, lineItems: priced, targetPrice: currentOfferPrice, totalCost: linesTotal(priced), vendor: "Primus Technologies" };
+                            }));
                             setActiveScene(9);
                           }}
                           className="w-full py-3 bg-brand hover:bg-brand text-xs font-bold rounded-xl text-onbrand transition-all shadow-lg flex items-center justify-center space-x-2"
@@ -2455,8 +2656,10 @@ export default function App() {
                           </div>
                           
                           <div className="space-y-4">
-                            <h3 className="font-outfit font-extrabold text-textPrimary text-lg">{req.productQty}x {req.productName}</h3>
-                            
+                            <h3 className="font-outfit font-extrabold text-textPrimary text-lg">{req.productQty}x {reqSummary(req)}</h3>
+
+                            <LineItemsTable lines={reqLines(req)} title="Products requested" totalLabel="Total cost" />
+
                             <div className="grid grid-cols-2 gap-4 text-xs font-outfit">
                               <div>
                                 <span className="text-textSecondary block">Total cost:</span>
@@ -2584,7 +2787,7 @@ export default function App() {
                             <span className="text-[11px] font-bold text-textSecondary tabular-nums">{r.id}</span>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: statusColor(r.status), background: `${statusColor(r.status)}1a` }}>{STATUS_META[r.status]?.short ?? r.status}</span>
                           </div>
-                          <p className="text-sm font-bold text-textPrimary mt-1.5 truncate">{r.productQty}× {r.productName}</p>
+                          <p className="text-sm font-bold text-textPrimary mt-1.5 truncate">{r.productQty}× {reqSummary(r)}</p>
                           <div className="flex items-center justify-between mt-2 text-[11px]">
                             <span className="text-textFaint truncate pr-2">{r.location.replace(' Office', '').replace(' Head', '')} · {r.department.split(' ')[0]}</span>
                             <span className="font-bold text-textPrimary tabular-nums">₹{r.totalCost.toLocaleString()}</span>
@@ -2687,9 +2890,11 @@ export default function App() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-textSecondary">Items:</span>
-                            <span className="font-semibold text-textPrimary">{currentRequest.productQty}x {currentRequest.productName}</span>
+                            <span className="font-semibold text-textPrimary">{currentLines.length} product{currentLines.length > 1 ? 's' : ''} · {linesQty(currentLines)} units</span>
                           </div>
                         </div>
+
+                        <LineItemsTable lines={currentLines} title="PO lines" totalLabel="PO Value" />
                       </div>
 
                       {/* Right: Operational Actions card */}
@@ -2815,24 +3020,59 @@ export default function App() {
                           </div>
                         </div>
 
+                        {/* Per-line receiving — every requested product is inspected and received */}
                         <div>
-                          <span className="text-xs text-textSecondary font-bold uppercase tracking-wider block mb-1">Product Details</span>
-                          <span className="text-sm font-semibold text-textPrimary bg-secondary border border-borderTheme rounded-lg p-2 block">{currentRequest.productName}</span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <span className="text-xs text-textSecondary font-bold uppercase tracking-wider block mb-1">Ordered Qty</span>
-                            <span className="text-sm font-semibold text-textPrimary bg-secondary border border-borderTheme rounded-lg p-2 block">{currentRequest.productQty} units</span>
-                          </div>
-                          <div>
-                            <label className="text-xs text-accent-budget font-bold uppercase tracking-wider block mb-1">Delivered Qty</label>
-                            <input 
-                              type="number" 
-                              value={deliveredQty} 
-                              onChange={(e) => setDeliveredQty(Number(e.target.value))}
-                              className="w-full bg-secondary border border-accent-budget/50 rounded-lg p-2 text-sm text-textPrimary focus:outline-none focus:border-textPrimary font-semibold"
-                            />
+                          <span className="text-xs text-textSecondary font-bold uppercase tracking-wider block mb-1">Products on this delivery</span>
+                          <div className="rounded-xl border border-borderTheme overflow-hidden">
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-xs min-w-[460px]">
+                                <thead>
+                                  <tr className="bg-secondary/60 text-[10px] uppercase tracking-wider text-textFaint">
+                                    <th className="text-left font-bold px-3 py-2">Product</th>
+                                    <th className="text-right font-bold px-3 py-2">Ordered</th>
+                                    <th className="text-right font-bold px-3 py-2 text-accent-budget">Delivered</th>
+                                    <th className="text-right font-bold px-3 py-2">Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {currentLines.map((l, i) => {
+                                    const got = deliveredQtys[i] ?? l.productQty;
+                                    const short = got < l.productQty;
+                                    return (
+                                      <tr key={i} className="border-t border-borderTheme/60">
+                                        <td className="px-3 py-2 text-textPrimary font-semibold">{l.productName}</td>
+                                        <td className="px-3 py-2 text-right text-textSecondary tabular-nums">{l.productQty}</td>
+                                        <td className="px-3 py-2 text-right">
+                                          <input
+                                            type="number"
+                                            min={0}
+                                            value={got}
+                                            onChange={(e) => {
+                                              const next = currentLines.map((cl, ci) => deliveredQtys[ci] ?? cl.productQty);
+                                              next[i] = Number(e.target.value);
+                                              setDeliveredQtys(next);
+                                              setDeliveredQty(next.reduce((s, n) => s + n, 0));
+                                            }}
+                                            className="w-20 bg-secondary border border-accent-budget/50 rounded-lg px-2 py-1 text-xs text-textPrimary text-right focus:outline-none focus:border-textPrimary font-semibold tabular-nums"
+                                          />
+                                        </td>
+                                        <td className={`px-3 py-2 text-right font-bold ${short ? 'text-accent-approvals' : 'text-accent-savings'}`}>
+                                          {short ? `Short by ${l.productQty - got}` : 'Full'}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                                <tfoot>
+                                  <tr className="border-t border-borderTheme bg-secondary/40 font-bold text-textPrimary">
+                                    <td className="px-3 py-2">Total</td>
+                                    <td className="px-3 py-2 text-right tabular-nums">{linesQty(currentLines)}</td>
+                                    <td className="px-3 py-2 text-right tabular-nums">{linesQty(receivedLines)}</td>
+                                    <td className="px-3 py-2" />
+                                  </tr>
+                                </tfoot>
+                              </table>
+                            </div>
                           </div>
                         </div>
 
@@ -2947,16 +3187,16 @@ export default function App() {
                         </div>
                         <div className="space-y-2 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-textSecondary">Qty Ordered:</span>
-                            <span className="font-semibold text-textPrimary">{currentRequest.productQty} units</span>
+                            <span className="text-textSecondary">Lines Ordered:</span>
+                            <span className="font-semibold text-textPrimary">{currentLines.length} product{currentLines.length > 1 ? 's' : ''}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-textSecondary">Rate:</span>
-                            <span className="font-semibold text-textPrimary">₹{currentRequest.targetPrice.toLocaleString()}</span>
+                            <span className="text-textSecondary">Qty Ordered:</span>
+                            <span className="font-semibold text-textPrimary">{linesQty(currentLines)} units</span>
                           </div>
                           <div className="flex justify-between pt-2 border-t border-borderTheme">
                             <span className="text-textSecondary">Total amount:</span>
-                            <span className="font-bold text-textPrimary">₹{currentRequest.totalCost.toLocaleString()}</span>
+                            <span className="font-bold text-textPrimary">₹{linesTotal(currentLines).toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
@@ -2969,8 +3209,12 @@ export default function App() {
                         </div>
                         <div className="space-y-2 text-xs">
                           <div className="flex justify-between">
+                            <span className="text-textSecondary">Lines Received:</span>
+                            <span className="font-semibold text-textPrimary">{receivedLines.filter(l => l.productQty > 0).length} of {currentLines.length}</span>
+                          </div>
+                          <div className="flex justify-between">
                             <span className="text-textSecondary">Qty Received:</span>
-                            <span className="font-semibold text-textPrimary">{deliveredQty} units</span>
+                            <span className="font-semibold text-textPrimary">{linesQty(receivedLines)} units</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-textSecondary">Quality Check:</span>
@@ -2991,18 +3235,65 @@ export default function App() {
                         </div>
                         <div className="space-y-2 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-textSecondary">Qty Billed:</span>
-                            <span className="font-semibold text-textPrimary">{currentRequest.productQty} units</span>
+                            <span className="text-textSecondary">Lines Billed:</span>
+                            <span className="font-semibold text-textPrimary">{receivedLines.length} product{receivedLines.length > 1 ? 's' : ''}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-textSecondary">Rate Billed:</span>
-                            <span className="font-semibold text-textPrimary">₹{currentRequest.targetPrice.toLocaleString()}</span>
+                            <span className="text-textSecondary">Qty Billed:</span>
+                            <span className="font-semibold text-textPrimary">{linesQty(receivedLines)} units</span>
                           </div>
                           <div className="flex justify-between pt-2 border-t border-borderTheme">
                             <span className="text-textSecondary">Total Billed:</span>
-                            <span className="font-bold text-textPrimary">₹{currentRequest.totalCost.toLocaleString()}</span>
+                            <span className="font-bold text-textPrimary">₹{linesTotal(receivedLines).toLocaleString()}</span>
                           </div>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Line-by-line match: every product ordered is received and billed */}
+                    <div className="rounded-xl border border-borderTheme overflow-hidden font-outfit">
+                      <div className="px-3 py-2 bg-secondary/60 border-b border-borderTheme flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-textFaint">Line-by-line reconciliation</span>
+                        <span className="text-[10px] font-bold text-textSecondary">{currentLines.length} product{currentLines.length > 1 ? 's' : ''} billed</span>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs min-w-[620px]">
+                          <thead>
+                            <tr className="text-[10px] uppercase tracking-wider text-textFaint">
+                              <th className="text-left font-bold px-3 py-2">Product</th>
+                              <th className="text-right font-bold px-3 py-2">PO Qty</th>
+                              <th className="text-right font-bold px-3 py-2">GRN Qty</th>
+                              <th className="text-right font-bold px-3 py-2">Billed Qty</th>
+                              <th className="text-right font-bold px-3 py-2">Rate</th>
+                              <th className="text-right font-bold px-3 py-2">Billed Amount</th>
+                              <th className="text-right font-bold px-3 py-2">Match</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {currentLines.map((l, i) => {
+                              const got = receivedLines[i]?.productQty ?? l.productQty;
+                              const matched = got === l.productQty;
+                              return (
+                                <tr key={i} className="border-t border-borderTheme/60">
+                                  <td className="px-3 py-2 text-textPrimary font-semibold">{l.productName}</td>
+                                  <td className="px-3 py-2 text-right text-textSecondary tabular-nums">{l.productQty}</td>
+                                  <td className="px-3 py-2 text-right text-textSecondary tabular-nums">{got}</td>
+                                  <td className="px-3 py-2 text-right text-textSecondary tabular-nums">{got}</td>
+                                  <td className="px-3 py-2 text-right text-textSecondary tabular-nums">₹{l.targetPrice.toLocaleString()}</td>
+                                  <td className="px-3 py-2 text-right text-textPrimary font-bold tabular-nums">₹{(got * l.targetPrice).toLocaleString()}</td>
+                                  <td className={`px-3 py-2 text-right font-bold ${matched ? 'text-accent-savings' : 'text-accent-approvals'}`}>{matched ? '✓ Matched' : 'Qty variance'}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                          <tfoot>
+                            <tr className="border-t border-borderTheme bg-secondary/40">
+                              <td className="px-3 py-2 font-bold text-textSecondary" colSpan={5}>Total payable to vendor</td>
+                              <td className="px-3 py-2 text-right font-extrabold text-accent-budget tabular-nums">₹{linesTotal(receivedLines).toLocaleString()}</td>
+                              <td className="px-3 py-2" />
+                            </tr>
+                          </tfoot>
+                        </table>
                       </div>
                     </div>
 
@@ -3087,9 +3378,11 @@ export default function App() {
                           </div>
                           <div>
                             <span className="text-textSecondary font-bold uppercase tracking-wider block mb-1">Settlement Amount</span>
-                            <span className="text-sm font-extrabold text-accent-budget block bg-secondary p-2.5 rounded-lg border border-borderTheme">₹{currentRequest.totalCost.toLocaleString()}</span>
+                            <span className="text-sm font-extrabold text-accent-budget block bg-secondary p-2.5 rounded-lg border border-borderTheme">₹{linesTotal(receivedLines).toLocaleString()}</span>
                           </div>
                         </div>
+
+                        <LineItemsTable lines={receivedLines} title="Invoiced lines being settled" totalLabel="Settlement Amount" />
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
