@@ -7,7 +7,8 @@ import {
   Volume2, ShieldCheck, Landmark, Briefcase, FileInput,
   Calendar, Layers, Clock, Users, ArrowUpRight, ArrowDownRight, Menu,
   Paperclip, MessageSquare, History, Search, Eye, Filter,
-  Truck, Package, Receipt, CreditCard, Moon, Sun, Bell
+  Truck, Package, Receipt, CreditCard, Moon, Sun, Bell,
+  PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 
 // Define the Scene IDs and names
@@ -1078,7 +1079,20 @@ export default function App() {
       {/* --- SCENES 2 - 12: INTEGRATED DEMO DASHBOARD LAYOUT --- */}
       {activeScene > 1 && (
         <div className="flex-grow flex overflow-hidden h-screen relative z-10">
-          
+
+          {/* Collapsed rail — keeps the re-open toggle reachable now the header is hidden */}
+          {!sidebarOpen && (
+            <div className="w-12 flex-shrink-0 flex flex-col items-center pt-5 border-r bg-surface border-borderTheme">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 rounded-lg text-textFaint hover:text-brand hover:bg-secondary transition-all"
+                title="Expand sidebar"
+              >
+                <PanelLeftOpen className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
           {/* LEFT SIDEBAR */}
           {sidebarOpen && (
             <aside className={`w-64 flex-shrink-0 flex flex-col justify-between border-r bg-surface border-borderTheme`}>
@@ -1090,6 +1104,13 @@ export default function App() {
                     </div>
                     <span className="holo-text font-outfit font-bold text-lg tracking-tight">SmartSpend</span>
                   </div>
+                  <button
+                    onClick={() => setSidebarOpen(false)}
+                    className="p-1.5 rounded-lg text-textFaint hover:text-brand hover:bg-secondary transition-all"
+                    title="Collapse sidebar"
+                  >
+                    <PanelLeftClose className="h-4 w-4" />
+                  </button>
                 </div>
                 
                 {/* Switch Role Quick Dropdown */}
