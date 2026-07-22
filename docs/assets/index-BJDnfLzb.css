@@ -752,6 +752,10 @@ video {
   display: grid;
 }
 
+.hidden{
+  display: none;
+}
+
 .h-0\.5{
   height: 0.125rem;
 }

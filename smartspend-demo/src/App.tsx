@@ -1177,32 +1177,35 @@ export default function App() {
                 >
                   <Menu className="h-5 w-5" />
                 </button>
+
+                {/* Scene Selector — temporarily hidden; uncomment to restore the guided demo walkthrough
                 <div className="h-4 w-[1px] bg-raised" />
-                
-                {/* Scene Selector */}
+
                 <div className="flex items-center space-x-2 text-xs">
                   <span className="font-semibold text-brand">DEMO STEP:</span>
-                  <select 
+                  <select
                     value={activeScene}
                     onChange={(e) => setActiveScene(Number(e.target.value))}
                     className="bg-secondary border border-line2 rounded-lg px-2.5 py-1 text-primary font-bold"
                   >
                     {SCENES.map(s => (
-                      <option key={s.id} value={s.id}>{s.name.replace(/^Scene \d+:\s*/, '')}</option>
+                      <option key={s.id} value={s.id}>{s.name.replace(/^Scene \d+:\s+/, '')}</option>
                     ))}
                   </select>
                 </div>
+                */}
               </div>
-              
+
+              {/* Back / Next Step — temporarily hidden; uncomment to restore the guided demo walkthrough
               <div className="flex items-center space-x-3">
-                <button 
-                  onClick={prevScene} 
+                <button
+                  onClick={prevScene}
                   disabled={activeScene === 2}
                   className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-secondary hover:bg-raised text-primary disabled:opacity-30 transition-all border border-borderTheme"
                 >
                   Back
                 </button>
-                <button 
+                <button
                   onClick={nextScene}
                   disabled={activeScene === 15}
                   className="px-4 py-1.5 rounded-lg text-xs font-bold bg-brand hover:bg-brand text-onbrand disabled:opacity-30 transition-all flex items-center space-x-1"
@@ -1211,6 +1214,7 @@ export default function App() {
                   <ChevronRight className="h-3 w-3" />
                 </button>
               </div>
+              */}
             </header>
             
             {/* WORKSPACE AREA */}
