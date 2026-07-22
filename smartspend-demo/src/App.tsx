@@ -1168,17 +1168,19 @@ export default function App() {
           {/* MAIN WORKSPACE CONTENT */}
           <main className="flex-grow flex flex-col min-w-0 overflow-y-auto">
             
-            {/* TOP NAVIGATION HEADER WITH SCENE PICKER */}
+            {/* TOP NAVIGATION HEADER — temporarily hidden in full (bar, sidebar toggle,
+                DEMO STEP picker and Back / Next Step). Uncomment this whole block to
+                restore the guided demo walkthrough.
+
             <header className={`h-16 px-6 border-b flex items-center justify-between flex-shrink-0 bg-surface/80 backdrop-blur-md border-borderTheme`}>
               <div className="flex items-center space-x-4">
-                <button 
+                <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
                   className="p-2 rounded-lg hover:bg-secondary text-textSecondary hover:text-primary"
                 >
                   <Menu className="h-5 w-5" />
                 </button>
 
-                {/* Scene Selector — temporarily hidden; uncomment to restore the guided demo walkthrough
                 <div className="h-4 w-[1px] bg-raised" />
 
                 <div className="flex items-center space-x-2 text-xs">
@@ -1193,10 +1195,8 @@ export default function App() {
                     ))}
                   </select>
                 </div>
-                */}
               </div>
 
-              {/* Back / Next Step — temporarily hidden; uncomment to restore the guided demo walkthrough
               <div className="flex items-center space-x-3">
                 <button
                   onClick={prevScene}
@@ -1214,9 +1214,10 @@ export default function App() {
                   <ChevronRight className="h-3 w-3" />
                 </button>
               </div>
-              */}
             </header>
-            
+            */}
+
+
             {/* WORKSPACE AREA */}
             <div className="px-4 md:px-6 py-6 flex-grow">
               {/* Poke reminders targeted at the current role (#10) */}
