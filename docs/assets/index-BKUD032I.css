@@ -2404,11 +2404,10 @@ video {
     Brand gradients. All three run teal → blue → violet; they differ only in
     lightness so each stays legible where it is used.
     - holo-btn  : deep, so white button text holds up
-    - holo-text : deep, a single sweep across the text so headings stay solid
     - holo-light: pale, for text sitting on a gradient banner or tile
+    Headings no longer take a gradient at all — see .holo-text below.
   */
   --holo-btn:   linear-gradient(115deg, #0FA8BE 0%, #1E7FD8 30%, #4338CA 55%, #6A2FD6 78%, #0FA8BE 100%);
-  --holo-text:  linear-gradient(95deg, #0B87A0 0%, #1667C6 34%, #3A31BC 66%, #6A2FD6 100%);
   --holo-light: linear-gradient(100deg, #FFFFFF 0%, #C8F4F9 22%, #CFE2FF 46%, #DCCBFF 70%, #FFFFFF 100%);
 }
 
@@ -2453,21 +2452,6 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-}
-
-/* Very faint blue grid texture — keeps the canvas from feeling empty */
-
-.bg-grid-pattern {
-  background-size: 40px 40px;
-  background-image:
-    linear-gradient(to right, rgb(var(--glow-brand) / 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(var(--glow-brand) / 0.035) 1px, transparent 1px);
-}
-
-.dark .bg-grid-pattern {
-  background-image:
-    linear-gradient(to right, rgb(var(--glow-brand) / 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(var(--glow-brand) / 0.05) 1px, transparent 1px);
 }
 
 /*
@@ -2642,32 +2626,27 @@ body {
   animation: holoShift 6s linear infinite;
 }
 
-/* Brand clip-text — the teal → blue → violet sweep on headings/wordmarks */
-
-.holo-text, .holo-text-light {
-  -webkit-background-clip: text;
-          background-clip: text;
-  -webkit-text-fill-color: transparent;
-          color: transparent;
-}
-
 /*
-  Headings get ONE deep pass of the sweep across the text and hold still. The
-  oversized shimmering version banded mid-word and washed the letterforms out
-  at heading sizes; the animation also dragged the light end of the gradient
-  through the type, so the highlight kept changing contrast as it moved.
+  Heading highlight — one flat brand colour. Gradient type read badly at
+  heading sizes however it was tuned: the sweep banded mid-word and the stops
+  gave different letters different contrast. A single solid colour keeps the
+  brand hue and lets the letterforms stay letterforms.
 */
 
 .holo-text {
-  background-image: var(--holo-text);
-  background-size: 100% auto;
+  color: rgb(var(--accent-budget));
 }
 
-/* The pale variant only ever sits on a gradient banner, where it can shimmer */
+/* The pale iridescent variant only ever sits on a gradient banner, where it
+   has room to shimmer without hurting legibility */
 
 .holo-text-light {
   background-image: var(--holo-light);
   background-size: 260% auto;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+          color: transparent;
   animation: holoShift 5s linear infinite;
 }
 
@@ -2701,17 +2680,6 @@ body {
     radial-gradient(closest-side at 80% 72%, rgba(106,  47, 214, 0.18), transparent),
     radial-gradient(closest-side at 62% 18%, rgba( 30, 127, 216, 0.20), transparent);
   animation: auroraDrift 22s ease-in-out infinite;
-}
-
-/* fine grid, faded toward the edges */
-
-.login-grid {
-  background-image:
-    linear-gradient(rgba(30, 127, 216, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(30, 127, 216, 0.07) 1px, transparent 1px);
-  background-size: 46px 46px;
-  -webkit-mask-image: radial-gradient(120% 100% at 50% 35%, #000 0%, transparent 80%);
-          mask-image: radial-gradient(120% 100% at 50% 35%, #000 0%, transparent 80%);
 }
 
 @keyframes spinSlow { to { transform: rotate(360deg); } }
