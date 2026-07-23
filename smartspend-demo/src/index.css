@@ -5,79 +5,118 @@
 @tailwind utilities;
 
 /*
-  SmartSpend — "Aurora" theme (2026 premium AI-SaaS aesthetic)
-  Inspired by Vercel AI / Framer AI / Linear: soft white canvas, floating
-  blurred aurora gradients, frosted glass, a violet primary, and pastel accents.
+  SmartSpend — "Logicware" theme.
 
-  All colors are stored as raw RGB channels (e.g. "124 108 246") so Tailwind
+  Built to the brand poster: a pale blue-white canvas carrying faint circuit
+  lines and soft cyan / violet corner blooms, with every solid gradient running
+  the same teal → blue → violet sweep as the poster's CTA banner and hex badge.
+  The canvas, the scene banners and the stat tiles are all cut from that one
+  gradient, so the colour combo covers the whole screen rather than sitting only
+  on the tiles.
+
+  All colors are stored as raw RGB channels (e.g. "78 62 216") so Tailwind
   utilities can apply opacity modifiers, e.g. bg-brand/10, border-line2/60.
   In config each token is wrapped as rgb(var(--token) / <alpha-value>).
 
-  Status/accent tokens are tuned one notch deeper than the pastel spec values
-  so colored TEXT and icons stay WCAG-legible on white; the app derives the
-  soft pastel *fills* automatically from the same token via /10 /15 opacity.
+  Accent tokens are tuned deep enough that colored TEXT and icons stay legible
+  on the light canvas; the app derives the soft tinted *fills* from the same
+  token via /10 /15 opacity.
 */
 
 :root {
   font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 
-  /* Light theme — soft white canvas + violet ink */
-  --bg-app:        247 247 252;   /* #F7F7FC soft white     */
-  --bg-surface:    255 255 255;   /* #FFFFFF card           */
-  --bg-secondary:  239 235 251;   /* #EFEBFB light lavender  */
-  --bg-raised:     231 225 250;   /* #E7E1FA raised lavender */
-  --border-color:  229 225 245;   /* #E5E1F5 soft hairline   */
-  --border-strong: 214 208 238;   /* #D6D0EE stronger line   */
-  --text-primary:   26  26  26;   /* #1A1A1A near-black      */
-  --text-secondary: 95 100 117;   /* #5F6475 body            */
-  --text-faint:    156 163 175;   /* #9CA3AF muted           */
-  --onbrand:       255 255 255;   /* text on colored fills   */
-
-  --accent-budget:    124 108 246;   /* #7C6CF6 violet primary       */
-  --accent-savings:    67 193 133;   /* #43C185 success (pastel-lean)*/
-  --accent-expenses:  249 124 124;   /* #F97C7C danger  (pastel-lean)*/
-  --accent-approvals: 230 169  78;   /* #E6A94E warning (pastel-lean)*/
-  --accent-analytics:  98 172 236;   /* #62ACEC info    (pastel-lean)*/
-  --accent-alerts:    232  80  85;   /* #E85055 alert red            */
-
-  /* raw decorative colors for glows / grid */
-  --glow-brand: 141 125 255;      /* #8D7DFF */
-  --glow-gold:  255 182 217;      /* #FFB6D9 */
+  /* ---- The brand gradient, in one place ----
+     Poster order: teal → blue → indigo → violet. Everything solid and colored
+     in the app is a slice of this sweep. */
+  --brand-teal:   15 181 200;   /* #0FB5C8 */
+  --brand-blue:   30 127 216;   /* #1E7FD8 */
+  --brand-indigo: 67  56 202;   /* #4338CA */
+  --brand-violet:106  47 214;   /* #6A2FD6 */
 
   /*
-    Holographic / iridescent gradients (same aurora hue family). Used for the
-    prismatic sheen on buttons, card rims, hero text and the aurora blobs.
-    - holo-btn  : violet-dominant so white button text stays legible
-    - holo-text : mid-tone spectrum, readable as clip-text on white
-    - holo-light: bright spectrum for text on the dark/violet login panel
+    The app canvas — pale blue-white with a cyan bloom top-left, violet top-right
+    and blue bottom-right, mirroring the poster's background wash. Painted on
+    <body> and on .login-aurora (the app shell + the login page).
   */
-  --holo-btn:   linear-gradient(115deg, #6C54F6 0%, #8A5CF2 20%, #C06FE0 40%, #6E6BF8 60%, #4686EE 80%, #6C54F6 100%);
-  --holo-text:  linear-gradient(100deg, #7C6CF6 0%, #A878FF 16%, #F06BC0 34%, #FF9A4E 52%, #2E9EE8 72%, #2EC29A 88%, #7C6CF6 100%);
-  --holo-light: linear-gradient(100deg, #FFFFFF 0%, #E7DEFF 20%, #FFC7E6 42%, #FFD8BE 60%, #CDEBFF 80%, #FFFFFF 100%);
+  --canvas-aurora:
+    radial-gradient( 90% 70% at  6%  0%, rgba( 15, 194, 206, 0.16) 0%, transparent 60%),
+    radial-gradient( 80% 65% at 98%  4%, rgba(106,  47, 214, 0.13) 0%, transparent 58%),
+    radial-gradient( 90% 72% at 94% 100%, rgba( 30, 127, 216, 0.15) 0%, transparent 62%),
+    radial-gradient( 85% 70% at  0% 96%, rgba( 91,  58, 214, 0.11) 0%, transparent 60%),
+    linear-gradient(150deg, #FBFCFF 0%, #F1F5FD 45%, #ECF0FB 100%);
+
+  /* Faint diagonal circuit lines, like the poster's background texture */
+  --canvas-circuitry:
+    repeating-linear-gradient( 55deg, rgba(30,127,216,0.045) 0 1px, transparent 1px 92px),
+    repeating-linear-gradient(-55deg, rgba(106,47,214,0.038) 0 1px, transparent 1px 132px);
+
+  /* Light canvas + white surfaces */
+  --bg-app:        241 244 252;   /* #F1F4FC pale blue canvas */
+  --bg-surface:    255 255 255;   /* #FFFFFF card             */
+  --bg-secondary:  234 240 251;   /* #EAF0FB inset panel      */
+  --bg-raised:     221 231 249;   /* #DDE7F9 hover / raised   */
+  --border-color:  222 229 244;   /* #DEE5F4 hairline         */
+  --border-strong: 197 210 236;   /* #C5D2EC stronger line    */
+  --text-primary:   16  26  61;   /* #101A3D poster navy      */
+  --text-secondary: 82  95 128;   /* #525F80 body             */
+  --text-faint:    132 145 175;   /* #8491AF muted            */
+  --onbrand:       255 255 255;   /* text on colored fills    */
+
+  --accent-budget:     78  62 216;   /* #4E3ED8 blue-violet primary */
+  --accent-savings:    12 150 137;   /* #0C9689 teal success        */
+  --accent-expenses:  219  58  75;   /* #DB3A4B danger              */
+  --accent-approvals: 194 124   9;   /* #C27C09 warning             */
+  --accent-analytics:  30 118 212;   /* #1E76D4 info blue           */
+  --accent-alerts:    212  42  70;   /* #D42A46 alert red           */
+
+  /* raw decorative colors for glows / grid */
+  --glow-brand: 42 123 216;       /* #2A7BD8 blue  */
+  --glow-gold:  15 194 206;       /* #0FC2CE cyan  */
+
+  /*
+    Brand gradients. All three run teal → blue → violet; they differ only in
+    lightness so each stays legible where it is used.
+    - holo-btn  : deep, so white button text holds up
+    - holo-text : mid-tone, readable as clip-text on the light canvas
+    - holo-light: pale, for text sitting on a gradient banner or tile
+  */
+  --holo-btn:   linear-gradient(115deg, #0FA8BE 0%, #1E7FD8 30%, #4338CA 55%, #6A2FD6 78%, #0FA8BE 100%);
+  --holo-text:  linear-gradient(100deg, #0FA8BE 0%, #1E7FD8 26%, #4338CA 50%, #7B2FD6 74%, #0FA8BE 100%);
+  --holo-light: linear-gradient(100deg, #FFFFFF 0%, #C8F4F9 22%, #CFE2FF 46%, #DCCBFF 70%, #FFFFFF 100%);
 }
 
 .dark {
-  /* Dark theme — deep space canvas + luminous violet, same aurora concept */
-  --bg-app:         15  17  23;      /* #0F1117 */
-  --bg-surface:     27  30  42;      /* #1B1E2A card         */
-  --bg-secondary:   35  40  56;      /* #232838 inset panel  */
-  --bg-raised:      44  50  69;      /* #2C3245 hover/raised */
-  --border-color:   49  55  73;      /* #313749 hairline     */
-  --border-strong:  62  70  92;      /* #3E465C strong line  */
-  --text-primary:  243 244 246;      /* #F3F4F6 */
-  --text-secondary:166 169 184;      /* #A6A9B8 */
-  --text-faint:    123 129 148;      /* #7B8194 */
+  /* Dark theme — deep navy canvas, same teal → blue → violet identity.
+     Currently dormant: App.tsx forces the light theme (see `darkMode`). */
+  --canvas-aurora:
+    radial-gradient( 90% 70% at  6%  0%, rgba( 15, 194, 206, 0.16) 0%, transparent 60%),
+    radial-gradient( 90% 72% at 94% 100%, rgba(106,  47, 214, 0.20) 0%, transparent 62%),
+    linear-gradient(150deg, #0A1024 0%, #0E1730 50%, #131A38 100%);
+  --canvas-circuitry:
+    repeating-linear-gradient( 55deg, rgba(120,190,255,0.05) 0 1px, transparent 1px 92px),
+    repeating-linear-gradient(-55deg, rgba(160,130,255,0.045) 0 1px, transparent 1px 132px);
+
+  --bg-app:         10  16  36;      /* #0A1024 */
+  --bg-surface:     22  30  56;      /* #161E38 card         */
+  --bg-secondary:   30  40  70;      /* #1E2846 inset panel  */
+  --bg-raised:      42  55  92;      /* #2A375C hover/raised */
+  --border-color:   45  58  94;      /* #2D3A5E hairline     */
+  --border-strong:  66  84 130;      /* #425482 strong line  */
+  --text-primary:  238 243 255;      /* #EEF3FF */
+  --text-secondary:166 180 210;      /* #A6B4D2 */
+  --text-faint:    122 137 170;      /* #7A89AA */
   --onbrand:       255 255 255;
 
-  --accent-budget:    169 151 255;   /* #A997FF violet primary       */
-  --accent-savings:   123 216 143;   /* #7BD88F success (exact spec) */
-  --accent-expenses:  255 138 138;   /* #FF8A8A danger  (exact spec) */
-  --accent-approvals: 255 200 112;   /* #FFC870 warning (exact spec) */
-  --accent-analytics: 142 201 255;   /* #8EC9FF info    (exact spec) */
-  --accent-alerts:    255 118 123;   /* #FF767B alert red            */
+  --accent-budget:    150 141 255;   /* #968DFF */
+  --accent-savings:    56 214 190;   /* #38D6BE */
+  --accent-expenses:  255 138 138;   /* #FF8A8A */
+  --accent-approvals: 255 200 112;   /* #FFC870 */
+  --accent-analytics: 124 190 255;   /* #7CBEFF */
+  --accent-alerts:    255 118 123;   /* #FF767B */
 
-  --glow-brand: 169 151 255;
-  --glow-gold:  255 182 217;
+  --glow-brand: 124 190 255;
+  --glow-gold:   56 214 190;
 }
 
 body {
@@ -85,88 +124,91 @@ body {
   padding: 0;
   min-height: 100vh;
   background-color: rgb(var(--bg-app));
+  background-image: var(--canvas-aurora);
+  background-attachment: fixed;
   color: rgb(var(--text-primary));
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* Very faint lavender grid texture — keeps the canvas from feeling empty */
+/* Very faint blue grid texture — keeps the canvas from feeling empty */
 .bg-grid-pattern {
   background-size: 40px 40px;
   background-image:
-    linear-gradient(to right, rgb(var(--glow-brand) / 0.028) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(var(--glow-brand) / 0.028) 1px, transparent 1px);
+    linear-gradient(to right, rgb(var(--glow-brand) / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--glow-brand) / 0.035) 1px, transparent 1px);
 }
 .dark .bg-grid-pattern {
   background-image:
-    linear-gradient(to right, rgb(var(--glow-brand) / 0.045) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(var(--glow-brand) / 0.045) 1px, transparent 1px);
+    linear-gradient(to right, rgb(var(--glow-brand) / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--glow-brand) / 0.05) 1px, transparent 1px);
 }
 
 /*
   Floating aurora blobs — large, heavily blurred, multi-hue radial gradients.
   Rendered behind the app on the two decorative divs in App.tsx. Effective
   opacity lands around 10–15% after the blur + the divs' own opacity-60.
+  Glow 1 is the cyan/teal end of the brand sweep, glow 2 the blue/violet end.
 */
 .ambient-glow-1 {
   background:
-    radial-gradient(closest-side at 35% 40%, rgba(201,184,255,0.70), transparent),
-    radial-gradient(closest-side at 65% 60%, rgba(191,167,255,0.55), transparent),
-    radial-gradient(closest-side at 50% 30%, rgba(221,244,255,0.42), transparent),
-    radial-gradient(closest-side at 30% 70%, rgba(221,247,236,0.34), transparent);
+    radial-gradient(closest-side at 35% 40%, rgba( 15, 194, 206, 0.52), transparent),
+    radial-gradient(closest-side at 65% 60%, rgba( 42, 156, 226, 0.42), transparent),
+    radial-gradient(closest-side at 50% 30%, rgba(140, 220, 255, 0.34), transparent),
+    radial-gradient(closest-side at 30% 70%, rgba(190, 235, 240, 0.28), transparent);
   animation: auroraDrift 20s ease-in-out infinite;
 }
 .dark .ambient-glow-1 {
   background:
-    radial-gradient(closest-side at 40% 40%, rgba(169,151,255,0.22), transparent),
-    radial-gradient(closest-side at 62% 55%, rgba(142,201,255,0.16), transparent);
+    radial-gradient(closest-side at 40% 40%, rgba(15, 194, 206, 0.20), transparent),
+    radial-gradient(closest-side at 62% 55%, rgba(42, 123, 216, 0.18), transparent);
 }
 
 .ambient-glow-2 {
   background:
-    radial-gradient(closest-side at 60% 50%, rgba(255,214,236,0.64), transparent),
-    radial-gradient(closest-side at 40% 65%, rgba(255,226,209,0.50), transparent),
-    radial-gradient(closest-side at 72% 70%, rgba(205,189,255,0.42), transparent),
-    radial-gradient(closest-side at 30% 40%, rgba(221,244,255,0.36), transparent);
+    radial-gradient(closest-side at 60% 50%, rgba(106,  47, 214, 0.40), transparent),
+    radial-gradient(closest-side at 40% 65%, rgba( 30, 127, 216, 0.42), transparent),
+    radial-gradient(closest-side at 72% 70%, rgba(150, 130, 245, 0.34), transparent),
+    radial-gradient(closest-side at 30% 40%, rgba(190, 220, 255, 0.30), transparent);
   animation: auroraDrift 26s ease-in-out infinite reverse;
 }
 .dark .ambient-glow-2 {
   background:
-    radial-gradient(closest-side at 55% 55%, rgba(255,182,217,0.16), transparent),
-    radial-gradient(closest-side at 66% 66%, rgba(169,151,255,0.16), transparent);
+    radial-gradient(closest-side at 55% 55%, rgba(106, 47, 214, 0.22), transparent),
+    radial-gradient(closest-side at 66% 66%, rgba(30, 127, 216, 0.18), transparent);
 }
 
-/* Frosted glass panels (spec values) */
+/* Frosted glass panels */
 .glass-panel {
-  background: rgb(var(--bg-surface) / 0.72);
+  background: rgb(var(--bg-surface) / 0.74);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  box-shadow: 0 20px 50px rgba(60, 40, 120, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 20px 50px rgba(19, 46, 110, 0.10);
   border-radius: 22px;
 }
 .dark .glass-panel {
-  background: rgba(35, 40, 55, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  background: rgb(var(--bg-surface) / 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
 }
 
-/* Premium card hover — soft aurora lift */
+/* Premium card hover — soft brand lift */
 .glow-card { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s; }
 .glow-card:hover {
   transform: translateY(-4px);
-  border-color: rgb(var(--accent-budget) / 0.4);
-  box-shadow: 0 28px 60px rgba(60, 40, 120, 0.14);
+  border-color: rgb(var(--accent-analytics) / 0.45);
+  box-shadow: 0 28px 60px rgba(19, 46, 110, 0.16);
 }
 .dark .glow-card:hover {
-  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.5);
 }
 
 /*
-  Primary solid fills render as a soft violet gradient for a premium button /
-  pill look. Opacity variants (bg-brand/10, /20 …) are separate classes and
-  keep their flat pastel tint, so this only upgrades the solid fills.
+  Primary solid fills render as the brand sweep for a premium button / pill
+  look. Opacity variants (bg-brand/10, /20 …) are separate classes and keep
+  their flat pastel tint, so this only upgrades the solid fills.
 */
 .bg-brand {
   background-image: var(--holo-btn);
@@ -178,89 +220,86 @@ body {
 /* Holographic shimmer: slides the oversized gradient across the element */
 @keyframes holoShift { to { background-position: 220% center; } }
 
-/* Aurora blobs breathe/drift so the backdrop feels alive (holographic) */
+/* Aurora blobs breathe/drift so the backdrop feels alive */
 @keyframes auroraDrift {
   0%, 100% { transform: translate(0, 0) scale(1); }
   50%      { transform: translate(6%, 4%) scale(1.13); }
 }
 
 /*
-  Frost every solid surface into glass (cards, sidebar, chat bar). The
-  bg-surface/NN opacity variants (header, hero image panel, selectable rows)
-  are separate classes and keep their own tuned values, so this only upgrades
-  the plain solid surfaces to the spec frosted-glass look:
-    background rgba(255,255,255,0.72) + blur(20px).
+  Frost every solid surface into glass (cards, sidebar, chat bar) so the canvas
+  wash reads faintly through each panel. The bg-surface/NN opacity variants
+  (header, hero image panel, selectable rows) are separate classes and keep
+  their own tuned values, so this only upgrades the plain solid surfaces.
 */
 .bg-surface {
-  background-color: rgb(var(--bg-surface) / 0.72);
+  background-color: rgb(var(--bg-surface) / 0.78);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 .dark .bg-surface {
-  background-color: rgb(var(--bg-surface) / 0.65);
+  background-color: rgb(var(--bg-surface) / 0.7);
 }
 
 /*
-  Holographic cards — scoped to card surfaces only (elements that have BOTH
+  Brand-tinted cards — scoped to card surfaces only (elements that have BOTH
   `bg-surface` and `rounded-2xl`), so the sidebar / header / chat bar are not
-  affected. Adds a faint iridescent glass sheen + a prismatic edge (a soft
-  lavender hairline with pink glow on one side and sky-blue on the other) that
-  reads as a hologram while respecting the rounded corners.
+  affected. Adds a faint cool glass sheen + a prismatic edge: cyan glow down
+  one side, violet down the other, matching the poster's gradient.
 */
 .bg-surface.rounded-2xl {
   border-color: transparent;
   background-image:
     linear-gradient(135deg,
-      rgba(201,184,255,0.20) 0%,
-      rgba(255,182,217,0.11) 32%,
-      rgba(221,244,255,0.14) 58%,
-      rgba(221,247,236,0.10) 80%,
-      rgba(201,184,255,0.16) 100%);
+      rgba( 15, 194, 206, 0.13) 0%,
+      rgba( 42, 156, 226, 0.09) 34%,
+      rgba(120, 160, 255, 0.10) 60%,
+      rgba(150, 120, 240, 0.09) 82%,
+      rgba( 15, 194, 206, 0.11) 100%);
   background-size: 240% 240%;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.65),
-    0 0 0 1px rgba(201,184,255,0.65),
-    -12px 0 32px -12px rgba(255,150,205,0.78),
-     12px 0 32px -12px rgba(120,190,255,0.78),
-    0 22px 48px rgba(60,40,120,0.12);
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 0 0 1px rgba(160, 195, 240, 0.6),
+    -12px 0 32px -12px rgba( 15, 194, 206, 0.7),
+     12px 0 32px -12px rgba(120,  70, 235, 0.55),
+    0 22px 48px rgba(19, 46, 110, 0.12);
 }
 .bg-surface.rounded-2xl:hover {
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.7),
-    0 0 0 1px rgba(201,184,255,0.9),
-    -16px 0 42px -10px rgba(255,150,205,0.9),
-     16px 0 42px -10px rgba(120,190,255,0.9),
-    0 32px 64px rgba(60,40,120,0.16);
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 0 0 1px rgba(140, 180, 235, 0.85),
+    -16px 0 42px -10px rgba( 15, 194, 206, 0.9),
+     16px 0 42px -10px rgba(120,  70, 235, 0.75),
+    0 32px 64px rgba(19, 46, 110, 0.18);
   transform: translateY(-3px);
   animation: holoShift 6s linear infinite;
 }
 .dark .bg-surface.rounded-2xl {
   background-image:
     linear-gradient(135deg,
-      rgba(169,151,255,0.16) 0%,
-      rgba(255,182,217,0.09) 32%,
-      rgba(142,201,255,0.12) 58%,
-      rgba(99,214,153,0.07) 80%,
-      rgba(169,151,255,0.13) 100%);
+      rgba( 15, 194, 206, 0.14) 0%,
+      rgba( 42, 123, 216, 0.10) 34%,
+      rgba(106,  47, 214, 0.12) 68%,
+      rgba( 15, 194, 206, 0.11) 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    0 0 0 1px rgba(169,151,255,0.45),
-    -12px 0 32px -12px rgba(255,150,205,0.5),
-     12px 0 32px -12px rgba(120,190,255,0.5),
-    0 22px 48px rgba(0,0,0,0.40);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(90, 130, 200, 0.4),
+    -12px 0 32px -12px rgba( 15, 194, 206, 0.45),
+     12px 0 32px -12px rgba(120,  70, 235, 0.45),
+    0 22px 48px rgba(0, 0, 0, 0.42);
 }
 .dark .bg-surface.rounded-2xl:hover {
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.1),
-    0 0 0 1px rgba(169,151,255,0.75),
-    -16px 0 42px -10px rgba(255,150,205,0.7),
-     16px 0 42px -10px rgba(120,190,255,0.7),
-    0 32px 64px rgba(0,0,0,0.55);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 1px rgba(120, 165, 225, 0.65),
+    -16px 0 42px -10px rgba( 15, 194, 206, 0.6),
+     16px 0 42px -10px rgba(120,  70, 235, 0.6),
+    0 32px 64px rgba(0, 0, 0, 0.55);
   transform: translateY(-3px);
   animation: holoShift 6s linear infinite;
 }
 
-/* Holographic clip-text — iridescent, gently shimmering headings/wordmarks */
+/* Brand clip-text — the teal → blue → violet sweep on headings/wordmarks */
 .holo-text, .holo-text-light {
   background-size: 260% auto;
   -webkit-background-clip: text;
@@ -272,37 +311,37 @@ body {
 .holo-text       { background-image: var(--holo-text); }
 .holo-text-light { background-image: var(--holo-light); }
 
-/* ===== Login hero — extraordinary holographic backdrop ===== */
+/*
+  ===== The app canvas =====
+  Used by the app shell AND the login page, so every screen carries the same
+  wash + circuit texture the tiles are cut from.
+*/
 .login-aurora {
-  background:
-    radial-gradient(120% 120% at 12% 18%, rgba(201,184,255,0.45) 0%, transparent 55%),
-    radial-gradient(120% 120% at 88% 12%, rgba(255,198,230,0.42) 0%, transparent 50%),
-    radial-gradient(130% 130% at 84% 90%, rgba(190,220,255,0.42) 0%, transparent 55%),
-    radial-gradient(130% 120% at 6% 90%, rgba(210,196,255,0.45) 0%, transparent 55%),
-    linear-gradient(140deg, #FBFAFF 0%, #F4F1FE 45%, #EFEAFD 100%);
+  background-color: rgb(var(--bg-app));
+  background-image: var(--canvas-circuitry), var(--canvas-aurora);
 }
 /* slow-rotating prismatic light sweep */
 .login-sweep {
   background: conic-gradient(from 0deg,
-    transparent 0deg,   rgba(255,182,217,0.15) 40deg,
-    transparent 95deg,  rgba(142,201,255,0.16) 165deg,
-    transparent 215deg, rgba(221,247,236,0.12) 285deg,
+    transparent 0deg,   rgba( 15, 194, 206, 0.14) 40deg,
+    transparent 95deg,  rgba( 42, 123, 216, 0.15) 165deg,
+    transparent 215deg, rgba(120,  70, 235, 0.12) 285deg,
     transparent 335deg);
   animation: spinSlow 28s linear infinite;
 }
 /* drifting soft aurora wash */
 .login-wash {
   background:
-    radial-gradient(closest-side at 25% 30%, rgba(255,182,217,0.22), transparent),
-    radial-gradient(closest-side at 80% 72%, rgba(142,201,255,0.20), transparent),
-    radial-gradient(closest-side at 62% 18%, rgba(205,189,255,0.18), transparent);
+    radial-gradient(closest-side at 25% 30%, rgba( 15, 194, 206, 0.20), transparent),
+    radial-gradient(closest-side at 80% 72%, rgba(106,  47, 214, 0.18), transparent),
+    radial-gradient(closest-side at 62% 18%, rgba( 30, 127, 216, 0.20), transparent);
   animation: auroraDrift 22s ease-in-out infinite;
 }
-/* fine holographic grid, faded toward the edges */
+/* fine grid, faded toward the edges */
 .login-grid {
   background-image:
-    linear-gradient(rgba(124,108,246,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(124,108,246,0.06) 1px, transparent 1px);
+    linear-gradient(rgba(30, 127, 216, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 127, 216, 0.07) 1px, transparent 1px);
   background-size: 46px 46px;
   -webkit-mask-image: radial-gradient(120% 100% at 50% 35%, #000 0%, transparent 80%);
           mask-image: radial-gradient(120% 100% at 50% 35%, #000 0%, transparent 80%);
@@ -311,26 +350,30 @@ body {
 
 /*
   ===== Spotlight tiles =====
-  Bold gradient stat tiles + request tiles, tuned to the deep indigo→fuchsia
-  palette of the brand poster. Each tile takes a `--tint` (status colour, as raw
-  RGB channels) and derives its glow, spine and hover halo from it, so the set
-  reads as one system instead of six unrelated colours.
+  Gradient stat tiles + request tiles, cut from the poster's teal → blue →
+  violet sweep. Each tile takes a `--tint` (status colour, as raw RGB channels)
+  and derives its glow, spine and hover halo from it, so the set reads as one
+  system instead of six unrelated colours.
 */
 
-/* Deep gradient count tile — dark violet slab, luminous status accent */
+/* Gradient count tile — the brand sweep as a slab, luminous status accent */
 .stat-tile {
   position: relative;
   isolation: isolate;
   overflow: hidden;
   border-radius: 18px;
-  background: linear-gradient(150deg, #241653 0%, #3D1E8F 40%, #6D28D9 76%, #8B2FC9 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(140deg, #0FB5C8 0%, #1E7FD8 38%, #4338CA 68%, #6A2FD6 100%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
-    0 12px 28px -10px rgba(76, 29, 149, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    0 14px 30px -10px rgba(30, 70, 180, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
 }
-/* status-tinted corner bloom */
+/*
+  Status-tinted corner bloom. It sits ABOVE the tile gradient (the fill is
+  opaque, so a z-index:-1 layer would never be seen) and below the content,
+  which .stat-tile > * lifts onto its own layer.
+*/
 .stat-tile::before {
   content: '';
   position: absolute;
@@ -339,8 +382,9 @@ body {
   border-radius: 50%;
   background: radial-gradient(circle, rgb(var(--tint) / 0.9), transparent 68%);
   filter: blur(16px);
-  z-index: -1;
+  z-index: 0;
 }
+.stat-tile > * { position: relative; z-index: 1; }
 /* diagonal sheen, sweeps across on hover */
 .stat-tile::after {
   content: '';
@@ -350,12 +394,14 @@ body {
   background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.24) 47%, transparent 62%);
   transform: translateX(-125%);
   transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 2;
 }
 .stat-tile:hover {
   transform: translateY(-5px);
   box-shadow:
-    0 24px 46px -12px rgba(76, 29, 149, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    0 26px 48px -12px rgba(30, 70, 180, 0.55),
+    0 0 30px -10px rgb(var(--tint) / 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 .stat-tile:hover::after { transform: translateX(125%); }
 
@@ -374,9 +420,9 @@ body {
   overflow: hidden;
   border-radius: 18px;
   background:
-    linear-gradient(155deg, rgb(var(--bg-surface) / 0.94) 0%, rgb(var(--bg-secondary) / 0.72) 100%);
+    linear-gradient(155deg, rgb(var(--bg-surface) / 0.94) 0%, rgb(var(--bg-secondary) / 0.74) 100%);
   border: 1px solid rgb(var(--border-color));
-  box-shadow: 0 4px 14px rgba(60, 40, 120, 0.06);
+  box-shadow: 0 4px 14px rgba(19, 46, 110, 0.07);
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease, border-color 0.28s ease;
 }
 .req-tile::before {
@@ -400,18 +446,24 @@ body {
   border-color: rgb(var(--tint) / 0.55);
   box-shadow:
     0 18px 36px -14px rgb(var(--tint) / 0.5),
-    0 4px 12px rgba(60, 40, 120, 0.08);
+    0 4px 12px rgba(19, 46, 110, 0.1);
 }
 .req-tile:hover::after { opacity: 1; }
-.dark .req-tile { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28); }
+.dark .req-tile { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3); }
 
-/* Panel hero — the gradient banner heading a scene */
+/*
+  Panel hero — the gradient banner heading a scene, the same sweep as the
+  poster's CTA strip. Pitched a touch deeper than the stat tiles so a banner
+  and the tiles beneath it stay distinguishable.
+*/
 .panel-hero {
   position: relative;
   overflow: hidden;
   border-radius: 22px;
-  background: linear-gradient(120deg, #1E1B4B 0%, #4C1D95 38%, #7C3AED 68%, #C026D3 100%);
-  box-shadow: 0 18px 40px -14px rgba(76, 29, 149, 0.55);
+  background: linear-gradient(120deg, #0C93AA 0%, #1A6FCE 32%, #3B31BE 64%, #6A2FD6 100%);
+  box-shadow:
+    0 18px 40px -14px rgba(30, 70, 180, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 /* soft prismatic wash + fine grid so the banner has depth */
 .panel-hero::before {
@@ -419,8 +471,8 @@ body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(80% 130% at 88% 8%, rgba(34, 211, 238, 0.34), transparent 58%),
-    radial-gradient(70% 120% at 4% 96%, rgba(236, 72, 153, 0.32), transparent 60%);
+    radial-gradient(80% 130% at 88% 8%, rgba( 34, 211, 238, 0.34), transparent 58%),
+    radial-gradient(70% 120% at 4% 96%, rgba(139,  92, 246, 0.32), transparent 60%);
 }
 .panel-hero::after {
   content: '';
@@ -434,10 +486,10 @@ body {
           mask-image: radial-gradient(120% 100% at 70% 20%, #000 0%, transparent 78%);
 }
 
-/* Glass chip used on dark gradient surfaces (hero + stat tiles) */
+/* Glass chip used on gradient surfaces (hero + stat tiles) */
 .glass-chip {
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -445,24 +497,24 @@ body {
 /*
   Controls living inside a .panel-hero. The scene toggles were styled for a
   light surface; on the gradient they need to invert — translucent white by
-  default, solid white with violet ink when selected.
+  default, solid white with brand ink when selected.
 */
 .hero-ctl {
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   color: #fff;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
-.hero-ctl:hover { background: rgba(255, 255, 255, 0.24); }
+.hero-ctl:hover { background: rgba(255, 255, 255, 0.26); }
 .hero-ctl-on {
   background: #fff;
   border-color: #fff;
-  color: #4C1D95;
+  color: #1E3A8A;
 }
 .hero-ctl-on:hover { background: #fff; }
 
-/* Respect reduced-motion: keep the iridescence, drop the movement */
+/* Respect reduced-motion: keep the colour, drop the movement */
 @media (prefers-reduced-motion: reduce) {
   .bg-brand,
   .holo-text,
@@ -478,41 +530,41 @@ body {
   .stat-tile::after { display: none; }
 }
 
-/* Buttons: subtle lift + soft aurora shadow on the primary action buttons */
+/* Buttons: subtle lift + soft brand shadow on the primary action buttons */
 button.bg-brand:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 30px rgba(124, 108, 246, 0.28);
+  box-shadow: 0 10px 30px rgba(42, 123, 216, 0.35);
 }
 
 /*
-  Universal hover feedback for buttons & tab controls — a soft violet "shade"
-  that blends with the aurora theme, plus a gentle press on click. Primary
-  (bg-brand) buttons keep their own holographic hover above.
+  Universal hover feedback for buttons & tab controls — a soft blue "shade"
+  that blends with the theme, plus a gentle press on click. Primary (bg-brand)
+  buttons keep their own gradient hover above.
 */
 button:not(:disabled) {
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease,
               background-color 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
 }
 button:not(:disabled):not(.bg-brand):hover {
-  box-shadow: 0 6px 18px rgba(124, 108, 246, 0.16);
+  box-shadow: 0 6px 18px rgba(42, 123, 216, 0.18);
 }
 button:not(:disabled):active {
   transform: scale(0.98);
 }
 
-/* Inputs: soft violet focus glow (purely visual — no size/layout change) */
+/* Inputs: soft brand focus glow (purely visual — no size/layout change) */
 input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: rgb(139 124 255) !important;
-  box-shadow: 0 0 0 3px rgba(139, 124, 255, 0.18);
+  border-color: rgb(58 130 226) !important;
+  box-shadow: 0 0 0 3px rgba(58, 130, 226, 0.2);
 }
 
-/* Tables: quiet zebra striping + soft lavender row hover */
+/* Tables: quiet zebra striping + soft blue row hover */
 tbody tr { transition: background-color 0.2s ease; }
 tbody tr:nth-child(even) { background-color: rgb(var(--bg-secondary) / 0.5); }
-tbody tr:hover { background-color: rgb(var(--accent-budget) / 0.06); }
+tbody tr:hover { background-color: rgb(var(--accent-analytics) / 0.07); }
 
 /* Global transitions for theme-affected properties (250ms, spec) */
 *, *::before, *::after {

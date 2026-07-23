@@ -16,15 +16,16 @@ export default {
         sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
         outfit: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
       },
-      // Soft violet "aurora" shadows — replace Tailwind's grey shadows so every
-      // existing shadow-sm/lg/xl/2xl reads as a premium, low-opacity purple lift.
+      // Cool navy-blue shadows — replace Tailwind's grey shadows so every
+      // existing shadow-sm/lg/xl/2xl reads as a premium, low-opacity lift in
+      // the brand's blue family rather than a neutral grey drop.
       boxShadow: {
-        sm:     '0 2px 8px rgba(60,40,120,0.05)',
-        DEFAULT:'0 8px 24px rgba(60,40,120,0.07)',
-        md:     '0 10px 30px rgba(60,40,120,0.08)',
-        lg:     '0 16px 40px rgba(60,40,120,0.10)',
-        xl:     '0 20px 50px rgba(60,40,120,0.10)',
-        '2xl':  '0 28px 60px rgba(60,40,120,0.12)',
+        sm:     '0 2px 8px rgba(19,46,110,0.06)',
+        DEFAULT:'0 8px 24px rgba(19,46,110,0.08)',
+        md:     '0 10px 30px rgba(19,46,110,0.09)',
+        lg:     '0 16px 40px rgba(19,46,110,0.11)',
+        xl:     '0 20px 50px rgba(19,46,110,0.12)',
+        '2xl':  '0 28px 60px rgba(19,46,110,0.14)',
       },
       // Softer corners across the board (no sharp borders) — cards land at 22px.
       borderRadius: {

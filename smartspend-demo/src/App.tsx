@@ -119,24 +119,25 @@ const reqSummary = (r: { productName: string; productQty: number; targetPrice: n
   return lines.length > 1 ? `${lines[0].productName} +${lines.length - 1} more` : lines[0].productName;
 };
 
-// ---- Lightweight SVG charts (categorical palette validated CVD-safe on light) ----
-const CHART_COLORS = ['#6D5AE0', '#0E8F6A', '#C77E00', '#2E7FC7', '#C43D7E', '#8A8F9C'];
+// ---- Lightweight SVG charts (categorical palette, CVD-safe on the light canvas) ----
+const CHART_COLORS = ['#1E76D4', '#0C9689', '#6A2FD6', '#C27C09', '#C43D7E', '#64748B'];
 
-// Status colors — theme-blended, used for status tiles / dense request cards.
+// Status colors — drawn from the brand's teal → blue → violet sweep where the
+// meaning allows, deep enough to stay legible as text on the light canvas.
 // `rgb` carries the same colour as raw channels so CSS can build tinted glows
 // and halos from it via rgb(var(--tint) / <alpha>).
 const STATUS_META: Record<string, { color: string; rgb: string; short: string; icon: LucideIcon }> = {
-  'Draft': { color: '#8A8F9C', rgb: '138 143 156', short: 'Draft', icon: FileText },
-  'Pending Approval': { color: '#D99A3C', rgb: '217 154 60', short: 'Pending', icon: Clock },
-  'Needs Clarification': { color: '#E06C4E', rgb: '224 108 78', short: 'Clarify', icon: AlertCircle },
-  'Sourcing': { color: '#4F9EE8', rgb: '79 158 232', short: 'Sourcing', icon: Search },
-  'Approved': { color: '#2FB574', rgb: '47 181 116', short: 'Approved', icon: CheckCircle2 },
-  'PO Confirmed': { color: '#7C6CF6', rgb: '124 108 246', short: 'PO Confirmed', icon: Package },
-  'Rejected': { color: '#E5484D', rgb: '229 72 77', short: 'Rejected', icon: X },
-  'Paid': { color: '#0E8F6A', rgb: '14 143 106', short: 'Paid', icon: Landmark },
+  'Draft': { color: '#64748B', rgb: '100 116 139', short: 'Draft', icon: FileText },
+  'Pending Approval': { color: '#C27C09', rgb: '194 124 9', short: 'Pending', icon: Clock },
+  'Needs Clarification': { color: '#D9622B', rgb: '217 98 43', short: 'Clarify', icon: AlertCircle },
+  'Sourcing': { color: '#1E76D4', rgb: '30 118 212', short: 'Sourcing', icon: Search },
+  'Approved': { color: '#0C9689', rgb: '12 150 137', short: 'Approved', icon: CheckCircle2 },
+  'PO Confirmed': { color: '#4E3ED8', rgb: '78 62 216', short: 'PO Confirmed', icon: Package },
+  'Rejected': { color: '#DB3A4B', rgb: '219 58 75', short: 'Rejected', icon: X },
+  'Paid': { color: '#6A2FD6', rgb: '106 47 214', short: 'Paid', icon: Landmark },
 };
-const statusColor = (s: string) => STATUS_META[s]?.color ?? '#8A8F9C';
-const statusRgb = (s: string) => STATUS_META[s]?.rgb ?? '138 143 156';
+const statusColor = (s: string) => STATUS_META[s]?.color ?? '#64748B';
+const statusRgb = (s: string) => STATUS_META[s]?.rgb ?? '100 116 139';
 
 // Compact request lifecycle stages (for inline mini-trackers on tiles).
 const STAGE_LABELS = ['Submitted', 'Approved', 'Sourcing', 'PO', 'Received', 'Paid'];
@@ -306,7 +307,7 @@ function DonutChart({ data, prefix = '', suffix = '' }: { data: Datum[]; prefix?
 }
 
 // Horizontal magnitude bars — single hue, sorted, direct-labeled.
-function BarList({ data, color = '#7C6CF6', prefix = '', suffix = '' }: { data: Datum[]; color?: string; prefix?: string; suffix?: string }) {
+function BarList({ data, color = '#1E76D4', prefix = '', suffix = '' }: { data: Datum[]; color?: string; prefix?: string; suffix?: string }) {
   const max = Math.max(...data.map(d => d.value), 1);
   return (
     <div className="space-y-3">
@@ -1082,7 +1083,7 @@ export default function App() {
 
           <div className="lg:w-7/12 flex flex-col justify-between p-8 lg:p-16 text-textPrimary relative z-10">
             <div className="relative z-10 flex items-center space-x-2">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand to-gold flex items-center justify-center shadow-lg ring-1 ring-white/25">
+              <div className="h-10 w-10 rounded-xl bg-brand flex items-center justify-center shadow-lg ring-1 ring-white/25">
                 <Sparkles className="h-5 w-5 text-onbrand" />
               </div>
               <span className="font-outfit text-2xl font-bold tracking-tight">SmartSpend</span>
@@ -1179,7 +1180,7 @@ export default function App() {
               <div>
                 <div className="p-6 flex items-center justify-between border-b border-borderTheme/40">
                   <div className="flex items-center space-x-2">
-                    <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-brand to-gold flex items-center justify-center">
+                    <div className="h-8 w-8 rounded-lg bg-brand flex items-center justify-center">
                       <Sparkles className="h-4.5 w-4.5 text-onbrand" />
                     </div>
                     <span className="holo-text font-outfit font-bold text-lg tracking-tight">SmartSpend</span>
@@ -1325,7 +1326,7 @@ export default function App() {
               {pokes.some(p => p.to === userRole) && (
                 <div className="mb-6 space-y-2 max-w-6xl mx-auto">
                   {pokes.map((p, i) => p.to !== userRole ? null : (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl border shadow-sm animate-fadeIn" style={{ background: '#7C6CF610', borderColor: '#7C6CF640' }}>
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl border shadow-sm animate-fadeIn" style={{ background: '#1E76D414', borderColor: '#1E76D440' }}>
                       <span className="h-8 w-8 rounded-full bg-brand/15 flex items-center justify-center flex-shrink-0"><Bell className="h-4 w-4 text-brand" /></span>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-textPrimary">Reminder from {p.from}</p>
@@ -2798,7 +2799,7 @@ export default function App() {
                         {(() => {
                           const agg = requests.reduce((a, r) => { a[r.department] = (a[r.department] || 0) + r.totalCost; return a; }, {} as Record<string, number>);
                           const data = Object.entries(agg).map(([label, value]) => ({ label, value: Math.round(value / 1000) }));
-                          return <BarList data={data} color="#7C6CF6" prefix="₹" suffix="K" />;
+                          return <BarList data={data} color="#1E76D4" prefix="₹" suffix="K" />;
                         })()}
                       </div>
                     </div>
@@ -3717,12 +3718,12 @@ export default function App() {
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <h3 className="font-outfit font-bold text-textPrimary">Spend by Department</h3>
                       <p className="text-[11px] text-textFaint mb-4">Cost-center concentration (₹ Crore)</p>
-                      <BarList data={spendAnalytics.byDepartment} color="#7C6CF6" prefix="₹" />
+                      <BarList data={spendAnalytics.byDepartment} color="#1E76D4" prefix="₹" />
                     </div>
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <h3 className="font-outfit font-bold text-textPrimary">Spend by Category</h3>
                       <p className="text-[11px] text-textFaint mb-4">Procurement categories (₹ Crore)</p>
-                      <BarList data={spendAnalytics.byCategory} color="#0E8F6A" prefix="₹" />
+                      <BarList data={spendAnalytics.byCategory} color="#0C9689" prefix="₹" />
                     </div>
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <h3 className="font-outfit font-bold text-textPrimary">Monthly Spend Trend</h3>
@@ -3731,7 +3732,7 @@ export default function App() {
                         {spendAnalytics.byMonth.map((m, i) => (
                           <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
                             <span className="text-[10px] font-bold text-textSecondary tabular-nums mb-1">₹{m.value}</span>
-                            <div className="w-full rounded-t-lg transition-all duration-700" style={{ height: `${(m.value / Math.max(...spendAnalytics.byMonth.map(x => x.value))) * 74}%`, background: 'linear-gradient(180deg,#8D7DFF,#C9B8FF)' }} />
+                            <div className="w-full rounded-t-lg transition-all duration-700" style={{ height: `${(m.value / Math.max(...spendAnalytics.byMonth.map(x => x.value))) * 74}%`, background: 'linear-gradient(180deg,#22C3D6,#3D63D8)' }} />
                             <span className="text-[10px] text-textFaint mt-1.5">{m.label}</span>
                           </div>
                         ))}
