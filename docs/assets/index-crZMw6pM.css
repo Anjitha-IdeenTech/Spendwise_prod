@@ -2377,11 +2377,6 @@ video {
     radial-gradient( 90% 75% at -4% 102%, rgba( 96,  58, 224, 0.34) 0%, transparent 62%),
     linear-gradient(150deg, #E9F7FC 0%, #E6EFFD 44%, #EBE6FC 100%);
 
-  /* Diagonal circuit lines, like the poster's background texture */
-  --canvas-circuitry:
-    repeating-linear-gradient( 55deg, rgba(30,127,216,0.075) 0 1px, transparent 1px 92px),
-    repeating-linear-gradient(-55deg, rgba(106,47,214,0.065) 0 1px, transparent 1px 132px);
-
   /* Light canvas + white surfaces */
   --bg-app:        233 240 252;   /* #E9F0FC tinted canvas    */
   --bg-surface:    255 255 255;   /* #FFFFFF card             */
@@ -2409,11 +2404,11 @@ video {
     Brand gradients. All three run teal → blue → violet; they differ only in
     lightness so each stays legible where it is used.
     - holo-btn  : deep, so white button text holds up
-    - holo-text : mid-tone, readable as clip-text on the light canvas
+    - holo-text : deep, a single sweep across the text so headings stay solid
     - holo-light: pale, for text sitting on a gradient banner or tile
   */
   --holo-btn:   linear-gradient(115deg, #0FA8BE 0%, #1E7FD8 30%, #4338CA 55%, #6A2FD6 78%, #0FA8BE 100%);
-  --holo-text:  linear-gradient(100deg, #0FA8BE 0%, #1E7FD8 26%, #4338CA 50%, #7B2FD6 74%, #0FA8BE 100%);
+  --holo-text:  linear-gradient(95deg, #0B87A0 0%, #1667C6 34%, #3A31BC 66%, #6A2FD6 100%);
   --holo-light: linear-gradient(100deg, #FFFFFF 0%, #C8F4F9 22%, #CFE2FF 46%, #DCCBFF 70%, #FFFFFF 100%);
 }
 
@@ -2424,9 +2419,6 @@ video {
     radial-gradient( 90% 70% at  6%  0%, rgba( 15, 194, 206, 0.16) 0%, transparent 60%),
     radial-gradient( 90% 72% at 94% 100%, rgba(106,  47, 214, 0.20) 0%, transparent 62%),
     linear-gradient(150deg, #0A1024 0%, #0E1730 50%, #131A38 100%);
-  --canvas-circuitry:
-    repeating-linear-gradient( 55deg, rgba(120,190,255,0.05) 0 1px, transparent 1px 92px),
-    repeating-linear-gradient(-55deg, rgba(160,130,255,0.045) 0 1px, transparent 1px 132px);
 
   --bg-app:         10  16  36;      /* #0A1024 */
   --bg-surface:     22  30  56;      /* #161E38 card         */
@@ -2653,27 +2645,41 @@ body {
 /* Brand clip-text — the teal → blue → violet sweep on headings/wordmarks */
 
 .holo-text, .holo-text-light {
-  background-size: 260% auto;
   -webkit-background-clip: text;
           background-clip: text;
   -webkit-text-fill-color: transparent;
           color: transparent;
-  animation: holoShift 5s linear infinite;
 }
 
-.holo-text       { background-image: var(--holo-text); }
+/*
+  Headings get ONE deep pass of the sweep across the text and hold still. The
+  oversized shimmering version banded mid-word and washed the letterforms out
+  at heading sizes; the animation also dragged the light end of the gradient
+  through the type, so the highlight kept changing contrast as it moved.
+*/
 
-.holo-text-light { background-image: var(--holo-light); }
+.holo-text {
+  background-image: var(--holo-text);
+  background-size: 100% auto;
+}
+
+/* The pale variant only ever sits on a gradient banner, where it can shimmer */
+
+.holo-text-light {
+  background-image: var(--holo-light);
+  background-size: 260% auto;
+  animation: holoShift 5s linear infinite;
+}
 
 /*
   ===== The app canvas =====
   Used by the app shell AND the login page, so every screen carries the same
-  wash + circuit texture the tiles are cut from.
+  wash the tiles are cut from.
 */
 
 .login-aurora {
   background-color: rgb(var(--bg-app));
-  background-image: var(--canvas-circuitry), var(--canvas-aurora);
+  background-image: var(--canvas-aurora);
 }
 
 /* slow-rotating prismatic light sweep */
@@ -2904,7 +2910,6 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .bg-brand,
-  .holo-text,
   .holo-text-light,
   .ambient-glow-1,
   .ambient-glow-2,
