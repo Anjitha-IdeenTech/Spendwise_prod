@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Sparkles, Mic, FileText, Keyboard, LayoutDashboard, Send, 
-  TrendingUp, DollarSign, ShieldAlert, Award, FileSpreadsheet, 
-  ArrowRight, User, Settings, CheckCircle2, ChevronRight, 
-  Play, RefreshCw, X, AlertTriangle, AlertCircle, Check, 
+import React, { useState, useEffect, useRef, useId } from 'react';
+import {
+  Sparkles, Mic, FileText, Keyboard, LayoutDashboard, Send,
+  TrendingUp, DollarSign, ShieldAlert, Award, FileSpreadsheet,
+  ArrowRight, User, Settings, CheckCircle2, ChevronRight,
+  Play, RefreshCw, X, AlertTriangle, AlertCircle, Check,
   Volume2, ShieldCheck, Landmark, Briefcase, FileInput,
   Calendar, Layers, Clock, Users, ArrowUpRight, ArrowDownRight, Menu,
   Paperclip, MessageSquare, History, Search, Eye, Filter,
   Truck, Package, Receipt, CreditCard, Moon, Sun, Bell,
-  PanelLeftClose, PanelLeftOpen
+  PanelLeftClose, PanelLeftOpen,
+  Building2, Timer, Zap, Star, Activity, Boxes, Handshake, ScanLine
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -176,7 +177,9 @@ function SceneHeader({ icon: Icon, title, subtitle, stats, right, className = ''
           <div className="flex flex-wrap items-center gap-2.5">
             {stats?.map(s => (
               <div key={s.label} className="glass-chip rounded-2xl px-4 py-2 text-center">
-                <p className="text-xl font-extrabold text-white font-outfit leading-none tabular-nums">{s.value}</p>
+                <p className="text-xl font-extrabold text-white font-outfit leading-none tabular-nums">
+                  <CountUp value={s.value} />
+                </p>
                 <p className="text-[9px] font-bold uppercase tracking-wider text-white/70 mt-1">{s.label}</p>
               </div>
             ))}
@@ -192,7 +195,7 @@ function SceneHeader({ icon: Icon, title, subtitle, stats, right, className = ''
  * Gradient count tile — the flashy KPI/status card used across scenes. `tint`
  * is raw RGB channels; the glow, meter and hover halo all derive from it.
  */
-function StatTile({ icon: Icon, tint, value, label, caption, meter, delay = 0 }: {
+function StatTile({ icon: Icon, tint, value, label, caption, meter, delay = 0, spark, curr, prev, lowerIsBetter }: {
   icon: LucideIcon;
   tint: string;
   value: string | number;
@@ -200,6 +203,10 @@ function StatTile({ icon: Icon, tint, value, label, caption, meter, delay = 0 }:
   caption?: string;
   meter?: number;      // 0–100, omit to hide the bar
   delay?: number;
+  spark?: number[];    // optional trend line across the foot of the tile
+  curr?: number;       // with `prev`, renders a period-over-period chip
+  prev?: number;
+  lowerIsBetter?: boolean;
 }) {
   return (
     <div
@@ -207,13 +214,21 @@ function StatTile({ icon: Icon, tint, value, label, caption, meter, delay = 0 }:
       style={{ '--tint': tint, animationDelay: `${delay}ms` } as React.CSSProperties}
     >
       <div className="flex items-start justify-between gap-2">
-        <p className="text-[26px] font-extrabold text-white font-outfit leading-none tabular-nums">{value}</p>
+        <p className="text-[26px] font-extrabold text-white font-outfit leading-none tabular-nums">
+          <CountUp value={value} />
+        </p>
         <div className="glass-chip h-7 w-7 rounded-lg grid place-items-center shrink-0">
           <Icon className="h-3.5 w-3.5 text-white" />
         </div>
       </div>
-      <p className="text-[10px] font-bold uppercase tracking-wider mt-2 text-white/85">{label}</p>
+      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-white/85">{label}</p>
+        {curr !== undefined && prev !== undefined && (
+          <DeltaChip curr={curr} prev={prev} lowerIsBetter={lowerIsBetter} onDark />
+        )}
+      </div>
       {caption && <p className="text-[10px] text-white/55 mt-1 truncate">{caption}</p>}
+      {spark && <Sparkline data={spark} stroke="#fff" className="w-full h-7 mt-1.5 opacity-80" />}
       {meter !== undefined && (
         <div className="mt-2 h-[3px] rounded-full bg-white/15 overflow-hidden">
           <div className="stat-meter" style={{ width: `${meter}%` }} />
@@ -327,39 +342,344 @@ function BarList({ data, color = '#1E76D4', prefix = '', suffix = '' }: { data: 
   );
 }
 
-// Company-wide spend analytics for the CEO / consolidated dashboards (₹ Crore).
+// A breakdown row carries last period's figure too, so every table can show
+// share-of-total AND movement without a second data source.
+interface BreakdownRow { label: string; value: number; prev?: number; meta?: string; }
+
+// Company-wide spend analytics for the CEO / consolidated dashboards (₹ Crore
+// unless the field says otherwise). FY 2026, year-to-date.
 const spendAnalytics = {
+  headline: {
+    audited: 4.58, budget: 5.40, auditedPrev: 3.96,   // ₹ Cr
+    savings: 28.45, savingsPrev: 19.80,               // ₹ Lakh
+    anomalies: 4, anomaliesPrev: 9,
+    cycleDays: 6.4, cycleDaysPrev: 11.2,
+    poCount: 412, poCountPrev: 358,
+    vendors: 87, contractCoverage: 78,                // %
+  },
+  // 7-point series backing the KPI sparklines (Jan → Jul)
+  sparks: {
+    spend:     [0.38, 0.42, 0.52, 0.61, 0.74, 0.69, 1.14],
+    savings:   [1.8, 2.4, 3.1, 4.0, 4.6, 5.9, 6.65],
+    cycle:     [11.2, 10.4, 9.1, 8.6, 7.4, 6.9, 6.4],
+    anomalies: [3, 2, 4, 2, 1, 1, 0],
+  },
   byBranch: [
-    { label: 'Bangalore', value: 1.62 },
-    { label: 'Mumbai', value: 1.18 },
-    { label: 'Kochi', value: 0.86 },
-    { label: 'Delhi', value: 0.58 },
-    { label: 'Chennai', value: 0.34 },
-  ] as Datum[],
+    { label: 'Bangalore', value: 1.62, prev: 1.38, meta: '148 orders' },
+    { label: 'Mumbai',    value: 1.18, prev: 1.02, meta: '106 orders' },
+    { label: 'Kochi',     value: 0.86, prev: 0.71, meta: '74 orders' },
+    { label: 'Delhi',     value: 0.58, prev: 0.62, meta: '52 orders' },
+    { label: 'Chennai',   value: 0.34, prev: 0.23, meta: '32 orders' },
+  ] as BreakdownRow[],
   byDepartment: [
-    { label: 'IT & Infrastructure', value: 1.94 },
-    { label: 'Operations', value: 1.12 },
-    { label: 'Facilities', value: 0.72 },
-    { label: 'Marketing', value: 0.48 },
-    { label: 'Finance', value: 0.32 },
-  ] as Datum[],
+    { label: 'IT & Infrastructure', value: 1.94, prev: 1.52, meta: 'Budget ₹2.10 Cr' },
+    { label: 'Operations',          value: 1.12, prev: 1.06, meta: 'Budget ₹1.20 Cr' },
+    { label: 'Facilities',          value: 0.72, prev: 0.64, meta: 'Budget ₹0.90 Cr' },
+    { label: 'Marketing',           value: 0.48, prev: 0.51, meta: 'Budget ₹0.70 Cr' },
+    { label: 'Finance',             value: 0.32, prev: 0.23, meta: 'Budget ₹0.50 Cr' },
+  ] as BreakdownRow[],
   byCategory: [
-    { label: 'IT Hardware', value: 1.48 },
-    { label: 'Datacenter Equipment', value: 0.92 },
-    { label: 'Software Licenses', value: 0.74 },
-    { label: 'Office Furniture', value: 0.56 },
-    { label: 'Professional Services', value: 0.44 },
-    { label: 'MRO Supplies', value: 0.44 },
-  ] as Datum[],
+    { label: 'IT Hardware',           value: 1.48, prev: 1.14, meta: '18 vendors' },
+    { label: 'Datacenter Equipment',  value: 0.92, prev: 0.68, meta: '9 vendors' },
+    { label: 'Software Licenses',     value: 0.74, prev: 0.71, meta: '14 vendors' },
+    { label: 'Office Furniture',      value: 0.56, prev: 0.62, meta: '11 vendors' },
+    { label: 'Professional Services', value: 0.44, prev: 0.39, meta: '21 vendors' },
+    { label: 'MRO Supplies',          value: 0.44, prev: 0.42, meta: '14 vendors' },
+  ] as BreakdownRow[],
+  // Actual vs allocated, month by month — drives the trend chart.
   byMonth: [
-    { label: 'Feb', value: 0.52 },
-    { label: 'Mar', value: 0.61 },
-    { label: 'Apr', value: 0.74 },
-    { label: 'May', value: 0.69 },
-    { label: 'Jun', value: 0.88 },
-    { label: 'Jul', value: 1.14 },
-  ] as Datum[],
+    { label: 'Jan', value: 0.38, budget: 0.55 },
+    { label: 'Feb', value: 0.52, budget: 0.55 },
+    { label: 'Mar', value: 0.61, budget: 0.60 },
+    { label: 'Apr', value: 0.74, budget: 0.72 },
+    { label: 'May', value: 0.69, budget: 0.78 },
+    { label: 'Jun', value: 0.88, budget: 0.85 },
+    { label: 'Jul', value: 1.14, budget: 0.95 },
+  ],
+  // Where the ₹28.45 L of savings actually came from (₹ Lakh).
+  savingsLevers: [
+    { label: 'AI autonomous negotiation', value: 11.20, meta: '38 deals closed' },
+    { label: 'Rate contract enforcement', value: 7.60,  meta: '112 lines priced' },
+    { label: 'Demand consolidation',      value: 4.85,  meta: '26 requests merged' },
+    { label: 'Vendor switch on scorecard',value: 3.10,  meta: '9 switches' },
+    { label: 'Tail-spend catalogue',      value: 1.70,  meta: '64 small buys' },
+  ],
+  topVendors: [
+    { name: 'Dell Technologies',  spend: 1.24, orders: 62, onTime: 96, savings: 8.4, rating: 4.8, trend: [0.8, 0.9, 1.0, 1.1, 1.15, 1.2, 1.24] },
+    { name: 'Cisco Systems',      spend: 0.86, orders: 28, onTime: 92, savings: 5.1, rating: 4.6, trend: [0.5, 0.6, 0.62, 0.7, 0.76, 0.8, 0.86] },
+    { name: 'Featherlite Office', spend: 0.54, orders: 41, onTime: 88, savings: 3.6, rating: 4.3, trend: [0.42, 0.44, 0.47, 0.5, 0.48, 0.52, 0.54] },
+    { name: 'Redington India',    spend: 0.47, orders: 55, onTime: 94, savings: 4.2, rating: 4.5, trend: [0.3, 0.34, 0.38, 0.4, 0.43, 0.45, 0.47] },
+    { name: 'Schneider Electric', spend: 0.39, orders: 19, onTime: 90, savings: 2.8, rating: 4.4, trend: [0.22, 0.25, 0.28, 0.31, 0.34, 0.36, 0.39] },
+  ],
+  // Average days per stage — the funnel the AI is compressing.
+  cycleStages: [
+    { label: 'Request → Approval', days: 0.6, prevDays: 2.4 },
+    { label: 'Approval → Sourcing', days: 1.1, prevDays: 2.8 },
+    { label: 'Sourcing → PO',       days: 1.8, prevDays: 3.1 },
+    { label: 'PO → Receipt',        days: 2.4, prevDays: 2.2 },
+    { label: 'Receipt → Payment',   days: 0.5, prevDays: 0.7 },
+  ],
+  compliance: [
+    { label: 'PO-backed spend',     pct: 94, target: 90 },
+    { label: 'Rate contract usage', pct: 78, target: 85 },
+    { label: '3-way match pass',    pct: 97, target: 95 },
+    { label: 'Maverick spend',      pct: 6,  target: 10, lowerIsBetter: true },
+  ],
+  anomalies: [
+    { title: 'Duplicate invoice detected', vendor: 'Redington India', amount: '₹4.82 L', severity: 'High',   note: 'INV-88412 matches INV-88377 line-for-line' },
+    { title: 'Price above contract rate',  vendor: 'Featherlite Office', amount: '₹1.16 L', severity: 'High', note: 'Chair unit rate ₹9,400 vs contracted ₹8,000' },
+    { title: 'Split PO to dodge approval', vendor: 'Local Supplies Co', amount: '₹2.40 L', severity: 'Medium', note: '3 POs raised same day under the ₹1 L limit' },
+    { title: 'Delivery short-received',    vendor: 'Cisco Systems', amount: '₹0.94 L', severity: 'Low',    note: 'GRN qty 18 against PO qty 20' },
+  ],
 };
+
+/* ===================================================================
+   Reusable data-display primitives
+   Used by the dashboard, and by KPI tiles across every scene.
+   =================================================================== */
+
+const reduceMotion = () =>
+  typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+/**
+ * Eases a number toward `target`, easeOutCubic. It runs from zero on mount but
+ * from wherever it currently sits on later changes, so a KPI that updates while
+ * the demo runs (an approval landing, a request being raised) ticks across to
+ * the new figure instead of snapping back to zero and re-counting.
+ */
+function useCountUp(target: number, duration = 1100) {
+  const [v, setV] = useState(() => (reduceMotion() ? target : 0));
+  const from = useRef(reduceMotion() ? target : 0);
+  useEffect(() => {
+    if (reduceMotion()) { setV(target); from.current = target; return; }
+    const start = from.current;
+    let raf = 0;
+    const t0 = performance.now();
+    const tick = (t: number) => {
+      const p = Math.min((t - t0) / duration, 1);
+      const val = start + (target - start) * (1 - Math.pow(1 - p, 3));
+      from.current = val;
+      setV(val);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return v;
+}
+
+/**
+ * Counts the first number inside an already-formatted value up from zero and
+ * leaves the surrounding text alone: "₹4.58 Cr" keeps its symbol and unit,
+ * "72,000" keeps its grouping, "6.4" keeps its decimal. A value with no number
+ * in it (e.g. "TBD") renders unchanged.
+ */
+function CountUp({ value, duration = 1100 }: { value: string | number; duration?: number }) {
+  const raw = String(value);
+  const m = raw.match(/-?[\d,]*\.?\d+/);
+  const parsed = m ? Number(m[0].replace(/,/g, '')) : NaN;
+  const live = useCountUp(Number.isFinite(parsed) ? parsed : 0, duration);
+  if (!m || !Number.isFinite(parsed)) return <>{raw}</>;
+  const decimals = (m[0].split('.')[1] ?? '').length;
+  const shown = m[0].includes(',')
+    ? live.toLocaleString('en-IN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+    : live.toFixed(decimals);
+  const at = m.index ?? 0;
+  return <>{raw.slice(0, at)}{shown}{raw.slice(at + m[0].length)}</>;
+}
+
+// Tiny trend line with a soft fill — sits inside KPI tiles and vendor rows.
+function Sparkline({ data, stroke = '#fff', className = '' }: { data: number[]; stroke?: string; className?: string }) {
+  const gid = useId().replace(/:/g, '');
+  const W = 100, H = 26, PAD = 3;
+  const min = Math.min(...data), max = Math.max(...data), span = max - min || 1;
+  const pts = data.map((d, i) => [
+    (i / Math.max(data.length - 1, 1)) * W,
+    H - PAD - ((d - min) / span) * (H - PAD * 2),
+  ] as const);
+  const line = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className={className} aria-hidden="true">
+      <defs>
+        <linearGradient id={`sp${gid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={stroke} stopOpacity="0.45" />
+          <stop offset="100%" stopColor={stroke} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={`${line} L${W},${H} L0,${H} Z`} fill={`url(#sp${gid})`} />
+      <path d={line} fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round"
+        strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+// Period-over-period change chip. `lowerIsBetter` flips the colour for metrics
+// like cycle time and anomaly count, where a fall is the win.
+function DeltaChip({ curr, prev, lowerIsBetter = false, onDark = false }: {
+  curr: number; prev: number; lowerIsBetter?: boolean; onDark?: boolean;
+}) {
+  if (!prev) return null;
+  const pct = ((curr - prev) / Math.abs(prev)) * 100;
+  const up = pct >= 0;
+  const good = lowerIsBetter ? !up : up;
+  const Icon = up ? ArrowUpRight : ArrowDownRight;
+  const tone = onDark
+    ? (good ? 'text-emerald-200 bg-white/15' : 'text-rose-200 bg-white/15')
+    : (good ? 'text-pos bg-pos/10' : 'text-neg bg-neg/10');
+  return (
+    <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${tone}`}>
+      <Icon className="h-3 w-3" />{Math.abs(pct).toFixed(1)}%
+    </span>
+  );
+}
+
+// Actual-vs-budget trend. Hovering a month lifts that column and shows the
+// exact pair — the chart is the drill-down, so no separate table is needed.
+function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
+  data: { label: string; value: number; budget: number }[]; prefix?: string; suffix?: string;
+}) {
+  const gid = useId().replace(/:/g, '');
+  const [hover, setHover] = useState<number | null>(null);
+  const W = 560, H = 200, L = 10, R = 10, T = 16, B = 28;
+  const max = Math.max(...data.map(d => Math.max(d.value, d.budget))) * 1.18;
+  const x = (i: number) => L + (i / Math.max(data.length - 1, 1)) * (W - L - R);
+  const y = (v: number) => T + (1 - v / max) * (H - T - B);
+  const path = (key: 'value' | 'budget') =>
+    data.map((d, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(d[key]).toFixed(1)}`).join(' ');
+  const active = hover === null ? data.length - 1 : hover;
+
+  return (
+    <div className="relative">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[200px]" role="img" aria-label="Monthly spend against budget">
+        <defs>
+          <linearGradient id={`ta${gid}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#1E7FD8" stopOpacity="0.38" />
+            <stop offset="100%" stopColor="#6A2FD6" stopOpacity="0.02" />
+          </linearGradient>
+          <linearGradient id={`tl${gid}`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#0FB5C8" /><stop offset="55%" stopColor="#1E7FD8" /><stop offset="100%" stopColor="#6A2FD6" />
+          </linearGradient>
+        </defs>
+        {/* horizontal guides */}
+        {[0, 0.25, 0.5, 0.75, 1].map(f => (
+          <line key={f} x1={L} x2={W - R} y1={T + f * (H - T - B)} y2={T + f * (H - T - B)}
+            stroke="rgb(var(--border-color))" strokeWidth="1" />
+        ))}
+        {/* budget reference */}
+        <path d={path('budget')} fill="none" stroke="rgb(var(--text-faint))" strokeWidth="1.6"
+          strokeDasharray="5 4" strokeLinecap="round" />
+        {/* actual */}
+        <path d={`${path('value')} L${x(data.length - 1)},${H - B} L${x(0)},${H - B} Z`} fill={`url(#ta${gid})`} />
+        <path d={path('value')} fill="none" stroke={`url(#tl${gid})`} strokeWidth="2.6"
+          strokeLinecap="round" strokeLinejoin="round" />
+        {/* active column + points */}
+        <line x1={x(active)} x2={x(active)} y1={T} y2={H - B} stroke="rgb(var(--accent-analytics))"
+          strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
+        {data.map((d, i) => (
+          <circle key={i} cx={x(i)} cy={y(d.value)} r={i === active ? 5 : 3}
+            fill="#fff" stroke="#1E7FD8" strokeWidth={i === active ? 3 : 2} />
+        ))}
+        {/* hover targets */}
+        {data.map((d, i) => (
+          <rect key={`h${i}`} x={x(i) - (W - L - R) / (data.length * 2)} y={0}
+            width={(W - L - R) / data.length} height={H} fill="transparent"
+            onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} />
+        ))}
+        {data.map((d, i) => (
+          <text key={`t${i}`} x={x(i)} y={H - 8} textAnchor="middle"
+            className="fill-textFaint" style={{ fontSize: 11, fontWeight: 600 }}>{d.label}</text>
+        ))}
+      </svg>
+      {/* read-out for the active month */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 mt-1 text-xs">
+        <span className="font-bold text-textPrimary font-outfit">{data[active].label}</span>
+        <span className="flex items-center gap-1.5 text-textSecondary">
+          <span className="h-2 w-2 rounded-full" style={{ background: '#1E7FD8' }} />
+          Actual <b className="text-textPrimary tabular-nums">{prefix}{data[active].value.toFixed(2)}{suffix}</b>
+        </span>
+        <span className="flex items-center gap-1.5 text-textSecondary">
+          <span className="h-0.5 w-3 rounded-full bg-textFaint" />
+          Budget <b className="text-textPrimary tabular-nums">{prefix}{data[active].budget.toFixed(2)}{suffix}</b>
+        </span>
+        <DeltaChip curr={data[active].value} prev={data[active].budget} lowerIsBetter />
+        <span className="text-textFaint text-[11px] ml-auto hidden sm:inline">hover a month to inspect</span>
+      </div>
+    </div>
+  );
+}
+
+// Ranked breakdown: share bar, absolute value, share-of-total and movement,
+// so one row answers "how big", "how much of the pie" and "which way".
+function BreakdownBars({ rows, prefix = '₹', suffix = ' Cr', tint = '#1E76D4', decimals = 2 }: {
+  rows: BreakdownRow[]; prefix?: string; suffix?: string; tint?: string; decimals?: number;
+}) {
+  const sorted = [...rows].sort((a, b) => b.value - a.value);
+  const total = sorted.reduce((s, r) => s + r.value, 0) || 1;
+  const max = Math.max(...sorted.map(r => r.value), 1);
+  return (
+    <div className="space-y-3">
+      {sorted.map((r, i) => (
+        <div key={r.label}>
+          <div className="flex items-baseline gap-2">
+            <span className="text-[10px] font-bold text-textFaint tabular-nums w-3">{i + 1}</span>
+            <span className="text-xs font-semibold text-textPrimary truncate">{r.label}</span>
+            {r.meta && <span className="text-[10px] text-textFaint truncate hidden md:inline">{r.meta}</span>}
+            <span className="ml-auto text-xs font-bold tabular-nums text-textPrimary whitespace-nowrap">
+              {prefix}{r.value.toFixed(decimals)}{suffix}
+            </span>
+            <DeltaChip curr={r.value} prev={r.prev ?? 0} />
+          </div>
+          <div className="flex items-center gap-2 mt-1 pl-5">
+            <div className="h-2 flex-1 rounded-full bg-secondary overflow-hidden">
+              <div className="h-full rounded-full transition-all duration-700 ease-out"
+                style={{ width: `${(r.value / max) * 100}%`, background: `linear-gradient(90deg, ${tint}, ${tint}99)` }} />
+            </div>
+            <span className="text-[10px] font-bold tabular-nums text-textFaint w-10 text-right">
+              {((r.value / total) * 100).toFixed(1)}%
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Semicircular budget gauge. pathLength normalises the arc to 100 so the
+// dash array is just the percentage.
+function GaugeArc({ used, total, prefix = '₹', suffix = ' Cr' }: {
+  used: number; total: number; prefix?: string; suffix?: string;
+}) {
+  const gid = useId().replace(/:/g, '');
+  const pct = Math.min((used / total) * 100, 100);
+  const live = useCountUp(pct, 1200);
+  const D = 'M18 80 A62 62 0 0 1 142 80';
+  return (
+    <div className="flex flex-col items-center">
+      <div className="relative">
+        <svg viewBox="0 0 160 92" className="w-52">
+          <defs>
+            <linearGradient id={`ga${gid}`} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#0FB5C8" /><stop offset="55%" stopColor="#1E7FD8" /><stop offset="100%" stopColor="#6A2FD6" />
+            </linearGradient>
+          </defs>
+          <path d={D} fill="none" stroke="rgb(var(--bg-secondary))" strokeWidth="14" strokeLinecap="round" />
+          <path d={D} fill="none" stroke={`url(#ga${gid})`} strokeWidth="14" strokeLinecap="round"
+            pathLength={100} strokeDasharray={`${live} 100`} />
+        </svg>
+        <div className="absolute inset-x-0 bottom-1 flex flex-col items-center">
+          <span className="text-3xl font-extrabold font-outfit text-textPrimary tabular-nums leading-none">
+            {live.toFixed(1)}%
+          </span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-textFaint mt-1">of budget used</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-4 mt-2 text-xs">
+        <span className="text-textSecondary">Spent <b className="text-textPrimary tabular-nums">{prefix}{used.toFixed(2)}{suffix}</b></span>
+        <span className="text-textSecondary">Left <b className="text-pos tabular-nums">{prefix}{(total - used).toFixed(2)}{suffix}</b></span>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   // Global States
@@ -3697,18 +4017,83 @@ export default function App() {
                     stats={[
                       { label: 'Total audited', value: '₹4.58 Cr' },
                       { label: 'AI savings', value: '₹28.45 L' },
+                      { label: 'Budget used', value: '84.8%' },
+                      { label: 'Cycle time', value: '6.4 d' },
                     ]}
                   />
 
-                  {/* KPI row — gradient spotlight tiles */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-outfit">
-                    <StatTile icon={Landmark} tint="124 108 246" value="₹4.58 Cr" label="Total Audited" caption="FY 2026 · 5 branches" delay={0} />
-                    <StatTile icon={TrendingUp} tint="47 181 116" value="₹28.45 L" label="AI Savings" caption="6.2% of total spend" meter={62} delay={60} />
-                    <StatTile icon={Layers} tint="79 158 232" value={requests.length} label="Active Requests" caption={`${requests.filter(r => r.status === 'Pending Approval').length} awaiting approval`} delay={120} />
-                    <StatTile icon={ShieldAlert} tint="229 72 77" value="4" label="Blocked Anomalies" caption="fraud audits this quarter" delay={180} />
+                  {/* KPI row — each tile carries its own trend and movement */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 font-outfit">
+                    <StatTile icon={Landmark} tint="78 62 216" value="₹4.58 Cr" label="Total Audited"
+                      caption="FY 2026 · 5 branches" delay={0} spark={spendAnalytics.sparks.spend}
+                      curr={spendAnalytics.headline.audited} prev={spendAnalytics.headline.auditedPrev} />
+                    <StatTile icon={TrendingUp} tint="12 150 137" value="₹28.45 L" label="AI Savings"
+                      caption="6.2% of total spend" meter={62} delay={60} spark={spendAnalytics.sparks.savings}
+                      curr={spendAnalytics.headline.savings} prev={spendAnalytics.headline.savingsPrev} />
+                    <StatTile icon={Timer} tint="30 118 212" value="6.4 days" label="Avg Cycle Time"
+                      caption="request → payment" delay={120} spark={spendAnalytics.sparks.cycle}
+                      curr={spendAnalytics.headline.cycleDays} prev={spendAnalytics.headline.cycleDaysPrev} lowerIsBetter />
+                    <StatTile icon={ShieldAlert} tint="219 58 75" value="4" label="Blocked Anomalies"
+                      caption="₹9.32 L stopped this quarter" delay={180} spark={spendAnalytics.sparks.anomalies}
+                      curr={spendAnalytics.headline.anomalies} prev={spendAnalytics.headline.anomaliesPrev} lowerIsBetter />
                   </div>
 
-                  {/* Analytics charts */}
+                  {/* Budget position + actual-vs-budget trend */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <h3 className="font-outfit font-bold text-textPrimary">Budget Position</h3>
+                      <p className="text-[11px] text-textFaint mb-3">FY 2026 allocation vs committed</p>
+                      <GaugeArc used={spendAnalytics.headline.audited} total={spendAnalytics.headline.budget} />
+                      <div className="mt-4 pt-4 border-t border-borderTheme grid grid-cols-2 gap-3 text-center">
+                        <div>
+                          <p className="text-lg font-extrabold font-outfit text-textPrimary tabular-nums">
+                            <CountUp value={spendAnalytics.headline.poCount} />
+                          </p>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-textFaint">POs raised</p>
+                        </div>
+                        <div>
+                          <p className="text-lg font-extrabold font-outfit text-textPrimary tabular-nums">
+                            <CountUp value={spendAnalytics.headline.vendors} />
+                          </p>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-textFaint">Active vendors</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="lg:col-span-2 p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <div className="flex items-start justify-between gap-3 flex-wrap">
+                        <div>
+                          <h3 className="font-outfit font-bold text-textPrimary">Spend vs Budget</h3>
+                          <p className="text-[11px] text-textFaint mb-2">Monthly, ₹ Crore — dashed line is the allocation</p>
+                        </div>
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-neg/10 text-neg px-2.5 py-1 text-[10px] font-bold">
+                          <AlertTriangle className="h-3 w-3" /> July over allocation
+                        </span>
+                      </div>
+                      <TrendArea data={spendAnalytics.byMonth} />
+                    </div>
+                  </div>
+
+                  {/* Cost-centre and category breakdowns, each with movement */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-brand" />
+                        <h3 className="font-outfit font-bold text-textPrimary">Spend by Department</h3>
+                      </div>
+                      <p className="text-[11px] text-textFaint mb-4">Share of total, with change vs last year</p>
+                      <BreakdownBars rows={spendAnalytics.byDepartment} tint="#1E76D4" />
+                    </div>
+                    <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <div className="flex items-center gap-2">
+                        <Boxes className="h-4 w-4 text-pos" />
+                        <h3 className="font-outfit font-bold text-textPrimary">Spend by Category</h3>
+                      </div>
+                      <p className="text-[11px] text-textFaint mb-4">Share of total, with change vs last year</p>
+                      <BreakdownBars rows={spendAnalytics.byCategory} tint="#0C9689" />
+                    </div>
+                  </div>
+
+                  {/* Geography + where the savings actually came from */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <h3 className="font-outfit font-bold text-textPrimary">Spend by Branch</h3>
@@ -3716,27 +4101,144 @@ export default function App() {
                       <DonutChart data={spendAnalytics.byBranch} prefix="₹" />
                     </div>
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
-                      <h3 className="font-outfit font-bold text-textPrimary">Spend by Department</h3>
-                      <p className="text-[11px] text-textFaint mb-4">Cost-center concentration (₹ Crore)</p>
-                      <BarList data={spendAnalytics.byDepartment} color="#1E76D4" prefix="₹" />
-                    </div>
-                    <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
-                      <h3 className="font-outfit font-bold text-textPrimary">Spend by Category</h3>
-                      <p className="text-[11px] text-textFaint mb-4">Procurement categories (₹ Crore)</p>
-                      <BarList data={spendAnalytics.byCategory} color="#0C9689" prefix="₹" />
-                    </div>
-                    <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
-                      <h3 className="font-outfit font-bold text-textPrimary">Monthly Spend Trend</h3>
-                      <p className="text-[11px] text-textFaint mb-4">Rolling 6 months (₹ Crore)</p>
-                      <div className="flex items-end gap-2 h-36">
-                        {spendAnalytics.byMonth.map((m, i) => (
-                          <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
-                            <span className="text-[10px] font-bold text-textSecondary tabular-nums mb-1">₹{m.value}</span>
-                            <div className="w-full rounded-t-lg transition-all duration-700" style={{ height: `${(m.value / Math.max(...spendAnalytics.byMonth.map(x => x.value))) * 74}%`, background: 'linear-gradient(180deg,#22C3D6,#3D63D8)' }} />
-                            <span className="text-[10px] text-textFaint mt-1.5">{m.label}</span>
-                          </div>
-                        ))}
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-4 w-4 text-gold" />
+                        <h3 className="font-outfit font-bold text-textPrimary">Where the ₹28.45 L Came From</h3>
                       </div>
+                      <p className="text-[11px] text-textFaint mb-4">Savings attributed by lever (₹ Lakh)</p>
+                      <BreakdownBars rows={spendAnalytics.savingsLevers} tint="#6A2FD6" suffix=" L" />
+                    </div>
+                  </div>
+
+                  {/* Vendor leaderboard + how fast the pipeline moves */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <div className="flex items-center gap-2">
+                        <Handshake className="h-4 w-4 text-brand" />
+                        <h3 className="font-outfit font-bold text-textPrimary">Top Vendors</h3>
+                      </div>
+                      <p className="text-[11px] text-textFaint mb-3">By spend, with delivery performance</p>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs min-w-[460px]">
+                          <thead>
+                            <tr className="text-[10px] uppercase tracking-wider text-textFaint">
+                              <th className="text-left font-bold py-2">Vendor</th>
+                              <th className="text-right font-bold py-2">Spend</th>
+                              <th className="text-right font-bold py-2">Orders</th>
+                              <th className="text-right font-bold py-2">On-time</th>
+                              <th className="text-right font-bold py-2">Saved</th>
+                              <th className="text-right font-bold py-2 w-16">Trend</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {spendAnalytics.topVendors.map(v => (
+                              <tr key={v.name} className="border-t border-borderTheme/60">
+                                <td className="py-2.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className="h-7 w-7 rounded-lg bg-brand/10 text-brand grid place-items-center text-[10px] font-extrabold shrink-0">
+                                      {v.name.split(' ').map(w => w[0]).slice(0, 2).join('')}
+                                    </span>
+                                    <div className="min-w-0">
+                                      <p className="font-semibold text-textPrimary truncate">{v.name}</p>
+                                      <p className="text-[10px] text-textFaint flex items-center gap-0.5">
+                                        <Star className="h-2.5 w-2.5 fill-gold text-gold" />{v.rating}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="text-right tabular-nums font-bold text-textPrimary">₹{v.spend.toFixed(2)} Cr</td>
+                                <td className="text-right tabular-nums text-textSecondary">{v.orders}</td>
+                                <td className="text-right tabular-nums font-bold">
+                                  <span className={v.onTime >= 95 ? 'text-pos' : v.onTime >= 90 ? 'text-gold' : 'text-neg'}>{v.onTime}%</span>
+                                </td>
+                                <td className="text-right tabular-nums text-pos font-bold">₹{v.savings.toFixed(1)} L</td>
+                                <td className="py-2.5">
+                                  <Sparkline data={v.trend} stroke="#1E76D4" className="w-16 h-6 ml-auto" />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                      <div className="flex items-center gap-2">
+                        <Activity className="h-4 w-4 text-info" />
+                        <h3 className="font-outfit font-bold text-textPrimary">Cycle Time by Stage</h3>
+                      </div>
+                      <p className="text-[11px] text-textFaint mb-4">Average days — grey marker is where it sat before AI</p>
+                      <div className="space-y-3">
+                        {spendAnalytics.cycleStages.map(s => {
+                          const worst = Math.max(...spendAnalytics.cycleStages.map(c => Math.max(c.days, c.prevDays)));
+                          return (
+                            <div key={s.label}>
+                              <div className="flex items-baseline justify-between text-xs mb-1">
+                                <span className="text-textSecondary font-medium">{s.label}</span>
+                                <span className="font-bold text-textPrimary tabular-nums">
+                                  {s.days} d
+                                  <span className="text-textFaint font-medium ml-1.5">was {s.prevDays} d</span>
+                                </span>
+                              </div>
+                              <div className="relative h-2.5 rounded-full bg-secondary overflow-hidden">
+                                <div className="h-full rounded-full transition-all duration-700"
+                                  style={{ width: `${(s.days / worst) * 100}%`, background: 'linear-gradient(90deg,#0FB5C8,#1E7FD8)' }} />
+                                <span className="absolute top-0 bottom-0 w-0.5 bg-textFaint/70"
+                                  style={{ left: `${(s.prevDays / worst) * 100}%` }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-borderTheme">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-textFaint mb-2.5">Policy compliance</p>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+                          {spendAnalytics.compliance.map(c => {
+                            const ok = c.lowerIsBetter ? c.pct <= c.target : c.pct >= c.target;
+                            return (
+                              <div key={c.label}>
+                                <div className="flex items-baseline justify-between text-[11px]">
+                                  <span className="text-textSecondary truncate pr-1">{c.label}</span>
+                                  <span className={`font-bold tabular-nums ${ok ? 'text-pos' : 'text-gold'}`}>{c.pct}%</span>
+                                </div>
+                                <div className="h-1.5 rounded-full bg-secondary overflow-hidden mt-1">
+                                  <div className={`h-full rounded-full ${ok ? 'bg-pos' : 'bg-gold'}`} style={{ width: `${c.pct}%` }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* What the fraud audit actually caught */}
+                  <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <ScanLine className="h-4 w-4 text-neg" />
+                        <h3 className="font-outfit font-bold text-textPrimary">Anomalies Caught by the Audit Agent</h3>
+                      </div>
+                      <span className="text-[11px] text-textFaint">₹9.32 L of exposure stopped before payment</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                      {spendAnalytics.anomalies.map(a => {
+                        const tone = a.severity === 'High' ? '219 58 75' : a.severity === 'Medium' ? '194 124 9' : '30 118 212';
+                        return (
+                          <div key={a.title} className="req-tile p-4 pl-5" style={{ '--tint': tone } as React.CSSProperties}>
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-xs font-bold text-textPrimary">{a.title}</p>
+                              <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0"
+                                style={{ background: `rgb(${tone} / 0.12)`, color: `rgb(${tone})` }}>{a.severity}</span>
+                            </div>
+                            <p className="text-[11px] text-textSecondary mt-1.5">{a.note}</p>
+                            <div className="flex items-center justify-between mt-2 text-[11px]">
+                              <span className="text-textFaint">{a.vendor}</span>
+                              <span className="font-bold text-textPrimary tabular-nums">{a.amount}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
