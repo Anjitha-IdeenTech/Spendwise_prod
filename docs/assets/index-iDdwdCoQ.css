@@ -668,6 +668,10 @@ video {
   margin-bottom: 0.5rem;
 }
 
+.mb-2\.5{
+  margin-bottom: 0.625rem;
+}
+
 .mb-3{
   margin-bottom: 0.75rem;
 }
@@ -682,6 +686,10 @@ video {
 
 .mb-6{
   margin-bottom: 1.5rem;
+}
+
+.ml-1\.5{
+  margin-left: 0.375rem;
 }
 
 .ml-auto{
@@ -712,6 +720,10 @@ video {
   margin-top: 0.5rem;
 }
 
+.mt-2\.5{
+  margin-top: 0.625rem;
+}
+
 .mt-3{
   margin-top: 0.75rem;
 }
@@ -726,6 +738,10 @@ video {
 
 .mt-8{
   margin-top: 2rem;
+}
+
+.mt-auto{
+  margin-top: auto;
 }
 
 .block{
@@ -844,6 +860,10 @@ video {
   height: 34rem;
 }
 
+.h-\[3px\]{
+  height: 3px;
+}
+
 .h-\[400px\]{
   height: 400px;
 }
@@ -927,6 +947,10 @@ video {
 
 .w-64{
   width: 16rem;
+}
+
+.w-7{
+  width: 1.75rem;
 }
 
 .w-8{
@@ -1019,6 +1043,10 @@ video {
 }
 
 .flex-shrink-0{
+  flex-shrink: 0;
+}
+
+.shrink-0{
   flex-shrink: 0;
 }
 
@@ -1171,6 +1199,10 @@ video {
   flex-wrap: wrap;
 }
 
+.place-items-center{
+  place-items: center;
+}
+
 .items-start{
   align-items: flex-start;
 }
@@ -1211,8 +1243,16 @@ video {
   gap: 0.5rem;
 }
 
+.gap-2\.5{
+  gap: 0.625rem;
+}
+
 .gap-3{
   gap: 0.75rem;
+}
+
+.gap-3\.5{
+  gap: 0.875rem;
 }
 
 .gap-4{
@@ -1309,6 +1349,10 @@ video {
   --tw-space-y-reverse: 0;
   margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
   margin-bottom: calc(2rem * var(--tw-space-y-reverse));
+}
+
+.self-start{
+  align-self: flex-start;
 }
 
 .overflow-hidden{
@@ -1460,10 +1504,6 @@ video {
   border-color: rgb(var(--accent-approvals) / 0.45);
 }
 
-.border-info\/30{
-  border-color: rgb(var(--accent-analytics) / 0.3);
-}
-
 .border-line2{
   --tw-border-opacity: 1;
   border-color: rgb(var(--border-strong) / var(--tw-border-opacity, 1));
@@ -1491,10 +1531,6 @@ video {
 
 .border-pos\/25{
   border-color: rgb(var(--accent-savings) / 0.25);
-}
-
-.border-pos\/30{
-  border-color: rgb(var(--accent-savings) / 0.3);
 }
 
 .border-pos\/40{
@@ -1582,11 +1618,6 @@ video {
   background-color: rgb(var(--accent-budget) / 0.4);
 }
 
-.bg-gold{
-  --tw-bg-opacity: 1;
-  background-color: rgb(var(--accent-approvals) / var(--tw-bg-opacity, 1));
-}
-
 .bg-gold\/10{
   background-color: rgb(var(--accent-approvals) / 0.1);
 }
@@ -1597,10 +1628,6 @@ video {
 
 .bg-gold\/25{
   background-color: rgb(var(--accent-approvals) / 0.25);
-}
-
-.bg-info\/20{
-  background-color: rgb(var(--accent-analytics) / 0.2);
 }
 
 .bg-neg{
@@ -1672,10 +1699,6 @@ video {
   background-color: rgb(var(--bg-surface) / 0.8);
 }
 
-.bg-surface\/90{
-  background-color: rgb(var(--bg-surface) / 0.9);
-}
-
 .bg-textPrimary{
   --tw-bg-opacity: 1;
   background-color: rgb(var(--text-primary) / var(--tw-bg-opacity, 1));
@@ -1687,6 +1710,10 @@ video {
 
 .bg-transparent{
   background-color: transparent;
+}
+
+.bg-white\/15{
+  background-color: rgb(255 255 255 / 0.15);
 }
 
 .bg-white\/20{
@@ -1846,6 +1873,11 @@ video {
   padding-bottom: 1rem;
 }
 
+.py-5{
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+
 .py-6{
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
@@ -1870,6 +1902,14 @@ video {
 
 .pb-4{
   padding-bottom: 1rem;
+}
+
+.pl-5{
+  padding-left: 1.25rem;
+}
+
+.pl-6{
+  padding-left: 1.5rem;
 }
 
 .pr-2{
@@ -1955,6 +1995,10 @@ video {
   font-size: 11px;
 }
 
+.text-\[26px\]{
+  font-size: 26px;
+}
+
 .text-\[8px\]{
   font-size: 8px;
 }
@@ -2008,6 +2052,10 @@ video {
   text-transform: uppercase;
 }
 
+.normal-case{
+  text-transform: none;
+}
+
 .italic{
   font-style: italic;
 }
@@ -2025,12 +2073,24 @@ video {
   line-height: 1.625;
 }
 
+.leading-snug{
+  line-height: 1.375;
+}
+
 .leading-tight{
   line-height: 1.25;
 }
 
+.tracking-normal{
+  letter-spacing: 0em;
+}
+
 .tracking-tight{
   letter-spacing: -0.025em;
+}
+
+.tracking-wide{
+  letter-spacing: 0.025em;
 }
 
 .tracking-wider{
@@ -2064,11 +2124,6 @@ video {
 .text-gold{
   --tw-text-opacity: 1;
   color: rgb(var(--accent-approvals) / var(--tw-text-opacity, 1));
-}
-
-.text-info{
-  --tw-text-opacity: 1;
-  color: rgb(var(--accent-analytics) / var(--tw-text-opacity, 1));
 }
 
 .text-neg{
@@ -2116,6 +2171,27 @@ video {
 
 .text-textSecondary\/60{
   color: rgb(var(--text-secondary) / 0.6);
+}
+
+.text-white{
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+
+.text-white\/55{
+  color: rgb(255 255 255 / 0.55);
+}
+
+.text-white\/60{
+  color: rgb(255 255 255 / 0.6);
+}
+
+.text-white\/70{
+  color: rgb(255 255 255 / 0.7);
+}
+
+.text-white\/85{
+  color: rgb(255 255 255 / 0.85);
 }
 
 .placeholder-textFaint::-moz-placeholder{
@@ -2184,6 +2260,16 @@ video {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
   --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
   box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+
+.ring-2{
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+
+.ring-brand\/60{
+  --tw-ring-color: rgb(var(--accent-budget) / 0.6);
 }
 
 .ring-white\/25{
@@ -2599,6 +2685,182 @@ body {
 
 @keyframes spinSlow { to { transform: rotate(360deg); } }
 
+/*
+  ===== Spotlight tiles =====
+  Bold gradient stat tiles + request tiles, tuned to the deep indigo→fuchsia
+  palette of the brand poster. Each tile takes a `--tint` (status colour, as raw
+  RGB channels) and derives its glow, spine and hover halo from it, so the set
+  reads as one system instead of six unrelated colours.
+*/
+
+/* Deep gradient count tile — dark violet slab, luminous status accent */
+
+.stat-tile {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 18px;
+  background: linear-gradient(150deg, #241653 0%, #3D1E8F 40%, #6D28D9 76%, #8B2FC9 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 12px 28px -10px rgba(76, 29, 149, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+/* status-tinted corner bloom */
+
+.stat-tile::before {
+  content: '';
+  position: absolute;
+  top: -46px; right: -34px;
+  width: 128px; height: 128px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(var(--tint) / 0.9), transparent 68%);
+  filter: blur(16px);
+  z-index: -1;
+}
+
+/* diagonal sheen, sweeps across on hover */
+
+.stat-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.24) 47%, transparent 62%);
+  transform: translateX(-125%);
+  transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stat-tile:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 24px 46px -12px rgba(76, 29, 149, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.stat-tile:hover::after { transform: translateX(125%); }
+
+/* Share-of-total meter along the bottom of a stat tile */
+
+.stat-meter {
+  height: 3px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, rgb(var(--tint)), rgba(255, 255, 255, 0.85));
+  box-shadow: 0 0 10px rgb(var(--tint) / 0.8);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Request tile — frosted card with a status spine and a tinted hover halo */
+
+.req-tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    linear-gradient(155deg, rgb(var(--bg-surface) / 0.94) 0%, rgb(var(--bg-secondary) / 0.72) 100%);
+  border: 1px solid rgb(var(--border-color));
+  box-shadow: 0 4px 14px rgba(60, 40, 120, 0.06);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+}
+
+.req-tile::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, rgb(var(--tint)) 0%, rgb(var(--tint) / 0.25) 100%);
+}
+
+.req-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(120% 90% at 0% 0%, rgb(var(--tint) / 0.15), transparent 62%);
+  transition: opacity 0.28s ease;
+}
+
+.req-tile:hover {
+  transform: translateY(-4px);
+  border-color: rgb(var(--tint) / 0.55);
+  box-shadow:
+    0 18px 36px -14px rgb(var(--tint) / 0.5),
+    0 4px 12px rgba(60, 40, 120, 0.08);
+}
+
+.req-tile:hover::after { opacity: 1; }
+
+.dark .req-tile { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28); }
+
+/* Panel hero — the gradient banner heading a scene */
+
+.panel-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  background: linear-gradient(120deg, #1E1B4B 0%, #4C1D95 38%, #7C3AED 68%, #C026D3 100%);
+  box-shadow: 0 18px 40px -14px rgba(76, 29, 149, 0.55);
+}
+
+/* soft prismatic wash + fine grid so the banner has depth */
+
+.panel-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(80% 130% at 88% 8%, rgba(34, 211, 238, 0.34), transparent 58%),
+    radial-gradient(70% 120% at 4% 96%, rgba(236, 72, 153, 0.32), transparent 60%);
+}
+
+.panel-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 34px 34px;
+  -webkit-mask-image: radial-gradient(120% 100% at 70% 20%, #000 0%, transparent 78%);
+          mask-image: radial-gradient(120% 100% at 70% 20%, #000 0%, transparent 78%);
+}
+
+/* Glass chip used on dark gradient surfaces (hero + stat tiles) */
+
+.glass-chip {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/*
+  Controls living inside a .panel-hero. The scene toggles were styled for a
+  light surface; on the gradient they need to invert — translucent white by
+  default, solid white with violet ink when selected.
+*/
+
+.hero-ctl {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.hero-ctl:hover { background: rgba(255, 255, 255, 0.24); }
+
+.hero-ctl-on {
+  background: #fff;
+  border-color: #fff;
+  color: #4C1D95;
+}
+
+.hero-ctl-on:hover { background: #fff; }
+
 /* Respect reduced-motion: keep the iridescence, drop the movement */
 
 @media (prefers-reduced-motion: reduce) {
@@ -2609,6 +2871,11 @@ body {
   .ambient-glow-2,
   .login-sweep,
   .login-wash { animation: none !important; }
+
+  /* Tiles keep their colour and depth, but stop moving */
+  .stat-tile:hover,
+  .req-tile:hover { transform: none; }
+  .stat-tile::after { display: none; }
 }
 
 /* Buttons: subtle lift + soft aurora shadow on the primary action buttons */

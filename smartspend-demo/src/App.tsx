@@ -10,6 +10,7 @@ import {
   Truck, Package, Receipt, CreditCard, Moon, Sun, Bell,
   PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 // Define the Scene IDs and names
 const SCENES = [
@@ -122,17 +123,20 @@ const reqSummary = (r: { productName: string; productQty: number; targetPrice: n
 const CHART_COLORS = ['#6D5AE0', '#0E8F6A', '#C77E00', '#2E7FC7', '#C43D7E', '#8A8F9C'];
 
 // Status colors — theme-blended, used for status tiles / dense request cards.
-const STATUS_META: Record<string, { color: string; short: string }> = {
-  'Draft': { color: '#8A8F9C', short: 'Draft' },
-  'Pending Approval': { color: '#D99A3C', short: 'Pending' },
-  'Needs Clarification': { color: '#E06C4E', short: 'Clarify' },
-  'Sourcing': { color: '#4F9EE8', short: 'Sourcing' },
-  'Approved': { color: '#2FB574', short: 'Approved' },
-  'PO Confirmed': { color: '#7C6CF6', short: 'PO Confirmed' },
-  'Rejected': { color: '#E5484D', short: 'Rejected' },
-  'Paid': { color: '#0E8F6A', short: 'Paid' },
+// `rgb` carries the same colour as raw channels so CSS can build tinted glows
+// and halos from it via rgb(var(--tint) / <alpha>).
+const STATUS_META: Record<string, { color: string; rgb: string; short: string; icon: LucideIcon }> = {
+  'Draft': { color: '#8A8F9C', rgb: '138 143 156', short: 'Draft', icon: FileText },
+  'Pending Approval': { color: '#D99A3C', rgb: '217 154 60', short: 'Pending', icon: Clock },
+  'Needs Clarification': { color: '#E06C4E', rgb: '224 108 78', short: 'Clarify', icon: AlertCircle },
+  'Sourcing': { color: '#4F9EE8', rgb: '79 158 232', short: 'Sourcing', icon: Search },
+  'Approved': { color: '#2FB574', rgb: '47 181 116', short: 'Approved', icon: CheckCircle2 },
+  'PO Confirmed': { color: '#7C6CF6', rgb: '124 108 246', short: 'PO Confirmed', icon: Package },
+  'Rejected': { color: '#E5484D', rgb: '229 72 77', short: 'Rejected', icon: X },
+  'Paid': { color: '#0E8F6A', rgb: '14 143 106', short: 'Paid', icon: Landmark },
 };
 const statusColor = (s: string) => STATUS_META[s]?.color ?? '#8A8F9C';
+const statusRgb = (s: string) => STATUS_META[s]?.rgb ?? '138 143 156';
 
 // Compact request lifecycle stages (for inline mini-trackers on tiles).
 const STAGE_LABELS = ['Submitted', 'Approved', 'Sourcing', 'PO', 'Received', 'Paid'];
@@ -141,6 +145,82 @@ const STATUS_STAGE: Record<string, number> = {
   'Approved': 1, 'Sourcing': 2, 'PO Confirmed': 3, 'Paid': 5,
 };
 const statusStage = (s: string) => STATUS_STAGE[s] ?? 0;
+
+/**
+ * Gradient banner heading every scene — the shared identity across the demo.
+ * `stats` renders glass KPI chips on the right; `right` takes bespoke controls
+ * (toggles, badges), which should use .hero-ctl so they read on the gradient.
+ */
+function SceneHeader({ icon: Icon, title, subtitle, stats, right, className = '' }: {
+  icon: LucideIcon;
+  title: string;
+  subtitle?: string;
+  stats?: { label: string; value: string }[];
+  right?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`panel-hero px-6 py-5 ${className}`}>
+      <div className="relative flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="glass-chip h-12 w-12 rounded-2xl grid place-items-center shrink-0">
+            <Icon className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h2 className="font-outfit text-2xl font-extrabold text-white leading-tight">{title}</h2>
+            {subtitle && <p className="text-xs text-white/70 mt-0.5 max-w-2xl">{subtitle}</p>}
+          </div>
+        </div>
+        {(!!stats?.length || right) && (
+          <div className="flex flex-wrap items-center gap-2.5">
+            {stats?.map(s => (
+              <div key={s.label} className="glass-chip rounded-2xl px-4 py-2 text-center">
+                <p className="text-xl font-extrabold text-white font-outfit leading-none tabular-nums">{s.value}</p>
+                <p className="text-[9px] font-bold uppercase tracking-wider text-white/70 mt-1">{s.label}</p>
+              </div>
+            ))}
+            {right}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Gradient count tile — the flashy KPI/status card used across scenes. `tint`
+ * is raw RGB channels; the glow, meter and hover halo all derive from it.
+ */
+function StatTile({ icon: Icon, tint, value, label, caption, meter, delay = 0 }: {
+  icon: LucideIcon;
+  tint: string;
+  value: string | number;
+  label: string;
+  caption?: string;
+  meter?: number;      // 0–100, omit to hide the bar
+  delay?: number;
+}) {
+  return (
+    <div
+      className="stat-tile p-3.5 animate-fadeIn"
+      style={{ '--tint': tint, animationDelay: `${delay}ms` } as React.CSSProperties}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-[26px] font-extrabold text-white font-outfit leading-none tabular-nums">{value}</p>
+        <div className="glass-chip h-7 w-7 rounded-lg grid place-items-center shrink-0">
+          <Icon className="h-3.5 w-3.5 text-white" />
+        </div>
+      </div>
+      <p className="text-[10px] font-bold uppercase tracking-wider mt-2 text-white/85">{label}</p>
+      {caption && <p className="text-[10px] text-white/55 mt-1 truncate">{caption}</p>}
+      {meter !== undefined && (
+        <div className="mt-2 h-[3px] rounded-full bg-white/15 overflow-hidden">
+          <div className="stat-meter" style={{ width: `${meter}%` }} />
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Read-only requisition line table — reused by every downstream scene so multi-product
 // requests keep their full detail from sourcing through payment.
@@ -1500,38 +1580,56 @@ export default function App() {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {requests.map(req => (
-                          <div 
-                            key={req.id} 
-                            onClick={() => { setSelectedRequestId(req.id); setEmployeeTab('tracking'); }}
-                            className={`cursor-pointer p-5 rounded-2xl border transition-all ${selectedRequestId === req.id ? 'bg-surface/90 border-brand shadow-lg' : 'bg-surface/60 border-borderTheme hover:border-line2'}`}
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-xs font-bold text-textSecondary">{req.id}</span>
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                req.status === 'PO Confirmed' ? 'bg-pos/20 text-pos border border-pos/30' :
-                                req.status === 'Approved' ? 'bg-info/20 text-info border border-info/30' :
-                                req.status === 'Needs Clarification' ? 'bg-gold/20 text-gold border border-gold/30 animate-pulse' :
-                                'bg-brand/20 text-brand border border-brand/30'
-                              }`}>
-                                {req.status}
-                              </span>
-                            </div>
-                            
-                            <h4 className="font-outfit font-extrabold text-base text-primary">{req.productQty}x {reqSummary(req)}</h4>
-                            
-                            <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-borderTheme/60 text-xs text-textSecondary">
-                              <div>
-                                <span className="block text-[10px] text-textFaint uppercase">Total budget:</span>
-                                <span className="font-bold text-textPrimary">₹{req.totalCost.toLocaleString()}</span>
+                        {requests.map((req, i) => {
+                          const meta = STATUS_META[req.status];
+                          const Icon = meta?.icon ?? FileText;
+                          const stage = statusStage(req.status);
+                          const selected = selectedRequestId === req.id;
+                          return (
+                            <div
+                              key={req.id}
+                              onClick={() => { setSelectedRequestId(req.id); setEmployeeTab('tracking'); }}
+                              className={`req-tile cursor-pointer p-5 pl-6 animate-fadeIn ${selected ? 'ring-2 ring-brand/60' : ''}`}
+                              style={{ '--tint': statusRgb(req.status), animationDelay: `${i * 40}ms` } as React.CSSProperties}
+                            >
+                              <div className="relative flex items-center justify-between mb-2.5">
+                                <span className="text-xs font-bold text-textFaint tabular-nums">{req.id}</span>
+                                <span
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold"
+                                  style={{ color: statusColor(req.status), background: `rgb(${statusRgb(req.status)} / 0.12)` }}
+                                >
+                                  <Icon className="h-3 w-3" />
+                                  {req.status}
+                                </span>
                               </div>
-                              <div>
-                                <span className="block text-[10px] text-textFaint uppercase">Location:</span>
-                                <span className="font-bold text-textPrimary">{req.location}</span>
+
+                              <h4 className="relative font-outfit font-extrabold text-base text-textPrimary">{req.productQty}x {reqSummary(req)}</h4>
+
+                              <div className="relative grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-borderTheme/60 text-xs">
+                                <div>
+                                  <span className="block text-[10px] text-textFaint uppercase tracking-wider">Total budget:</span>
+                                  <span className="font-extrabold text-textPrimary tabular-nums">₹{req.totalCost.toLocaleString()}</span>
+                                </div>
+                                <div>
+                                  <span className="block text-[10px] text-textFaint uppercase tracking-wider">Location:</span>
+                                  <span className="font-bold text-textPrimary">{req.location}</span>
+                                </div>
+                              </div>
+
+                              {/* Lifecycle tracker — same language as the manager panel */}
+                              <div className="relative mt-3 flex items-center gap-1">
+                                {STAGE_LABELS.map((label, s) => (
+                                  <div
+                                    key={label}
+                                    title={label}
+                                    className="h-1.5 flex-1 rounded-full"
+                                    style={{ background: s <= stage ? `rgb(${statusRgb(req.status)})` : 'rgb(var(--border-color))' }}
+                                  />
+                                ))}
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -1784,16 +1882,17 @@ export default function App() {
               {/* --- SCENE 4: PARSED REQUISITION FORM --- */}
               {activeScene === 4 && (
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-primary">AI Parsed Requisition Form</h2>
-                      <p className="text-xs text-textSecondary">Review and edit the parameters extracted from your conversational request.</p>
-                    </div>
-                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-brand/15 text-brand border border-brand/25 flex items-center space-x-1">
-                      <ShieldCheck className="h-3 w-3" />
-                      <span>98% Parse Confidence</span>
-                    </span>
-                  </div>
+                  <SceneHeader
+                    icon={FileInput}
+                    title="AI Parsed Requisition Form"
+                    subtitle="Review and edit the parameters extracted from your conversational request."
+                    right={
+                      <span className="hero-ctl px-3.5 py-2 rounded-full text-xs font-bold flex items-center gap-1.5">
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        <span>98% Parse Confidence</span>
+                      </span>
+                    }
+                  />
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Left Form: Editable details */}
@@ -1904,28 +2003,28 @@ export default function App() {
               {/* --- SCENE 9: BUDGET VALIDATION --- */}
               {activeScene === 9 && (
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Smart Budget Verification &amp; Allocation</h2>
-                      <p className="text-xs text-textSecondary">The platform cross-references available cost center funds in real-time after contract pricing is resolved.</p>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3 bg-secondary px-3 py-1.5 rounded-lg border border-line2 text-xs">
-                      <span className="font-semibold text-textSecondary">Simulate Budget Status:</span>
-                      <button 
-                        onClick={() => { setBudgetBreach(false); setBudgetAction("default"); }}
-                        className={`px-2 py-1 rounded font-bold ${!budgetBreach ? 'bg-brand text-onbrand' : 'bg-raised text-textSecondary'}`}
-                      >
-                        Within Limit
-                      </button>
-                      <button 
-                        onClick={() => { setBudgetBreach(true); }}
-                        className={`px-2 py-1 rounded font-bold ${budgetBreach ? 'bg-neg text-onbrand' : 'bg-raised text-textSecondary'}`}
-                      >
-                        Limit Exceeded
-                      </button>
-                    </div>
-                  </div>
+                  <SceneHeader
+                    icon={Landmark}
+                    title="Smart Budget Verification & Allocation"
+                    subtitle="The platform cross-references available cost center funds in real-time after contract pricing is resolved."
+                    right={
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">Simulate</span>
+                        <button
+                          onClick={() => { setBudgetBreach(false); setBudgetAction("default"); }}
+                          className={`px-3 py-2 rounded-full text-xs font-bold hero-ctl ${!budgetBreach ? 'hero-ctl-on' : ''}`}
+                        >
+                          Within Limit
+                        </button>
+                        <button
+                          onClick={() => { setBudgetBreach(true); }}
+                          className={`px-3 py-2 rounded-full text-xs font-bold hero-ctl ${budgetBreach ? 'hero-ctl-on' : ''}`}
+                        >
+                          Limit Exceeded
+                        </button>
+                      </div>
+                    }
+                  />
                   
                   <div className="grid grid-cols-1 gap-6">
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-6">
@@ -2020,28 +2119,28 @@ export default function App() {
               {/* --- SCENE 5: RATE CONTRACT CHECK --- */}
               {activeScene === 5 && (
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Active Contract Search</h2>
-                      <p className="text-xs text-textSecondary">AI queries the Odoo registry for valid Rate Contracts or pricing agreements.</p>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3 bg-secondary px-3 py-1.5 rounded-lg border border-line2 text-xs">
-                      <span className="font-semibold text-textSecondary">Active Contract exists?</span>
-                      <button 
-                        onClick={() => setHasContract(true)}
-                        className={`px-2.5 py-1 rounded font-bold ${hasContract ? 'bg-brand text-onbrand' : 'bg-raised text-textSecondary'}`}
-                      >
-                        Yes
-                      </button>
-                      <button 
-                        onClick={() => setHasContract(false)}
-                        className={`px-2.5 py-1 rounded font-bold ${!hasContract ? 'bg-gold text-onbrand' : 'bg-raised text-textSecondary'}`}
-                      >
-                        No
-                      </button>
-                    </div>
-                  </div>
+                  <SceneHeader
+                    icon={Search}
+                    title="Active Contract Search"
+                    subtitle="AI queries the Odoo registry for valid Rate Contracts or pricing agreements."
+                    right={
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">Contract exists?</span>
+                        <button
+                          onClick={() => setHasContract(true)}
+                          className={`px-3.5 py-2 rounded-full text-xs font-bold hero-ctl ${hasContract ? 'hero-ctl-on' : ''}`}
+                        >
+                          Yes
+                        </button>
+                        <button
+                          onClick={() => setHasContract(false)}
+                          className={`px-3.5 py-2 rounded-full text-xs font-bold hero-ctl ${!hasContract ? 'hero-ctl-on' : ''}`}
+                        >
+                          No
+                        </button>
+                      </div>
+                    }
+                  />
                   
                   <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-6">
                     {hasContract ? (
@@ -2130,7 +2229,16 @@ export default function App() {
               {/* --- SCENE 6: SCM BUYER PORTAL (RFQ & BIDDING MANAGEMENT) --- */}
               {activeScene === 6 && (
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
-                  
+                  <SceneHeader
+                    icon={Briefcase}
+                    title="SCM Buyer Portal"
+                    subtitle="Sourcing workload, live RFQs and AI-assisted vendor discovery in one queue."
+                    stats={[
+                      { label: 'To source', value: String(requests.filter(r => r.status === 'Sourcing').length) },
+                      { label: 'Pipeline', value: `₹${Math.round(requests.filter(r => r.status === 'Sourcing').reduce((s, r) => s + r.totalCost, 0) / 1000)}K` },
+                    ]}
+                  />
+
                   {/* SCM Sourcing Tab Selector */}
                   <div className="flex border-b border-borderTheme">
                     <button 
@@ -2427,12 +2535,11 @@ export default function App() {
               {/* --- SCENE 7: RFQ COMPARISON MATRIX --- */}
               {activeScene === 7 && (
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-primary">Side-by-Side RFQ Comparison</h2>
-                      <p className="text-xs text-textSecondary">Value scorecard compiled from active vendor bids in local Odoo database.</p>
-                    </div>
-                  </div>
+                  <SceneHeader
+                    icon={Award}
+                    title="Side-by-Side RFQ Comparison"
+                    subtitle="Value scorecard compiled from active vendor bids in local Odoo database."
+                  />
                   
                   <div className="p-6 rounded-2xl bg-surface border border-borderTheme overflow-hidden">
                     <table className="w-full text-left border-collapse">
@@ -2495,25 +2602,25 @@ export default function App() {
               {/* --- SCENE 8: AI NEGOTIATION LOUNGE --- */}
               {activeScene === 8 && (
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-primary">AI Autonomous Negotiation</h2>
-                      <p className="text-xs text-textSecondary">Watch the AI agent negotiate rates and terms directly with the supplier bot.</p>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <span className="px-3 py-1 bg-brand/15 text-brand border border-brand/25 rounded-full text-xs font-bold">
-                        Savings: ₹{((getNegotiationBaselinePrice(currentRequest.productName) - currentOfferPrice) * currentRequest.productQty).toLocaleString()} (₹{(getNegotiationBaselinePrice(currentRequest.productName) - currentOfferPrice).toLocaleString()}/unit)
-                      </span>
-                      <button 
-                        onClick={resetNegotiation}
-                        className="p-2 rounded-lg bg-secondary hover:bg-raised text-textSecondary"
-                        title="Restart Negotiation"
-                      >
-                        <RefreshCw className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
+                  <SceneHeader
+                    icon={Sparkles}
+                    title="AI Autonomous Negotiation"
+                    subtitle="Watch the AI agent negotiate rates and terms directly with the supplier bot."
+                    right={
+                      <>
+                        <span className="hero-ctl px-3.5 py-2 rounded-full text-xs font-bold">
+                          Savings: ₹{((getNegotiationBaselinePrice(currentRequest.productName) - currentOfferPrice) * currentRequest.productQty).toLocaleString()} (₹{(getNegotiationBaselinePrice(currentRequest.productName) - currentOfferPrice).toLocaleString()}/unit)
+                        </span>
+                        <button
+                          onClick={resetNegotiation}
+                          className="hero-ctl p-2.5 rounded-full"
+                          title="Restart Negotiation"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        </button>
+                      </>
+                    }
+                  />
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2 flex flex-col h-[400px] rounded-2xl bg-surface border border-borderTheme overflow-hidden">
@@ -2617,37 +2724,74 @@ export default function App() {
               {/* --- SCENE 10: MANAGER APPROVAL INBOX --- */}
               {activeScene === 10 && (
                 <div className="max-w-6xl mx-auto py-8 animate-fadeIn">
-                  <div className="flex items-center justify-between mb-5">
-                    <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Unified Approval Panel</h2>
-                      <p className="text-xs text-textSecondary">Simplifying decision metrics for managers. No complex ERP menus.</p>
-                    </div>
-                    <span className="px-3 py-1 bg-accent-approvals/10 text-accent-approvals border border-accent-approvals/20 rounded-full text-xs font-bold font-outfit">
-                      Pending Approvals: {requests.filter(r => r.status === 'Pending Approval').length}
-                    </span>
-                  </div>
+                  <SceneHeader
+                    icon={ShieldCheck}
+                    title="Unified Approval Panel"
+                    subtitle="Simplifying decision metrics for managers. No complex ERP menus."
+                    className="mb-5"
+                    stats={[
+                      { label: 'Awaiting you', value: String(requests.filter(r => r.status === 'Pending Approval').length) },
+                      { label: 'AI savings', value: `₹${Math.round(requests.reduce((s, r) => s + r.savings, 0) / 1000)}K` },
+                    ]}
+                  />
 
-                  {/* Status-wise approval counts (#7) */}
-                  <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-5">
-                    {(['Pending Approval', 'Approved', 'Sourcing', 'PO Confirmed', 'Needs Clarification', 'Rejected']).map(st => {
+                  {/* Status-wise approval counts (#7) — gradient spotlight tiles */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-5">
+                    {(['Pending Approval', 'Approved', 'Sourcing', 'PO Confirmed', 'Needs Clarification', 'Rejected']).map((st, i) => {
                       const n = requests.filter(r => r.status === st).length;
-                      const c = statusColor(st);
+                      const meta = STATUS_META[st];
+                      const share = requests.length ? (n / requests.length) * 100 : 0;
                       return (
-                        <div key={st} className="p-3 rounded-xl bg-surface border border-borderTheme shadow-sm" style={{ borderTop: `3px solid ${c}` }}>
-                          <p className="text-2xl font-extrabold text-textPrimary font-outfit leading-none">{n}</p>
-                          <p className="text-[10px] font-bold uppercase tracking-wider mt-1.5" style={{ color: c }}>{STATUS_META[st].short}</p>
-                        </div>
+                        <StatTile
+                          key={st}
+                          icon={meta.icon}
+                          tint={meta.rgb}
+                          value={n}
+                          label={meta.short}
+                          meter={n === 0 ? 0 : Math.max(share, 6)}
+                          delay={i * 55}
+                        />
                       );
                     })}
                   </div>
 
                   {/* Consolidated snapshot (#4) */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm">
-                      <span className="text-[11px] text-textFaint font-bold uppercase tracking-wider">Awaiting your approval</span>
-                      <p className="text-2xl font-extrabold text-textPrimary mt-1 font-outfit">₹{requests.filter(r => r.status === 'Pending Approval').reduce((s, r) => s + r.totalCost, 0).toLocaleString()}</p>
-                      <p className="text-[11px] text-accent-savings mt-0.5">₹{requests.filter(r => r.status === 'Pending Approval').reduce((s, r) => s + r.savings, 0).toLocaleString()} AI savings on the table</p>
-                    </div>
+                    {(() => {
+                      const pending = requests.filter(r => r.status === 'Pending Approval');
+                      const value = pending.reduce((s, r) => s + r.totalCost, 0);
+                      const saved = pending.reduce((s, r) => s + r.savings, 0);
+                      const largest = pending.reduce((m, r) => Math.max(m, r.totalCost), 0);
+                      const avg = pending.length ? Math.round(value / pending.length) : 0;
+                      return (
+                        <div className="p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm flex flex-col">
+                          <span className="text-[11px] text-textFaint font-bold uppercase tracking-wider">Awaiting your approval</span>
+                          <p className="text-3xl font-extrabold text-textPrimary mt-1.5 font-outfit tabular-nums leading-none">
+                            ₹{value.toLocaleString()}
+                          </p>
+                          <div className="mt-3 inline-flex items-center gap-1.5 self-start rounded-full bg-accent-savings/12 px-2.5 py-1">
+                            <TrendingUp className="h-3.5 w-3.5 text-accent-savings" />
+                            <span className="text-[11px] font-bold text-accent-savings tabular-nums">
+                              ₹{saved.toLocaleString()} AI savings on the table
+                            </span>
+                          </div>
+
+                          {/* Fills the card with the numbers a manager actually decides on */}
+                          <div className="mt-auto pt-5 grid grid-cols-3 gap-2 border-t border-borderTheme/70">
+                            {[
+                              { label: 'Requests', value: String(pending.length) },
+                              { label: 'Largest', value: `₹${Math.round(largest / 1000)}K` },
+                              { label: 'Avg ticket', value: `₹${Math.round(avg / 1000)}K` },
+                            ].map(m => (
+                              <div key={m.label}>
+                                <p className="text-base font-extrabold text-textPrimary font-outfit tabular-nums leading-none">{m.value}</p>
+                                <p className="text-[9px] font-bold uppercase tracking-wider text-textFaint mt-1">{m.label}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
                     <div className="md:col-span-2 p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <span className="text-[11px] text-textFaint font-bold uppercase tracking-wider">Live request value by department (₹K)</span>
                       <div className="mt-3">
@@ -2806,20 +2950,72 @@ export default function App() {
                   {/* All requests — dense tile grid (#1) */}
                   <div className="mt-8">
                     <h3 className="font-outfit font-bold text-textPrimary mb-3">All Requests <span className="text-textFaint font-medium">({requests.length})</span></h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {requests.map(r => (
-                        <div key={r.id} className="p-3.5 rounded-xl bg-surface border border-borderTheme shadow-sm" style={{ borderLeft: `3px solid ${statusColor(r.status)}` }}>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-textSecondary tabular-nums">{r.id}</span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: statusColor(r.status), background: `${statusColor(r.status)}1a` }}>{STATUS_META[r.status]?.short ?? r.status}</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                      {requests.map((r, i) => {
+                        const meta = STATUS_META[r.status];
+                        const Icon = meta?.icon ?? FileText;
+                        const stage = statusStage(r.status);
+                        return (
+                          <div
+                            key={r.id}
+                            className="req-tile p-4 pl-5 animate-fadeIn"
+                            style={{ '--tint': statusRgb(r.status), animationDelay: `${i * 40}ms` } as React.CSSProperties}
+                          >
+                            <div className="relative flex items-center justify-between">
+                              <span className="text-[11px] font-bold text-textFaint tabular-nums tracking-wide">{r.id}</span>
+                              <span
+                                className="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full"
+                                style={{ color: statusColor(r.status), background: `rgb(${statusRgb(r.status)} / 0.12)` }}
+                              >
+                                <Icon className="h-3 w-3" />
+                                {meta?.short ?? r.status}
+                              </span>
+                            </div>
+
+                            <p className="relative text-sm font-bold text-textPrimary mt-2 truncate">
+                              {r.productQty}× {reqSummary(r)}
+                            </p>
+
+                            <div className="relative flex items-end justify-between mt-2.5">
+                              <span className="text-[11px] text-textFaint truncate pr-2 leading-snug">
+                                {r.location.replace(' Office', '').replace(' Head', '')} · {r.department.split(' ')[0]}
+                              </span>
+                              <span className="text-base font-extrabold text-textPrimary tabular-nums leading-none shrink-0">
+                                ₹{r.totalCost.toLocaleString()}
+                              </span>
+                            </div>
+
+                            {/* Compact lifecycle tracker — where this request sits today */}
+                            <div className="relative mt-3 pt-3 border-t border-borderTheme/70">
+                              <div className="flex items-center gap-1">
+                                {STAGE_LABELS.map((label, s) => (
+                                  <div
+                                    key={label}
+                                    title={label}
+                                    className="h-1.5 flex-1 rounded-full transition-colors duration-300"
+                                    style={{
+                                      background: s <= stage
+                                        ? `rgb(${statusRgb(r.status)})`
+                                        : 'rgb(var(--border-color))',
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                              <p className="text-[9px] font-bold uppercase tracking-wider text-textFaint mt-1.5">
+                                {/* Terminal / blocked states have no meaningful stage — name the state itself */}
+                                {r.status === 'Rejected' || r.status === 'Needs Clarification'
+                                  ? meta.short
+                                  : STAGE_LABELS[stage]}
+                                {r.savings > 0 && (
+                                  <span className="text-accent-savings ml-1.5 normal-case tracking-normal">
+                                    · ₹{r.savings.toLocaleString()} saved
+                                  </span>
+                                )}
+                              </p>
+                            </div>
                           </div>
-                          <p className="text-sm font-bold text-textPrimary mt-1.5 truncate">{r.productQty}× {reqSummary(r)}</p>
-                          <div className="flex items-center justify-between mt-2 text-[11px]">
-                            <span className="text-textFaint truncate pr-2">{r.location.replace(' Office', '').replace(' Head', '')} · {r.department.split(' ')[0]}</span>
-                            <span className="font-bold text-textPrimary tabular-nums">₹{r.totalCost.toLocaleString()}</span>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -2828,12 +3024,11 @@ export default function App() {
               {/* --- SCENE 11: REQUEST TRACKING TIMELINE --- */}
               {activeScene === 11 && (
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Request Tracking Milestone</h2>
-                      <p className="text-xs text-textSecondary">Amazon-style simple progress tracker hiding deep transactional ERP states.</p>
-                    </div>
-                  </div>
+                  <SceneHeader
+                    icon={History}
+                    title="Request Tracking Milestone"
+                    subtitle="Amazon-style simple progress tracker hiding deep transactional ERP states."
+                  />
                   
                   <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-8 shadow-sm">
                     {/* 5-Step Progress Tracker */}
@@ -3020,12 +3215,11 @@ export default function App() {
               {/* --- SCENE 12: PRODUCT RECEIVING & INSPECTION (GRN) --- */}
               {activeScene === 12 && (
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Product Receiving &amp; Goods Receipt Note</h2>
-                      <p className="text-xs text-textSecondary">Simulate warehouse operations. Inspect the delivered items and generate the GRN in Odoo.</p>
-                    </div>
-                  </div>
+                  <SceneHeader
+                    icon={Truck}
+                    title="Product Receiving & Goods Receipt Note"
+                    subtitle="Simulate warehouse operations. Inspect the delivered items and generate the GRN in Odoo."
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div className="md:col-span-3 p-6 rounded-2xl bg-surface border border-borderTheme space-y-6 shadow-sm">
@@ -3191,12 +3385,11 @@ export default function App() {
               {/* --- SCENE 13: VENDOR BILL 3-WAY MATCHING --- */}
               {activeScene === 13 && (
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Automated 3-Way Match Verification</h2>
-                      <p className="text-xs text-textSecondary">Audit and reconcile PO details, Goods Receipt note, and Vendor Invoice side-by-side.</p>
-                    </div>
-                  </div>
+                  <SceneHeader
+                    icon={ShieldCheck}
+                    title="Automated 3-Way Match Verification"
+                    subtitle="Audit and reconcile PO details, Goods Receipt note, and Vendor Invoice side-by-side."
+                  />
 
                   <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-6 shadow-sm">
                     <div className="flex items-center space-x-3 text-accent-budget">
@@ -3371,12 +3564,11 @@ export default function App() {
               {/* --- SCENE 14: PAYMENT PROCESSING & RECONCILIATION --- */}
               {activeScene === 14 && (
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Payment Disbursement &amp; Reconciliation</h2>
-                      <p className="text-xs text-textSecondary">Authorize the cash disbursement and auto-reconcile bank statements in Odoo.</p>
-                    </div>
-                  </div>
+                  <SceneHeader
+                    icon={CreditCard}
+                    title="Payment Disbursement & Reconciliation"
+                    subtitle="Authorize the cash disbursement and auto-reconcile bank statements in Odoo."
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div className="md:col-span-3 p-6 rounded-2xl bg-surface border border-borderTheme space-y-6 shadow-sm">
@@ -3497,35 +3689,22 @@ export default function App() {
               {/* --- SCENE 15: spend INTELLIGENCE ANALYTICS --- */}
               {activeScene === 15 && (
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="font-outfit text-2xl font-extrabold text-textPrimary">Spend Intelligence Dashboard</h2>
-                      <p className="text-xs text-textSecondary">High-level capital monitoring and automated fraud detection audits.</p>
-                    </div>
-                  </div>
-                  
-                  {/* KPI row */}
+                  <SceneHeader
+                    icon={LayoutDashboard}
+                    title="Spend Intelligence Dashboard"
+                    subtitle="High-level capital monitoring and automated fraud detection audits."
+                    stats={[
+                      { label: 'Total audited', value: '₹4.58 Cr' },
+                      { label: 'AI savings', value: '₹28.45 L' },
+                    ]}
+                  />
+
+                  {/* KPI row — gradient spotlight tiles */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-outfit">
-                    <div className="p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm">
-                      <div className="flex items-center gap-2 text-brand mb-2"><Landmark className="h-4 w-4" /><span className="text-[11px] font-bold uppercase tracking-wider">Total Audited</span></div>
-                      <p className="text-2xl font-extrabold text-textPrimary">₹4.58 Cr</p>
-                      <p className="text-[11px] text-textFaint mt-0.5">FY 2026 · 5 branches</p>
-                    </div>
-                    <div className="p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm">
-                      <div className="flex items-center gap-2 text-pos mb-2"><TrendingUp className="h-4 w-4" /><span className="text-[11px] font-bold uppercase tracking-wider">AI Savings</span></div>
-                      <p className="text-2xl font-extrabold text-pos">₹28.45 L</p>
-                      <p className="text-[11px] text-textFaint mt-0.5">6.2% of total spend</p>
-                    </div>
-                    <div className="p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm">
-                      <div className="flex items-center gap-2 text-info mb-2"><Layers className="h-4 w-4" /><span className="text-[11px] font-bold uppercase tracking-wider">Active Requests</span></div>
-                      <p className="text-2xl font-extrabold text-textPrimary">{requests.length}</p>
-                      <p className="text-[11px] text-textFaint mt-0.5">{requests.filter(r => r.status === 'Pending Approval').length} awaiting approval</p>
-                    </div>
-                    <div className="p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm">
-                      <div className="flex items-center gap-2 text-neg mb-2"><ShieldAlert className="h-4 w-4" /><span className="text-[11px] font-bold uppercase tracking-wider">Blocked Anomalies</span></div>
-                      <p className="text-2xl font-extrabold text-neg">4</p>
-                      <p className="text-[11px] text-textFaint mt-0.5">fraud audits this quarter</p>
-                    </div>
+                    <StatTile icon={Landmark} tint="124 108 246" value="₹4.58 Cr" label="Total Audited" caption="FY 2026 · 5 branches" delay={0} />
+                    <StatTile icon={TrendingUp} tint="47 181 116" value="₹28.45 L" label="AI Savings" caption="6.2% of total spend" meter={62} delay={60} />
+                    <StatTile icon={Layers} tint="79 158 232" value={requests.length} label="Active Requests" caption={`${requests.filter(r => r.status === 'Pending Approval').length} awaiting approval`} delay={120} />
+                    <StatTile icon={ShieldAlert} tint="229 72 77" value="4" label="Blocked Anomalies" caption="fraud audits this quarter" delay={180} />
                   </div>
 
                   {/* Analytics charts */}
