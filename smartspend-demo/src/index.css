@@ -40,24 +40,24 @@
     <body> and on .login-aurora (the app shell + the login page).
   */
   --canvas-aurora:
-    radial-gradient( 90% 70% at  6%  0%, rgba( 15, 194, 206, 0.16) 0%, transparent 60%),
-    radial-gradient( 80% 65% at 98%  4%, rgba(106,  47, 214, 0.13) 0%, transparent 58%),
-    radial-gradient( 90% 72% at 94% 100%, rgba( 30, 127, 216, 0.15) 0%, transparent 62%),
-    radial-gradient( 85% 70% at  0% 96%, rgba( 91,  58, 214, 0.11) 0%, transparent 60%),
-    linear-gradient(150deg, #FBFCFF 0%, #F1F5FD 45%, #ECF0FB 100%);
+    radial-gradient( 95% 75% at  2% -4%, rgba( 13, 190, 210, 0.46) 0%, transparent 62%),
+    radial-gradient( 85% 70% at 100% -2%, rgba(122,  47, 224, 0.38) 0%, transparent 60%),
+    radial-gradient( 95% 78% at 97% 102%, rgba( 25, 118, 220, 0.42) 0%, transparent 64%),
+    radial-gradient( 90% 75% at -4% 102%, rgba( 96,  58, 224, 0.34) 0%, transparent 62%),
+    linear-gradient(150deg, #E9F7FC 0%, #E6EFFD 44%, #EBE6FC 100%);
 
-  /* Faint diagonal circuit lines, like the poster's background texture */
+  /* Diagonal circuit lines, like the poster's background texture */
   --canvas-circuitry:
-    repeating-linear-gradient( 55deg, rgba(30,127,216,0.045) 0 1px, transparent 1px 92px),
-    repeating-linear-gradient(-55deg, rgba(106,47,214,0.038) 0 1px, transparent 1px 132px);
+    repeating-linear-gradient( 55deg, rgba(30,127,216,0.075) 0 1px, transparent 1px 92px),
+    repeating-linear-gradient(-55deg, rgba(106,47,214,0.065) 0 1px, transparent 1px 132px);
 
   /* Light canvas + white surfaces */
-  --bg-app:        241 244 252;   /* #F1F4FC pale blue canvas */
+  --bg-app:        233 240 252;   /* #E9F0FC tinted canvas    */
   --bg-surface:    255 255 255;   /* #FFFFFF card             */
-  --bg-secondary:  234 240 251;   /* #EAF0FB inset panel      */
-  --bg-raised:     221 231 249;   /* #DDE7F9 hover / raised   */
-  --border-color:  222 229 244;   /* #DEE5F4 hairline         */
-  --border-strong: 197 210 236;   /* #C5D2EC stronger line    */
+  --bg-secondary:  226 236 251;   /* #E2ECFB inset panel      */
+  --bg-raised:     211 225 248;   /* #D3E1F8 hover / raised   */
+  --border-color:  214 225 243;   /* #D6E1F3 hairline         */
+  --border-strong: 188 205 234;   /* #BCCDEA stronger line    */
   --text-primary:   16  26  61;   /* #101A3D poster navy      */
   --text-secondary: 82  95 128;   /* #525F80 body             */
   --text-faint:    132 145 175;   /* #8491AF muted            */
@@ -153,10 +153,10 @@ body {
 */
 .ambient-glow-1 {
   background:
-    radial-gradient(closest-side at 35% 40%, rgba( 15, 194, 206, 0.52), transparent),
-    radial-gradient(closest-side at 65% 60%, rgba( 42, 156, 226, 0.42), transparent),
-    radial-gradient(closest-side at 50% 30%, rgba(140, 220, 255, 0.34), transparent),
-    radial-gradient(closest-side at 30% 70%, rgba(190, 235, 240, 0.28), transparent);
+    radial-gradient(closest-side at 35% 40%, rgba( 13, 190, 210, 0.85), transparent),
+    radial-gradient(closest-side at 65% 60%, rgba( 30, 150, 226, 0.72), transparent),
+    radial-gradient(closest-side at 50% 30%, rgba( 90, 200, 255, 0.58), transparent),
+    radial-gradient(closest-side at 30% 70%, rgba(140, 225, 235, 0.46), transparent);
   animation: auroraDrift 20s ease-in-out infinite;
 }
 .dark .ambient-glow-1 {
@@ -167,10 +167,10 @@ body {
 
 .ambient-glow-2 {
   background:
-    radial-gradient(closest-side at 60% 50%, rgba(106,  47, 214, 0.40), transparent),
-    radial-gradient(closest-side at 40% 65%, rgba( 30, 127, 216, 0.42), transparent),
-    radial-gradient(closest-side at 72% 70%, rgba(150, 130, 245, 0.34), transparent),
-    radial-gradient(closest-side at 30% 40%, rgba(190, 220, 255, 0.30), transparent);
+    radial-gradient(closest-side at 60% 50%, rgba(122,  47, 224, 0.70), transparent),
+    radial-gradient(closest-side at 40% 65%, rgba( 25, 118, 220, 0.72), transparent),
+    radial-gradient(closest-side at 72% 70%, rgba(150, 120, 250, 0.58), transparent),
+    radial-gradient(closest-side at 30% 40%, rgba(140, 190, 255, 0.48), transparent);
   animation: auroraDrift 26s ease-in-out infinite reverse;
 }
 .dark .ambient-glow-2 {
@@ -233,7 +233,7 @@ body {
   their own tuned values, so this only upgrades the plain solid surfaces.
 */
 .bg-surface {
-  background-color: rgb(var(--bg-surface) / 0.78);
+  background-color: rgb(var(--bg-surface) / 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -323,9 +323,9 @@ body {
 /* slow-rotating prismatic light sweep */
 .login-sweep {
   background: conic-gradient(from 0deg,
-    transparent 0deg,   rgba( 15, 194, 206, 0.14) 40deg,
-    transparent 95deg,  rgba( 42, 123, 216, 0.15) 165deg,
-    transparent 215deg, rgba(120,  70, 235, 0.12) 285deg,
+    transparent 0deg,   rgba( 15, 194, 206, 0.26) 40deg,
+    transparent 95deg,  rgba( 42, 123, 216, 0.28) 165deg,
+    transparent 215deg, rgba(120,  70, 235, 0.24) 285deg,
     transparent 335deg);
   animation: spinSlow 28s linear infinite;
 }
