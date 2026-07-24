@@ -110,6 +110,11 @@
   --glow-gold:   56 214 190;
 }
 
+/* Larger base type for readability — scales every rem-based size ~6%. */
+html {
+  font-size: 17px;
+}
+
 body {
   margin: 0;
   padding: 0;

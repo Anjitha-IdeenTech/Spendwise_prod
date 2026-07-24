@@ -148,6 +148,102 @@ const STATUS_STAGE: Record<string, number> = {
 };
 const statusStage = (s: string) => STATUS_STAGE[s] ?? 0;
 
+// The three coloured filter dots on "My Requests" collapse the eight raw
+// statuses into three plain buckets the client understands at a glance.
+const STATUS_GROUPS: { key: 'action' | 'progress' | 'done'; label: string; color: string; rgb: string; statuses: string[] }[] = [
+  { key: 'action',   label: 'Needs attention', color: '#C27C09', rgb: '194 124 9',  statuses: ['Draft', 'Pending Approval', 'Needs Clarification', 'Rejected'] },
+  { key: 'progress', label: 'In progress',      color: '#1E76D4', rgb: '30 118 212', statuses: ['Sourcing', 'Approved'] },
+  { key: 'done',     label: 'Completed',        color: '#0C9689', rgb: '12 150 137', statuses: ['PO Confirmed', 'Paid'] },
+];
+const groupOf = (s: string): 'action' | 'progress' | 'done' => STATUS_GROUPS.find(g => g.statuses.includes(s))?.key ?? 'action';
+
+/**
+ * Premium request card on the employee home grid — status icon chip, urgency
+ * flag, headline value, delivery date and a gradient lifecycle bar, with a
+ * soft status-tinted glow on hover.
+ */
+function RequestCard({ r, onOpen, onPoke }: { r: RequestItem; onOpen: () => void; onPoke: () => void }) {
+  const meta = STATUS_META[r.status];
+  const Icon = meta?.icon ?? FileText;
+  const color = statusColor(r.status);
+  const rgb = statusRgb(r.status);
+  const stage = statusStage(r.status);
+  const last = r.history[r.history.length - 1];
+  const settled = r.status === 'Paid' || r.status === 'PO Confirmed';
+  const urgencyTone = r.urgency === 'High' ? '#DB3A4B' : r.urgency === 'Medium' ? '#C27C09' : '#0C9689';
+  const pct = Math.round((stage / (STAGE_LABELS.length - 1)) * 100);
+  return (
+    <div
+      onClick={onOpen}
+      className="request-card group relative cursor-pointer overflow-hidden rounded-2xl bg-surface border border-borderTheme shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg"
+      style={{ '--tint': rgb } as React.CSSProperties}
+    >
+      {/* top accent bar + soft corner glow that lifts on hover */}
+      <span className="absolute inset-x-0 top-0 h-1.5" style={{ background: `linear-gradient(90deg, rgb(${rgb}), rgb(${rgb} / 0.2))` }} />
+      <span className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full blur-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: `rgb(${rgb} / 0.22)` }} />
+
+      <div className="relative p-5">
+        {/* header: icon chip + id + status, urgency on the right */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="grid h-11 w-11 place-items-center rounded-2xl shrink-0 shadow-sm" style={{ background: `rgb(${rgb} / 0.12)`, color }}>
+              <Icon className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-textFaint tabular-nums tracking-wide">{r.id}</p>
+              <span className="inline-flex items-center mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold" style={{ color, background: `rgb(${rgb} / 0.12)` }}>
+                {meta?.short ?? r.status}
+              </span>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold shrink-0" style={{ color: urgencyTone }} title={`${r.urgency} priority`}>
+            <span className="h-2 w-2 rounded-full" style={{ background: urgencyTone }} />
+            {r.urgency}
+          </span>
+        </div>
+
+        {/* what was requested */}
+        <p className="mt-4 text-[15px] font-extrabold text-textPrimary leading-snug line-clamp-2">{r.productQty}× {reqSummary(r)}</p>
+        <p className="mt-1 text-xs text-textFaint truncate">{r.location.replace(' Office', '')} · {r.department}</p>
+
+        {/* headline value + expected delivery */}
+        <div className="mt-4 flex items-end justify-between gap-2">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-textFaint">Total value</p>
+            <p className="text-xl font-extrabold text-textPrimary tabular-nums leading-none mt-1">₹{r.totalCost.toLocaleString()}</p>
+          </div>
+          {r.deliveryDate && (
+            <span className="inline-flex items-center gap-1 text-[11px] text-textSecondary font-semibold whitespace-nowrap">
+              <Calendar className="h-3.5 w-3.5" /> {r.deliveryDate}
+            </span>
+          )}
+        </div>
+
+        {/* lifecycle progress */}
+        <div className="mt-4">
+          <div className="h-2 rounded-full bg-secondary overflow-hidden">
+            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: `linear-gradient(90deg, rgb(${rgb} / 0.55), rgb(${rgb}))` }} />
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            <span className="text-[11px] font-bold" style={{ color }}>{STAGE_LABELS[Math.min(stage, STAGE_LABELS.length - 1)]}</span>
+            <span className="text-[10px] font-semibold text-textFaint tabular-nums">Step {stage + 1} of {STAGE_LABELS.length}</span>
+          </div>
+        </div>
+
+        {/* latest update + poke */}
+        <div className="mt-4 pt-3 border-t border-borderTheme/70 flex items-center justify-between gap-2">
+          <p className="text-[11px] text-textFaint flex items-center gap-1 min-w-0"><Clock className="h-3 w-3 shrink-0" /><span className="truncate">{last?.title}</span></p>
+          {!settled && (
+            <button onClick={(e) => { e.stopPropagation(); onPoke(); }} className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold text-brand px-2.5 py-1 rounded-lg hover:bg-brand/10 transition-colors">
+              <Bell className="h-3 w-3" /> Poke
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Gradient banner heading every scene — the shared identity across the demo.
  * `stats` renders glass KPI chips on the right; `right` takes bespoke controls
@@ -887,6 +983,29 @@ export default function App() {
 
   // Employee Portal Local States
   const [employeeTab, setEmployeeTab] = useState<'chat' | 'list' | 'tracking' | 'clarify'>('chat');
+  // "My Requests" home filters — three coloured status dots + free-text search.
+  const [homeStatusFilter, setHomeStatusFilter] = useState<'all' | 'action' | 'progress' | 'done'>('all');
+  const [homeSearch, setHomeSearch] = useState('');
+  // Spend dashboard date filter — inclusive from/to month (data runs Jan–Jul 2026).
+  const DASH_MONTH_MIN = '2026-01';
+  const DASH_MONTH_MAX = '2026-07';
+  const [dashFrom, setDashFrom] = useState(DASH_MONTH_MIN);
+  const [dashTo, setDashTo] = useState(DASH_MONTH_MAX);
+  // Slice the monthly spend series to the picked range and recompute the totals.
+  const dash = (() => {
+    const toIdx = (v: string) => Math.min(Math.max(parseInt(v.slice(5, 7), 10) - 1, 0), spendAnalytics.byMonth.length - 1);
+    let a = toIdx(dashFrom), b = toIdx(dashTo);
+    if (a > b) [a, b] = [b, a];
+    const months = spendAnalytics.byMonth.slice(a, b + 1);
+    const spend = months.reduce((s, m) => s + m.value, 0);
+    const budget = months.reduce((s, m) => s + m.budget, 0);
+    const len = b - a + 1;
+    const prevSpend = spendAnalytics.byMonth.slice(Math.max(0, a - len), a).reduce((s, m) => s + m.value, 0);
+    const over = months.some(m => m.value > m.budget);
+    const rangeLabel = months.length ? `${spendAnalytics.byMonth[a].label}–${spendAnalytics.byMonth[b].label}` : '—';
+    const full = dashFrom === DASH_MONTH_MIN && dashTo === DASH_MONTH_MAX;
+    return { months, spend, budget, prevSpend: prevSpend || spend, over, rangeLabel, full };
+  })();
 
   // Drag-to-reorder role nav; first item = landing screen on login (#5).
   // Role-keyed so Employee, SCM Buyer, Manager and CEO each persist their own order.
@@ -946,16 +1065,16 @@ export default function App() {
     const pill = (n: number, cls: string, pulse = false) => n > 0
       ? <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full font-bold ${cls} ${pulse ? 'animate-pulse' : ''}`}>{n}</span> : undefined;
     const m: Record<string, { icon: React.ReactNode; label: string; badge?: React.ReactNode }> = {
-      'Employee/chat': { icon: <MessageSquare className="h-4 w-4" />, label: 'Conversational Agent' },
+      'Employee/chat': { icon: <MessageSquare className="h-4 w-4" />, label: 'New Request' },
       'Employee/list': { icon: <FileText className="h-4 w-4" />, label: 'My Requests', badge: <span className="ml-auto bg-secondary text-textSecondary text-[10px] px-2 py-0.5 rounded-full font-bold">{requests.length}</span> },
-      'Employee/tracking': { icon: <History className="h-4 w-4" />, label: 'Request Tracking' },
-      'Employee/clarify': { icon: <AlertTriangle className="h-4 w-4" />, label: 'Clarification Inbox', badge: pill(requests.filter(r => r.status === 'Needs Clarification').length, 'bg-gold/20 text-gold border border-gold/30', true) },
-      'Manager/queue': { icon: <CheckCircle2 className="h-4 w-4" />, label: 'Approval Queue', badge: pill(requests.filter(r => r.status === 'Pending Approval').length, 'bg-gold/20 text-gold border border-gold/30') },
-      'Manager/tracking': { icon: <History className="h-4 w-4" />, label: 'Request Tracking' },
-      'SCM Buyer/requests': { icon: <Briefcase className="h-4 w-4" />, label: 'Contract Requests', badge: pill(requests.filter(r => r.status === 'Sourcing').length, 'bg-brand/20 text-brand border border-brand/30') },
-      'SCM Buyer/discovery': { icon: <Search className="h-4 w-4" />, label: 'AI Vendor Discovery' },
-      'CEO/analytics': { icon: <TrendingUp className="h-4 w-4" />, label: 'Spend Analytics' },
-      'CEO/tracking': { icon: <History className="h-4 w-4" />, label: 'Request Tracking' },
+      'Employee/tracking': { icon: <History className="h-4 w-4" />, label: 'Track Request' },
+      'Employee/clarify': { icon: <AlertTriangle className="h-4 w-4" />, label: 'Questions', badge: pill(requests.filter(r => r.status === 'Needs Clarification').length, 'bg-gold/20 text-gold border border-gold/30', true) },
+      'Manager/queue': { icon: <CheckCircle2 className="h-4 w-4" />, label: 'To Approve', badge: pill(requests.filter(r => r.status === 'Pending Approval').length, 'bg-gold/20 text-gold border border-gold/30') },
+      'Manager/tracking': { icon: <History className="h-4 w-4" />, label: 'Track Request' },
+      'SCM Buyer/requests': { icon: <Briefcase className="h-4 w-4" />, label: 'To Source', badge: pill(requests.filter(r => r.status === 'Sourcing').length, 'bg-brand/20 text-brand border border-brand/30') },
+      'SCM Buyer/discovery': { icon: <Search className="h-4 w-4" />, label: 'Find Vendors' },
+      'CEO/analytics': { icon: <TrendingUp className="h-4 w-4" />, label: 'Spend Dashboard' },
+      'CEO/tracking': { icon: <History className="h-4 w-4" />, label: 'Track Request' },
     };
     return m[`${role}/${key}`] ?? { icon: <FileText className="h-4 w-4" />, label: key };
   };
@@ -1671,10 +1790,10 @@ export default function App() {
                   {/* Employee Tabs Bar */}
                   <div className="flex border-b border-borderTheme">
                     <button 
-                      onClick={() => setEmployeeTab('chat')} 
+                      onClick={() => setEmployeeTab('chat')}
                       className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${employeeTab === 'chat' ? 'border-brand text-primary' : 'border-transparent text-textSecondary hover:text-textPrimary'}`}
                     >
-                      Raise Request
+                      New Request
                     </button>
                     <button 
                       onClick={() => setEmployeeTab('list')} 
@@ -1683,16 +1802,16 @@ export default function App() {
                       My Requests
                     </button>
                     <button 
-                      onClick={() => setEmployeeTab('tracking')} 
+                      onClick={() => setEmployeeTab('tracking')}
                       className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${employeeTab === 'tracking' ? 'border-brand text-primary' : 'border-transparent text-textSecondary hover:text-textPrimary'}`}
                     >
-                      Request Tracking
+                      Track Request
                     </button>
-                    <button 
-                      onClick={() => setEmployeeTab('clarify')} 
+                    <button
+                      onClick={() => setEmployeeTab('clarify')}
                       className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${employeeTab === 'clarify' ? 'border-brand text-primary' : 'border-transparent text-textSecondary hover:text-textPrimary'}`}
                     >
-                      Clarification Inbox
+                      Questions
                     </button>
                   </div>
 
@@ -1700,8 +1819,8 @@ export default function App() {
                   {employeeTab === 'chat' && (
                     <div className="max-w-6xl mx-auto space-y-12 py-10">
                       <div className="text-center space-y-3">
-                        <h2 className="font-outfit text-4xl font-extrabold tracking-tight text-primary">What's on the agenda today?</h2>
-                        <p className="text-sm text-textSecondary">Request any item or service. The AI orchestration layer maps the compliance rules in Odoo.</p>
+                        <h2 className="font-outfit text-4xl font-extrabold tracking-tight text-primary">What do you need today?</h2>
+                        <p className="text-base text-textSecondary">Ask for any item or service in plain words — we handle the rest.</p>
                       </div>
 
                       {/* File Attached Success Banner */}
@@ -1851,44 +1970,90 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* My Requests + inline tracking (#2) */}
-                      <div className="pt-8">
-                        <div className="flex items-center justify-between mb-3">
-                          <h3 className="font-outfit font-bold text-textPrimary">My Requests <span className="text-textFaint font-medium">({requests.length})</span></h3>
-                          <button onClick={() => setEmployeeTab('list')} className="text-xs font-semibold text-brand hover:underline">View all</button>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {requests.map(r => {
-                            const last = r.history[r.history.length - 1];
-                            const stage = statusStage(r.status);
-                            return (
-                              <div key={r.id} onClick={() => { setSelectedRequestId(r.id); setEmployeeTab('tracking'); }}
-                                className="cursor-pointer p-4 rounded-xl bg-surface border border-borderTheme shadow-sm hover:-translate-y-0.5 transition-all" style={{ borderLeft: `3px solid ${statusColor(r.status)}` }}>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-[11px] font-bold text-textSecondary tabular-nums">{r.id}</span>
-                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: statusColor(r.status), background: `${statusColor(r.status)}1a` }}>{STATUS_META[r.status]?.short ?? r.status}</span>
-                                </div>
-                                <p className="text-sm font-bold text-textPrimary mt-1.5 truncate">{r.productQty}× {reqSummary(r)}</p>
-                                <p className="text-[11px] text-textFaint mt-0.5 truncate">{r.location.replace(' Office', '')} · {r.department} · <span className="font-semibold text-textSecondary">₹{r.totalCost.toLocaleString()}</span></p>
-                                <div className="flex items-center gap-1 mt-3">
-                                  {STAGE_LABELS.map((lab, si) => (
-                                    <React.Fragment key={si}>
-                                      {si > 0 && <div className="h-0.5 flex-1 rounded" style={{ background: si <= stage ? statusColor(r.status) : 'rgb(var(--border-color))' }} />}
-                                      <div className="h-2 w-2 rounded-full flex-shrink-0" title={lab} style={{ background: si <= stage ? statusColor(r.status) : 'rgb(var(--border-color))' }} />
-                                    </React.Fragment>
-                                  ))}
-                                </div>
-                                <div className="flex items-center justify-between mt-2">
-                                  <p className="text-[10px] text-textFaint flex items-center gap-1 min-w-0"><Clock className="h-3 w-3 flex-shrink-0" /> <span className="truncate">{last?.title}</span></p>
-                                  {r.status !== 'Paid' && r.status !== 'PO Confirmed' && (
-                                    <button onClick={(e) => { e.stopPropagation(); handlePoke(r); }} className="text-[10px] font-bold text-brand hover:bg-brand/10 px-2 py-0.5 rounded-md flex items-center gap-1 flex-shrink-0"><Bell className="h-3 w-3" /> Poke</button>
-                                  )}
+                      {/* My Requests — status dots + search + redesigned cards (#2) */}
+                      {(() => {
+                        const q = homeSearch.trim().toLowerCase();
+                        const homeFiltered = requests.filter(r => {
+                          if (homeStatusFilter !== 'all' && groupOf(r.status) !== homeStatusFilter) return false;
+                          if (!q) return true;
+                          const hay = `${r.id} ${reqSummary(r)} ${r.productName} ${r.department} ${r.location} ${r.status} ${r.vendor}`.toLowerCase();
+                          return hay.includes(q);
+                        });
+                        return (
+                          <div className="pt-8">
+                            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                              <div className="flex items-center gap-3 flex-wrap">
+                                <h3 className="font-outfit text-xl font-extrabold text-textPrimary">My Requests <span className="text-textFaint font-semibold">({homeFiltered.length})</span></h3>
+                                {/* three coloured status filter dots */}
+                                <div className="flex items-center gap-1 rounded-full bg-surface border border-borderTheme px-1.5 py-1 shadow-sm">
+                                  <button
+                                    onClick={() => setHomeStatusFilter('all')}
+                                    title="Show all requests"
+                                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${homeStatusFilter === 'all' ? 'bg-secondary text-textPrimary' : 'text-textFaint hover:text-textPrimary'}`}
+                                  >
+                                    All
+                                  </button>
+                                  {STATUS_GROUPS.map(g => {
+                                    const active = homeStatusFilter === g.key;
+                                    const count = requests.filter(r => groupOf(r.status) === g.key).length;
+                                    return (
+                                      <button
+                                        key={g.key}
+                                        onClick={() => setHomeStatusFilter(active ? 'all' : g.key)}
+                                        title={`${g.label} · ${count} request${count === 1 ? '' : 's'}`}
+                                        className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[11px] font-bold transition-all"
+                                        style={active ? { background: `rgb(${g.rgb} / 0.12)`, color: g.color } : { color: 'rgb(var(--text-faint))' }}
+                                      >
+                                        <span
+                                          className="h-2.5 w-2.5 rounded-full transition-all"
+                                          style={{ background: g.color, boxShadow: active ? `0 0 0 3px rgb(${g.rgb} / 0.25)` : 'none' }}
+                                        />
+                                        <span className="tabular-nums">{count}</span>
+                                      </button>
+                                    );
+                                  })}
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      </div>
+                              <div className="flex items-center gap-3">
+                                {/* search by id / product / any detail */}
+                                <div className="relative">
+                                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-textFaint" />
+                                  <input
+                                    value={homeSearch}
+                                    onChange={(e) => setHomeSearch(e.target.value)}
+                                    placeholder="Search by ID, product…"
+                                    className="w-60 max-w-[60vw] bg-surface border border-borderTheme rounded-full pl-9 pr-8 py-2 text-sm text-textPrimary placeholder-textFaint focus:outline-none focus:border-brand shadow-sm"
+                                  />
+                                  {homeSearch && (
+                                    <button onClick={() => setHomeSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-textFaint hover:text-textPrimary" title="Clear search">
+                                      <X className="h-3.5 w-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                                <button onClick={() => setEmployeeTab('list')} className="text-sm font-semibold text-brand hover:underline whitespace-nowrap">View all</button>
+                              </div>
+                            </div>
+                            {homeFiltered.length === 0 ? (
+                              <div className="p-10 text-center bg-surface border border-borderTheme rounded-2xl shadow-sm">
+                                <Search className="h-7 w-7 mx-auto text-textFaint mb-2" />
+                                <p className="text-sm font-semibold text-textPrimary">No requests match your filters</p>
+                                <p className="text-xs text-textFaint mt-1">Try a different keyword or status.</p>
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {homeFiltered.map(r => (
+                                  <RequestCard
+                                    key={r.id}
+                                    r={r}
+                                    onOpen={() => { setSelectedRequestId(r.id); setEmployeeTab('tracking'); }}
+                                    onPoke={() => handlePoke(r)}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
 
@@ -1896,8 +2061,8 @@ export default function App() {
                   {employeeTab === 'list' && (
                     <div className="space-y-4 animate-fadeIn">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-outfit font-extrabold text-xl text-primary">Your Procurement Requisitions</h3>
-                        <span className="text-xs text-textFaint">Select any request to view its live tracking timeline</span>
+                        <h3 className="font-outfit font-extrabold text-xl text-primary">Your Requests</h3>
+                        <span className="text-xs text-textFaint">Tap any request to see where it is</span>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2205,8 +2370,8 @@ export default function App() {
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <SceneHeader
                     icon={FileInput}
-                    title="AI Parsed Requisition Form"
-                    subtitle="Review and edit the parameters extracted from your conversational request."
+                    title="Your Request Details"
+                    subtitle="Check and edit what the AI understood from your message."
                     right={
                       <span className="hero-ctl px-3.5 py-2 rounded-full text-xs font-bold flex items-center gap-1.5">
                         <ShieldCheck className="h-3.5 w-3.5" />
@@ -2326,8 +2491,8 @@ export default function App() {
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <SceneHeader
                     icon={Landmark}
-                    title="Smart Budget Verification & Allocation"
-                    subtitle="The platform cross-references available cost center funds in real-time after contract pricing is resolved."
+                    title="Budget Check"
+                    subtitle="We check your branch has the funds available — instantly."
                     right={
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">Simulate</span>
@@ -2442,8 +2607,8 @@ export default function App() {
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <SceneHeader
                     icon={Search}
-                    title="Active Contract Search"
-                    subtitle="AI queries the Odoo registry for valid Rate Contracts or pricing agreements."
+                    title="Finding the Best Price"
+                    subtitle="We look for existing supplier contracts and agreed rates."
                     right={
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">Contract exists?</span>
@@ -2552,8 +2717,8 @@ export default function App() {
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <SceneHeader
                     icon={Briefcase}
-                    title="SCM Buyer Portal"
-                    subtitle="Sourcing workload, live RFQs and AI-assisted vendor discovery in one queue."
+                    title="Sourcing Desk"
+                    subtitle="All your sourcing work, live quotes and vendor finds in one place."
                     stats={[
                       { label: 'To source', value: String(requests.filter(r => r.status === 'Sourcing').length) },
                       { label: 'Pipeline', value: `₹${Math.round(requests.filter(r => r.status === 'Sourcing').reduce((s, r) => s + r.totalCost, 0) / 1000)}K` },
@@ -2858,8 +3023,8 @@ export default function App() {
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <SceneHeader
                     icon={Award}
-                    title="Side-by-Side RFQ Comparison"
-                    subtitle="Value scorecard compiled from active vendor bids in local Odoo database."
+                    title="Compare Vendor Quotes"
+                    subtitle="See every vendor's price and terms side by side."
                   />
                   
                   <div className="p-6 rounded-2xl bg-surface border border-borderTheme overflow-hidden">
@@ -2925,8 +3090,8 @@ export default function App() {
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <SceneHeader
                     icon={Sparkles}
-                    title="AI Autonomous Negotiation"
-                    subtitle="Watch the AI agent negotiate rates and terms directly with the supplier bot."
+                    title="AI Price Negotiation"
+                    subtitle="Watch the AI negotiate the price and terms with the supplier."
                     right={
                       <>
                         <span className="hero-ctl px-3.5 py-2 rounded-full text-xs font-bold">
@@ -3047,8 +3212,8 @@ export default function App() {
                 <div className="max-w-6xl mx-auto py-8 animate-fadeIn">
                   <SceneHeader
                     icon={ShieldCheck}
-                    title="Unified Approval Panel"
-                    subtitle="Simplifying decision metrics for managers. No complex ERP menus."
+                    title="Approvals"
+                    subtitle="Everything you need to approve a request — no complex menus."
                     className="mb-5"
                     stats={[
                       { label: 'Awaiting you', value: String(requests.filter(r => r.status === 'Pending Approval').length) },
@@ -3347,8 +3512,8 @@ export default function App() {
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <SceneHeader
                     icon={History}
-                    title="Request Tracking Milestone"
-                    subtitle="Amazon-style simple progress tracker hiding deep transactional ERP states."
+                    title="Track Your Request"
+                    subtitle="A simple, order-tracking style view of where your request is."
                   />
                   
                   <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-8 shadow-sm">
@@ -3538,8 +3703,8 @@ export default function App() {
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <SceneHeader
                     icon={Truck}
-                    title="Product Receiving & Goods Receipt Note"
-                    subtitle="Simulate warehouse operations. Inspect the delivered items and generate the GRN in Odoo."
+                    title="Receive Items"
+                    subtitle="Check the delivered items and record what arrived."
                   />
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -3708,8 +3873,8 @@ export default function App() {
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <SceneHeader
                     icon={ShieldCheck}
-                    title="Automated 3-Way Match Verification"
-                    subtitle="Audit and reconcile PO details, Goods Receipt note, and Vendor Invoice side-by-side."
+                    title="Invoice Check"
+                    subtitle="We match the order, the delivery and the invoice automatically."
                   />
 
                   <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-6 shadow-sm">
@@ -3887,8 +4052,8 @@ export default function App() {
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <SceneHeader
                     icon={CreditCard}
-                    title="Payment Disbursement & Reconciliation"
-                    subtitle="Authorize the cash disbursement and auto-reconcile bank statements in Odoo."
+                    title="Make Payment"
+                    subtitle="Approve the payment and reconcile the bank records automatically."
                   />
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -4012,8 +4177,8 @@ export default function App() {
                 <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
                   <SceneHeader
                     icon={LayoutDashboard}
-                    title="Spend Intelligence Dashboard"
-                    subtitle="High-level capital monitoring and automated fraud detection audits."
+                    title="Spend Dashboard"
+                    subtitle="A clear view of company spending, savings and alerts."
                     stats={[
                       { label: 'Total audited', value: '₹4.58 Cr' },
                       { label: 'AI savings', value: '₹28.45 L' },
@@ -4022,11 +4187,50 @@ export default function App() {
                     ]}
                   />
 
+                  {/* Date filter — pick a month range to see the spend for those dates */}
+                  <div className="flex flex-wrap items-center gap-3 p-4 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="grid h-8 w-8 place-items-center rounded-xl bg-brand/10 text-brand"><Calendar className="h-4 w-4" /></span>
+                      <span className="text-sm font-bold text-textPrimary">Filter by date</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-textFaint">From</label>
+                      <input type="month" min={DASH_MONTH_MIN} max={DASH_MONTH_MAX} value={dashFrom} onChange={(e) => setDashFrom(e.target.value)}
+                        className="bg-secondary border border-borderTheme rounded-lg px-2.5 py-1.5 text-sm font-semibold text-textPrimary focus:outline-none focus:border-brand" />
+                      <label className="text-xs font-bold uppercase tracking-wider text-textFaint">To</label>
+                      <input type="month" min={DASH_MONTH_MIN} max={DASH_MONTH_MAX} value={dashTo} onChange={(e) => setDashTo(e.target.value)}
+                        className="bg-secondary border border-borderTheme rounded-lg px-2.5 py-1.5 text-sm font-semibold text-textPrimary focus:outline-none focus:border-brand" />
+                    </div>
+                    {/* quick presets */}
+                    <div className="flex items-center gap-1.5">
+                      {([
+                        { label: 'All', from: DASH_MONTH_MIN, to: DASH_MONTH_MAX },
+                        { label: 'Q1', from: '2026-01', to: '2026-03' },
+                        { label: 'Q2', from: '2026-04', to: '2026-06' },
+                        { label: 'Last 3M', from: '2026-05', to: '2026-07' },
+                      ]).map(p => {
+                        const active = dashFrom === p.from && dashTo === p.to;
+                        return (
+                          <button key={p.label} onClick={() => { setDashFrom(p.from); setDashTo(p.to); }}
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${active ? 'bg-brand text-onbrand' : 'bg-secondary text-textSecondary hover:text-textPrimary'}`}>
+                            {p.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="ml-auto flex items-center gap-2">
+                      <span className="rounded-full bg-brand/10 text-brand px-3 py-1.5 text-xs font-bold tabular-nums">{dash.rangeLabel} · ₹{dash.spend.toFixed(2)} Cr</span>
+                      {!dash.full && (
+                        <button onClick={() => { setDashFrom(DASH_MONTH_MIN); setDashTo(DASH_MONTH_MAX); }} className="text-xs font-semibold text-textFaint hover:text-textPrimary">Reset</button>
+                      )}
+                    </div>
+                  </div>
+
                   {/* KPI row — each tile carries its own trend and movement */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 font-outfit">
-                    <StatTile icon={Landmark} tint="78 62 216" value="₹4.58 Cr" label="Total Audited"
-                      caption="FY 2026 · 5 branches" delay={0} spark={spendAnalytics.sparks.spend}
-                      curr={spendAnalytics.headline.audited} prev={spendAnalytics.headline.auditedPrev} />
+                    <StatTile icon={Landmark} tint="78 62 216" value={`₹${dash.spend.toFixed(2)} Cr`} label={dash.full ? 'Total Spend' : 'Spend in Period'}
+                      caption={dash.full ? 'FY 2026 · 5 branches' : `${dash.rangeLabel} 2026 · ${dash.months.length} month${dash.months.length === 1 ? '' : 's'}`} delay={0} spark={spendAnalytics.sparks.spend}
+                      curr={dash.spend} prev={dash.prevSpend} />
                     <StatTile icon={TrendingUp} tint="12 150 137" value="₹28.45 L" label="AI Savings"
                       caption="6.2% of total spend" meter={62} delay={60} spark={spendAnalytics.sparks.savings}
                       curr={spendAnalytics.headline.savings} prev={spendAnalytics.headline.savingsPrev} />
@@ -4062,14 +4266,20 @@ export default function App() {
                     <div className="lg:col-span-2 p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div>
-                          <h3 className="font-outfit font-bold text-textPrimary">Spend vs Budget</h3>
+                          <h3 className="font-outfit font-bold text-textPrimary">Spend vs Budget <span className="text-textFaint font-semibold">· {dash.rangeLabel}</span></h3>
                           <p className="text-[11px] text-textFaint mb-2">Monthly, ₹ Crore — dashed line is the allocation</p>
                         </div>
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-neg/10 text-neg px-2.5 py-1 text-[10px] font-bold">
-                          <AlertTriangle className="h-3 w-3" /> July over allocation
-                        </span>
+                        {dash.over ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-neg/10 text-neg px-2.5 py-1 text-[10px] font-bold">
+                            <AlertTriangle className="h-3 w-3" /> Over allocation
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-pos/10 text-pos px-2.5 py-1 text-[10px] font-bold">
+                            <CheckCircle2 className="h-3 w-3" /> Within budget
+                          </span>
+                        )}
                       </div>
-                      <TrendArea data={spendAnalytics.byMonth} />
+                      <TrendArea data={dash.months} />
                     </div>
                   </div>
 
@@ -4165,7 +4375,7 @@ export default function App() {
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <div className="flex items-center gap-2">
                         <Activity className="h-4 w-4 text-info" />
-                        <h3 className="font-outfit font-bold text-textPrimary">Cycle Time by Stage</h3>
+                        <h3 className="font-outfit font-bold text-textPrimary">How Long Each Step Takes</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Average days — grey marker is where it sat before AI</p>
                       <div className="space-y-3">
@@ -4217,7 +4427,7 @@ export default function App() {
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                       <div className="flex items-center gap-2">
                         <ScanLine className="h-4 w-4 text-neg" />
-                        <h3 className="font-outfit font-bold text-textPrimary">Anomalies Caught by the Audit Agent</h3>
+                        <h3 className="font-outfit font-bold text-textPrimary">Issues We Caught</h3>
                       </div>
                       <span className="text-[11px] text-textFaint">₹9.32 L of exposure stopped before payment</span>
                     </div>
