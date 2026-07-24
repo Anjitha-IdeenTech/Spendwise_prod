@@ -373,30 +373,31 @@ function StatTile({ icon: Icon, tint, value, label, caption, meter, delay = 0, s
   prev?: number;
   lowerIsBetter?: boolean;
 }) {
+  const tintCss = `rgb(${tint})`;
+  const tintStroke = `rgb(${tint.split(' ').join(', ')})`;   // SVG-safe comma form
   return (
     <div
-      className="stat-tile p-3.5 animate-fadeIn"
+      className="relative overflow-hidden rounded-2xl bg-surface border border-borderTheme shadow-sm p-4 animate-fadeIn"
       style={{ '--tint': tint, animationDelay: `${delay}ms` } as React.CSSProperties}
     >
+      {/* icon chip carries the only colour, with the movement chip opposite it */}
       <div className="flex items-start justify-between gap-2">
-        <p className="text-[26px] font-extrabold text-white font-outfit leading-none tabular-nums">
-          <CountUp value={value} />
-        </p>
-        <div className="glass-chip h-7 w-7 rounded-lg grid place-items-center shrink-0">
-          <Icon className="h-3.5 w-3.5 text-white" />
-        </div>
-      </div>
-      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-white/85">{label}</p>
+        <span className="grid h-10 w-10 place-items-center rounded-xl shrink-0" style={{ background: `rgb(${tint} / 0.12)`, color: tintCss }}>
+          <Icon className="h-5 w-5" />
+        </span>
         {curr !== undefined && prev !== undefined && (
-          <DeltaChip curr={curr} prev={prev} lowerIsBetter={lowerIsBetter} onDark />
+          <DeltaChip curr={curr} prev={prev} lowerIsBetter={lowerIsBetter} />
         )}
       </div>
-      {caption && <p className="text-[10px] text-white/55 mt-1 truncate">{caption}</p>}
-      {spark && <Sparkline data={spark} stroke="#fff" className="w-full h-7 mt-1.5 opacity-80" />}
+      <p className="text-[26px] font-extrabold text-textPrimary font-outfit leading-none tabular-nums mt-3.5">
+        <CountUp value={value} />
+      </p>
+      <p className="text-xs font-bold text-textSecondary mt-2">{label}</p>
+      {caption && <p className="text-[11px] text-textFaint mt-0.5 truncate">{caption}</p>}
+      {spark && spark.length > 1 && <Sparkline data={spark} stroke={tintStroke} className="w-full h-7 mt-2.5" />}
       {meter !== undefined && (
-        <div className="mt-2 h-[3px] rounded-full bg-white/15 overflow-hidden">
-          <div className="stat-meter" style={{ width: `${meter}%` }} />
+        <div className="mt-2.5 h-1.5 rounded-full bg-secondary overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${meter}%`, background: tintCss }} />
         </div>
       )}
     </div>
@@ -4525,16 +4526,16 @@ export default function App() {
                   <>
                   {/* KPI row — every tile recomputes from the filtered ledger */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 font-outfit">
-                    <StatTile icon={Landmark} tint="78 62 216" value={`₹${dash.spend.toFixed(2)} Cr`} label={dash.fullRange && dash.noCat ? 'Total Spend' : 'Spend (filtered)'}
+                    <StatTile icon={Landmark} tint="76 91 212" value={`₹${dash.spend.toFixed(2)} Cr`} label={dash.fullRange && dash.noCat ? 'Total Spend' : 'Spend (filtered)'}
                       caption={[dash.fullRange ? `${dash.poCount} orders` : `${dash.rangeLabel} 2026`, dashBranch !== 'All' ? dashBranch : null, dashDept !== 'All' ? dashDept : null, dashCategory !== 'All' ? dashCategory : null].filter(Boolean).join(' · ')}
                       delay={0} spark={dash.spark.spend} curr={dash.spend} prev={dash.prev.spend} />
-                    <StatTile icon={TrendingUp} tint="12 150 137" value={`₹${dash.savings.toFixed(1)} L`} label="AI Savings"
+                    <StatTile icon={TrendingUp} tint="14 159 142" value={`₹${dash.savings.toFixed(1)} L`} label="AI Savings"
                       caption={`${dash.savingsPct.toFixed(1)}% of spend`} meter={Math.min(Math.round(dash.savingsPct * 8), 100)} delay={60} spark={dash.spark.savings}
                       curr={dash.savings} prev={dash.prev.savings} />
-                    <StatTile icon={Timer} tint="30 118 212" value={`${dash.cycleAvg.toFixed(1)} days`} label="Avg Cycle Time"
+                    <StatTile icon={Timer} tint="62 111 196" value={`${dash.cycleAvg.toFixed(1)} days`} label="Avg Cycle Time"
                       caption="request → payment" delay={120} spark={dash.spark.cycle}
                       curr={dash.cycleAvg} prev={dash.prev.cycle} lowerIsBetter />
-                    <StatTile icon={ShieldAlert} tint="219 58 75" value={String(dash.anomCount)} label="Blocked Anomalies"
+                    <StatTile icon={ShieldAlert} tint="198 58 80" value={String(dash.anomCount)} label="Blocked Anomalies"
                       caption={`₹${dash.anomTotalL.toFixed(2)} L stopped`} delay={180} spark={dash.spark.anomalies}
                       curr={dash.anomCount} prev={dash.prev.anomalies} lowerIsBetter />
                   </div>

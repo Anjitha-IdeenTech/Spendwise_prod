@@ -765,6 +765,10 @@ video {
   margin-top: 0.75rem;
 }
 
+.mt-3\.5{
+  margin-top: 0.875rem;
+}
+
 .mt-4{
   margin-top: 1rem;
 }
@@ -914,10 +918,6 @@ video {
 
 .h-\[34rem\]{
   height: 34rem;
-}
-
-.h-\[3px\]{
-  height: 3px;
 }
 
 .h-\[400px\]{
@@ -2338,20 +2338,12 @@ video {
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
-.text-white\/55{
-  color: rgb(255 255 255 / 0.55);
-}
-
 .text-white\/60{
   color: rgb(255 255 255 / 0.6);
 }
 
 .text-white\/70{
   color: rgb(255 255 255 / 0.7);
-}
-
-.text-white\/85{
-  color: rgb(255 255 255 / 0.85);
 }
 
 .placeholder-textFaint::-moz-placeholder{
@@ -2382,10 +2374,6 @@ video {
 
 .opacity-75{
   opacity: 0.75;
-}
-
-.opacity-80{
-  opacity: 0.8;
 }
 
 .shadow{
