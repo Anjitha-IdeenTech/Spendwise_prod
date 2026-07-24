@@ -157,6 +157,75 @@ const STATUS_GROUPS: { key: 'action' | 'progress' | 'done'; label: string; color
 ];
 const groupOf = (s: string): 'action' | 'progress' | 'done' => STATUS_GROUPS.find(g => g.statuses.includes(s))?.key ?? 'action';
 
+// Shared request filter — status bucket + free-text over id / product / branch /
+// department / status / vendor. Used by the home grid, the list tab and the
+// buyer / manager queues so search behaves identically everywhere.
+const requestHaystack = (r: RequestItem) => `${r.id} ${reqSummary(r)} ${r.productName} ${r.department} ${r.location} ${r.status} ${r.vendor}`.toLowerCase();
+const filterRequests = (list: RequestItem[], statusKey: string, search: string) => {
+  const q = search.trim().toLowerCase();
+  return list.filter(r => {
+    if (statusKey !== 'all' && groupOf(r.status) !== statusKey) return false;
+    return !q || requestHaystack(r).includes(q);
+  });
+};
+
+// The three coloured status filter dots (+ an "All" reset), shared across tabs.
+function StatusDots({ value, onChange, requests }: {
+  value: 'all' | 'action' | 'progress' | 'done';
+  onChange: (v: 'all' | 'action' | 'progress' | 'done') => void;
+  requests: RequestItem[];
+}) {
+  return (
+    <div className="flex items-center gap-1 rounded-full bg-surface border border-borderTheme px-1.5 py-1 shadow-sm">
+      <button
+        onClick={() => onChange('all')}
+        title="Show all requests"
+        className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${value === 'all' ? 'bg-secondary text-textPrimary' : 'text-textFaint hover:text-textPrimary'}`}
+      >
+        All
+      </button>
+      {STATUS_GROUPS.map(g => {
+        const active = value === g.key;
+        const count = requests.filter(r => groupOf(r.status) === g.key).length;
+        return (
+          <button
+            key={g.key}
+            onClick={() => onChange(active ? 'all' : g.key)}
+            title={`${g.label} · ${count} request${count === 1 ? '' : 's'}`}
+            className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[11px] font-bold transition-all"
+            style={active ? { background: `rgb(${g.rgb} / 0.12)`, color: g.color } : { color: 'rgb(var(--text-faint))' }}
+          >
+            <span className="h-2.5 w-2.5 rounded-full transition-all" style={{ background: g.color, boxShadow: active ? `0 0 0 3px rgb(${g.rgb} / 0.25)` : 'none' }} />
+            <span className="tabular-nums">{count}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Rounded search field with a leading icon and a clear button, shared across screens.
+function RequestSearch({ value, onChange, placeholder = 'Search by ID, product…', className = 'w-60' }: {
+  value: string; onChange: (v: string) => void; placeholder?: string; className?: string;
+}) {
+  return (
+    <div className="relative">
+      <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-textFaint" />
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`${className} max-w-[60vw] bg-surface border border-borderTheme rounded-full pl-9 pr-8 py-2 text-sm text-textPrimary placeholder-textFaint focus:outline-none focus:border-brand shadow-sm`}
+      />
+      {value && (
+        <button onClick={() => onChange('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-textFaint hover:text-textPrimary" title="Clear search">
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
+  );
+}
+
 /**
  * Premium request card on the employee home grid — status icon chip, urgency
  * flag, headline value, delivery date and a gradient lifecycle bar, with a
@@ -441,6 +510,21 @@ function BarList({ data, color = '#1E76D4', prefix = '', suffix = '' }: { data: 
 // A breakdown row carries last period's figure too, so every table can show
 // share-of-total AND movement without a second data source.
 interface BreakdownRow { label: string; value: number; prev?: number; meta?: string; }
+
+// Dashboard breakdown "focus" filter — when a specific row is picked, collapse
+// the rest into an "Others" bucket so the chart clearly compares the selection.
+const focusRows = (rows: BreakdownRow[], label: string): BreakdownRow[] => {
+  if (label === 'All') return rows;
+  const sel = rows.find(r => r.label === label);
+  if (!sel) return rows;
+  const rest = rows.filter(r => r.label !== label);
+  return [sel, {
+    label: 'Others',
+    value: rest.reduce((s, r) => s + r.value, 0),
+    prev: rest.reduce((s, r) => s + (r.prev ?? 0), 0),
+    meta: `${rest.length} more`,
+  }];
+};
 
 // Company-wide spend analytics for the CEO / consolidated dashboards (₹ Crore
 // unless the field says otherwise). FY 2026, year-to-date.
@@ -986,11 +1070,18 @@ export default function App() {
   // "My Requests" home filters — three coloured status dots + free-text search.
   const [homeStatusFilter, setHomeStatusFilter] = useState<'all' | 'action' | 'progress' | 'done'>('all');
   const [homeSearch, setHomeSearch] = useState('');
+  // Search boxes on the manager approvals and buyer sourcing queues.
+  const [mgrSearch, setMgrSearch] = useState('');
+  const [scmSearch, setScmSearch] = useState('');
   // Spend dashboard date filter — inclusive from/to month (data runs Jan–Jul 2026).
   const DASH_MONTH_MIN = '2026-01';
   const DASH_MONTH_MAX = '2026-07';
   const [dashFrom, setDashFrom] = useState(DASH_MONTH_MIN);
   const [dashTo, setDashTo] = useState(DASH_MONTH_MAX);
+  // Extra dashboard filters — focus the breakdown charts on one branch / department / category.
+  const [dashBranch, setDashBranch] = useState('All');
+  const [dashDept, setDashDept] = useState('All');
+  const [dashCategory, setDashCategory] = useState('All');
   // Slice the monthly spend series to the picked range and recompute the totals.
   const dash = (() => {
     const toIdx = (v: string) => Math.min(Math.max(parseInt(v.slice(5, 7), 10) - 1, 0), spendAnalytics.byMonth.length - 1);
@@ -1972,64 +2063,16 @@ export default function App() {
 
                       {/* My Requests — status dots + search + redesigned cards (#2) */}
                       {(() => {
-                        const q = homeSearch.trim().toLowerCase();
-                        const homeFiltered = requests.filter(r => {
-                          if (homeStatusFilter !== 'all' && groupOf(r.status) !== homeStatusFilter) return false;
-                          if (!q) return true;
-                          const hay = `${r.id} ${reqSummary(r)} ${r.productName} ${r.department} ${r.location} ${r.status} ${r.vendor}`.toLowerCase();
-                          return hay.includes(q);
-                        });
+                        const homeFiltered = filterRequests(requests, homeStatusFilter, homeSearch);
                         return (
                           <div className="pt-8">
                             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                               <div className="flex items-center gap-3 flex-wrap">
                                 <h3 className="font-outfit text-xl font-extrabold text-textPrimary">My Requests <span className="text-textFaint font-semibold">({homeFiltered.length})</span></h3>
-                                {/* three coloured status filter dots */}
-                                <div className="flex items-center gap-1 rounded-full bg-surface border border-borderTheme px-1.5 py-1 shadow-sm">
-                                  <button
-                                    onClick={() => setHomeStatusFilter('all')}
-                                    title="Show all requests"
-                                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${homeStatusFilter === 'all' ? 'bg-secondary text-textPrimary' : 'text-textFaint hover:text-textPrimary'}`}
-                                  >
-                                    All
-                                  </button>
-                                  {STATUS_GROUPS.map(g => {
-                                    const active = homeStatusFilter === g.key;
-                                    const count = requests.filter(r => groupOf(r.status) === g.key).length;
-                                    return (
-                                      <button
-                                        key={g.key}
-                                        onClick={() => setHomeStatusFilter(active ? 'all' : g.key)}
-                                        title={`${g.label} · ${count} request${count === 1 ? '' : 's'}`}
-                                        className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[11px] font-bold transition-all"
-                                        style={active ? { background: `rgb(${g.rgb} / 0.12)`, color: g.color } : { color: 'rgb(var(--text-faint))' }}
-                                      >
-                                        <span
-                                          className="h-2.5 w-2.5 rounded-full transition-all"
-                                          style={{ background: g.color, boxShadow: active ? `0 0 0 3px rgb(${g.rgb} / 0.25)` : 'none' }}
-                                        />
-                                        <span className="tabular-nums">{count}</span>
-                                      </button>
-                                    );
-                                  })}
-                                </div>
+                                <StatusDots value={homeStatusFilter} onChange={setHomeStatusFilter} requests={requests} />
                               </div>
                               <div className="flex items-center gap-3">
-                                {/* search by id / product / any detail */}
-                                <div className="relative">
-                                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-textFaint" />
-                                  <input
-                                    value={homeSearch}
-                                    onChange={(e) => setHomeSearch(e.target.value)}
-                                    placeholder="Search by ID, product…"
-                                    className="w-60 max-w-[60vw] bg-surface border border-borderTheme rounded-full pl-9 pr-8 py-2 text-sm text-textPrimary placeholder-textFaint focus:outline-none focus:border-brand shadow-sm"
-                                  />
-                                  {homeSearch && (
-                                    <button onClick={() => setHomeSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-textFaint hover:text-textPrimary" title="Clear search">
-                                      <X className="h-3.5 w-3.5" />
-                                    </button>
-                                  )}
-                                </div>
+                                <RequestSearch value={homeSearch} onChange={setHomeSearch} />
                                 <button onClick={() => setEmployeeTab('list')} className="text-sm font-semibold text-brand hover:underline whitespace-nowrap">View all</button>
                               </div>
                             </div>
@@ -2057,68 +2100,43 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Tab 2: My Requests List (Separated Grid) */}
-                  {employeeTab === 'list' && (
-                    <div className="space-y-4 animate-fadeIn">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-outfit font-extrabold text-xl text-primary">Your Requests</h3>
-                        <span className="text-xs text-textFaint">Tap any request to see where it is</span>
+                  {/* Tab 2: My Requests — full list, same card + filters as the home grid */}
+                  {employeeTab === 'list' && (() => {
+                    const listFiltered = filterRequests(requests, homeStatusFilter, homeSearch);
+                    return (
+                      <div className="space-y-4 animate-fadeIn">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <h3 className="font-outfit font-extrabold text-xl text-primary">Your Requests <span className="text-textFaint font-semibold">({listFiltered.length})</span></h3>
+                            <span className="text-xs text-textFaint">Tap any request to see where it is</span>
+                          </div>
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <StatusDots value={homeStatusFilter} onChange={setHomeStatusFilter} requests={requests} />
+                            <RequestSearch value={homeSearch} onChange={setHomeSearch} />
+                          </div>
+                        </div>
+
+                        {listFiltered.length === 0 ? (
+                          <div className="p-12 text-center bg-surface border border-borderTheme rounded-2xl shadow-sm">
+                            <Search className="h-8 w-8 mx-auto text-textFaint mb-2" />
+                            <p className="text-sm font-semibold text-textPrimary">No requests match your filters</p>
+                            <p className="text-xs text-textFaint mt-1">Try a different keyword or status.</p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {listFiltered.map(r => (
+                              <RequestCard
+                                key={r.id}
+                                r={r}
+                                onOpen={() => { setSelectedRequestId(r.id); setEmployeeTab('tracking'); }}
+                                onPoke={() => handlePoke(r)}
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {requests.map((req, i) => {
-                          const meta = STATUS_META[req.status];
-                          const Icon = meta?.icon ?? FileText;
-                          const stage = statusStage(req.status);
-                          const selected = selectedRequestId === req.id;
-                          return (
-                            <div
-                              key={req.id}
-                              onClick={() => { setSelectedRequestId(req.id); setEmployeeTab('tracking'); }}
-                              className={`req-tile cursor-pointer p-5 pl-6 animate-fadeIn ${selected ? 'ring-2 ring-brand/60' : ''}`}
-                              style={{ '--tint': statusRgb(req.status), animationDelay: `${i * 40}ms` } as React.CSSProperties}
-                            >
-                              <div className="relative flex items-center justify-between mb-2.5">
-                                <span className="text-xs font-bold text-textFaint tabular-nums">{req.id}</span>
-                                <span
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold"
-                                  style={{ color: statusColor(req.status), background: `rgb(${statusRgb(req.status)} / 0.12)` }}
-                                >
-                                  <Icon className="h-3 w-3" />
-                                  {req.status}
-                                </span>
-                              </div>
-
-                              <h4 className="relative font-outfit font-extrabold text-base text-textPrimary">{req.productQty}x {reqSummary(req)}</h4>
-
-                              <div className="relative grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-borderTheme/60 text-xs">
-                                <div>
-                                  <span className="block text-[10px] text-textFaint uppercase tracking-wider">Total budget:</span>
-                                  <span className="font-extrabold text-textPrimary tabular-nums">₹{req.totalCost.toLocaleString()}</span>
-                                </div>
-                                <div>
-                                  <span className="block text-[10px] text-textFaint uppercase tracking-wider">Location:</span>
-                                  <span className="font-bold text-textPrimary">{req.location}</span>
-                                </div>
-                              </div>
-
-                              {/* Lifecycle tracker — same language as the manager panel */}
-                              <div className="relative mt-3 flex items-center gap-1">
-                                {STAGE_LABELS.map((label, s) => (
-                                  <div
-                                    key={label}
-                                    title={label}
-                                    className="h-1.5 flex-1 rounded-full"
-                                    style={{ background: s <= stage ? `rgb(${statusRgb(req.status)})` : 'rgb(var(--border-color))' }}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {/* Tab 3: Request Tracking (Selected Requisition Timeline) */}
                   {employeeTab === 'tracking' && (
@@ -2748,17 +2766,27 @@ export default function App() {
                   </div>
 
                   {/* SCM Tab 1: Contract Requests Queue */}
-                  {scmTab === 'requests' && (
+                  {scmTab === 'requests' && (() => {
+                    const scmList = requests.filter(r => r.status === 'Sourcing' && requestHaystack(r).includes(scmSearch.trim().toLowerCase()));
+                    return (
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <h3 className="font-outfit font-extrabold text-xl text-primary">Pending Sourcing Workload</h3>
-                          <p className="text-xs text-textSecondary">Requisitions flagged by Odoo requiring vendor quotation sourcing.</p>
+                          <h3 className="font-outfit font-extrabold text-xl text-primary">Requests to Source <span className="text-textFaint font-semibold">({scmList.length})</span></h3>
+                          <p className="text-xs text-textSecondary">Requests that need vendor quotes.</p>
                         </div>
+                        <RequestSearch value={scmSearch} onChange={setScmSearch} placeholder="Search requests…" />
                       </div>
 
+                      {scmList.length === 0 ? (
+                        <div className="p-12 text-center bg-surface border border-borderTheme rounded-2xl shadow-sm">
+                          <Search className="h-8 w-8 mx-auto text-textFaint mb-2" />
+                          <p className="text-sm font-semibold text-textPrimary">No requests to source right now</p>
+                          <p className="text-xs text-textFaint mt-1">{scmSearch ? 'Try a different keyword.' : 'New sourcing work will appear here.'}</p>
+                        </div>
+                      ) : (
                       <div className="grid grid-cols-1 gap-4">
-                        {requests.filter(r => r.status === 'Sourcing').map(req => (
+                        {scmList.map(req => (
                           <div key={req.id} className="p-6 rounded-2xl bg-surface border border-borderTheme flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div className="space-y-2">
                               <div className="flex items-center space-x-2">
@@ -2794,8 +2822,10 @@ export default function App() {
                           </div>
                         ))}
                       </div>
+                      )}
                     </div>
-                  )}
+                    );
+                  })()}
 
                   {/* SCM Tab 2: RFQ Bidding Events (Managing RFQs and bidding) */}
                   {scmTab === 'bidding' && (
@@ -3290,15 +3320,31 @@ export default function App() {
                     </div>
                   </div>
                   
-                  {requests.filter(r => r.status === 'Pending Approval').length === 0 ? (
-                    <div className="p-8 text-center bg-surface border border-borderTheme rounded-2xl text-textSecondary shadow-sm">
-                      <CheckCircle2 className="h-8 w-8 mx-auto text-accent-savings mb-2" />
-                      <p className="text-sm font-bold text-textPrimary font-outfit">All caught up!</p>
-                      <p className="text-xs mt-1 text-textSecondary">No requisitions currently require your approval.</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {requests.filter(r => r.status === 'Pending Approval').map(req => (
+                  {(() => {
+                    const pendingAll = requests.filter(r => r.status === 'Pending Approval');
+                    const mgrList = pendingAll.filter(r => requestHaystack(r).includes(mgrSearch.trim().toLowerCase()));
+                    if (pendingAll.length === 0) return (
+                      <div className="p-8 text-center bg-surface border border-borderTheme rounded-2xl text-textSecondary shadow-sm">
+                        <CheckCircle2 className="h-8 w-8 mx-auto text-accent-savings mb-2" />
+                        <p className="text-sm font-bold text-textPrimary font-outfit">All caught up!</p>
+                        <p className="text-xs mt-1 text-textSecondary">Nothing needs your approval right now.</p>
+                      </div>
+                    );
+                    return (
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h3 className="font-outfit font-extrabold text-xl text-primary">Requests to Approve <span className="text-textFaint font-semibold">({mgrList.length})</span></h3>
+                        <RequestSearch value={mgrSearch} onChange={setMgrSearch} placeholder="Search requests…" />
+                      </div>
+                      {mgrList.length === 0 ? (
+                        <div className="p-12 text-center bg-surface border border-borderTheme rounded-2xl shadow-sm">
+                          <Search className="h-8 w-8 mx-auto text-textFaint mb-2" />
+                          <p className="text-sm font-semibold text-textPrimary">No requests match your search</p>
+                          <p className="text-xs text-textFaint mt-1">Try a different keyword.</p>
+                        </div>
+                      ) : (
+                      <div className="space-y-6">
+                      {mgrList.map(req => (
                         <div key={req.id} className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm space-y-6">
                           <div className="flex items-center justify-between border-b border-borderTheme pb-4">
                             <div className="flex items-center space-x-3">
@@ -3431,8 +3477,11 @@ export default function App() {
                           )}
                         </div>
                       ))}
+                      </div>
+                      )}
                     </div>
-                  )}
+                    );
+                  })()}
                   {/* All requests — dense tile grid (#1) */}
                   <div className="mt-8">
                     <h3 className="font-outfit font-bold text-textPrimary mb-3">All Requests <span className="text-textFaint font-medium">({requests.length})</span></h3>
@@ -4187,8 +4236,9 @@ export default function App() {
                     ]}
                   />
 
-                  {/* Date filter — pick a month range to see the spend for those dates */}
-                  <div className="flex flex-wrap items-center gap-3 p-4 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                  {/* Filters — date range + branch / department / category */}
+                  <div className="p-4 rounded-2xl bg-surface border border-borderTheme shadow-sm space-y-3">
+                    <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-2">
                       <span className="grid h-8 w-8 place-items-center rounded-xl bg-brand/10 text-brand"><Calendar className="h-4 w-4" /></span>
                       <span className="text-sm font-bold text-textPrimary">Filter by date</span>
@@ -4222,6 +4272,45 @@ export default function App() {
                       <span className="rounded-full bg-brand/10 text-brand px-3 py-1.5 text-xs font-bold tabular-nums">{dash.rangeLabel} · ₹{dash.spend.toFixed(2)} Cr</span>
                       {!dash.full && (
                         <button onClick={() => { setDashFrom(DASH_MONTH_MIN); setDashTo(DASH_MONTH_MAX); }} className="text-xs font-semibold text-textFaint hover:text-textPrimary">Reset</button>
+                      )}
+                    </div>
+                    </div>
+
+                    {/* Row 2 — focus the breakdown charts on a branch / department / category */}
+                    <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-borderTheme/60">
+                      <div className="flex items-center gap-2">
+                        <span className="grid h-8 w-8 place-items-center rounded-xl bg-brand/10 text-brand"><Filter className="h-4 w-4" /></span>
+                        <span className="text-sm font-bold text-textPrimary">Filter data</span>
+                      </div>
+                      <label className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold uppercase tracking-wider text-textFaint">Branch</span>
+                        <select value={dashBranch} onChange={(e) => setDashBranch(e.target.value)}
+                          className="bg-secondary border border-borderTheme rounded-lg px-2.5 py-1.5 text-sm font-semibold text-textPrimary focus:outline-none focus:border-brand">
+                          <option value="All">All branches</option>
+                          {spendAnalytics.byBranch.map(b => <option key={b.label} value={b.label}>{b.label}</option>)}
+                        </select>
+                      </label>
+                      <label className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold uppercase tracking-wider text-textFaint">Department</span>
+                        <select value={dashDept} onChange={(e) => setDashDept(e.target.value)}
+                          className="bg-secondary border border-borderTheme rounded-lg px-2.5 py-1.5 text-sm font-semibold text-textPrimary focus:outline-none focus:border-brand">
+                          <option value="All">All departments</option>
+                          {spendAnalytics.byDepartment.map(d => <option key={d.label} value={d.label}>{d.label}</option>)}
+                        </select>
+                      </label>
+                      <label className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold uppercase tracking-wider text-textFaint">Category</span>
+                        <select value={dashCategory} onChange={(e) => setDashCategory(e.target.value)}
+                          className="bg-secondary border border-borderTheme rounded-lg px-2.5 py-1.5 text-sm font-semibold text-textPrimary focus:outline-none focus:border-brand">
+                          <option value="All">All categories</option>
+                          {spendAnalytics.byCategory.map(c => <option key={c.label} value={c.label}>{c.label}</option>)}
+                        </select>
+                      </label>
+                      {(dashBranch !== 'All' || dashDept !== 'All' || dashCategory !== 'All') && (
+                        <button onClick={() => { setDashBranch('All'); setDashDept('All'); setDashCategory('All'); }}
+                          className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-textFaint hover:text-textPrimary">
+                          <X className="h-3.5 w-3.5" /> Clear filters
+                        </button>
                       )}
                     </div>
                   </div>
@@ -4288,27 +4377,27 @@ export default function App() {
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <div className="flex items-center gap-2">
                         <Building2 className="h-4 w-4 text-brand" />
-                        <h3 className="font-outfit font-bold text-textPrimary">Spend by Department</h3>
+                        <h3 className="font-outfit font-bold text-textPrimary">Spend by Department{dashDept !== 'All' && <span className="text-brand font-semibold"> · {dashDept}</span>}</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Share of total, with change vs last year</p>
-                      <BreakdownBars rows={spendAnalytics.byDepartment} tint="#1E76D4" />
+                      <BreakdownBars rows={focusRows(spendAnalytics.byDepartment, dashDept)} tint="#1E76D4" />
                     </div>
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <div className="flex items-center gap-2">
                         <Boxes className="h-4 w-4 text-pos" />
-                        <h3 className="font-outfit font-bold text-textPrimary">Spend by Category</h3>
+                        <h3 className="font-outfit font-bold text-textPrimary">Spend by Category{dashCategory !== 'All' && <span className="text-pos font-semibold"> · {dashCategory}</span>}</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Share of total, with change vs last year</p>
-                      <BreakdownBars rows={spendAnalytics.byCategory} tint="#0C9689" />
+                      <BreakdownBars rows={focusRows(spendAnalytics.byCategory, dashCategory)} tint="#0C9689" />
                     </div>
                   </div>
 
                   {/* Geography + where the savings actually came from */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
-                      <h3 className="font-outfit font-bold text-textPrimary">Spend by Branch</h3>
+                      <h3 className="font-outfit font-bold text-textPrimary">Spend by Branch{dashBranch !== 'All' && <span className="text-brand font-semibold"> · {dashBranch}</span>}</h3>
                       <p className="text-[11px] text-textFaint mb-4">Where capital is deployed (₹ Crore)</p>
-                      <DonutChart data={spendAnalytics.byBranch} prefix="₹" />
+                      <DonutChart data={focusRows(spendAnalytics.byBranch, dashBranch)} prefix="₹" />
                     </div>
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <div className="flex items-center gap-2">
