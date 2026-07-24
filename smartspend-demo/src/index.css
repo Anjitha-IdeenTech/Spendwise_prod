@@ -397,10 +397,10 @@ body {
   position: relative;
   overflow: hidden;
   border-radius: 22px;
-  background: linear-gradient(120deg, #46988D 0%, #3C8A7F 55%, #2F766B 100%);
+  background: linear-gradient(120deg, #56A79C 0%, #4A9A8E 55%, #3B8479 100%);
   box-shadow:
-    0 16px 36px -16px rgba(40, 78, 70, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    0 16px 36px -16px rgba(40, 78, 70, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 /* soft light sheen + faint grid so the banner keeps a little depth */
 .panel-hero::before {
