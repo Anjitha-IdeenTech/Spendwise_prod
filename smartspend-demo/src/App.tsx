@@ -944,11 +944,11 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[200px]" role="img" aria-label="Monthly spend against budget">
         <defs>
           <linearGradient id={`ta${gid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1E7FD8" stopOpacity="0.38" />
-            <stop offset="100%" stopColor="#6A2FD6" stopOpacity="0.02" />
+            <stop offset="0%" stopColor="#4C5BD4" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#4C5BD4" stopOpacity="0.02" />
           </linearGradient>
           <linearGradient id={`tl${gid}`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#0FB5C8" /><stop offset="55%" stopColor="#1E7FD8" /><stop offset="100%" stopColor="#6A2FD6" />
+            <stop offset="0%" stopColor="#5A67D8" /><stop offset="55%" stopColor="#4C5BD4" /><stop offset="100%" stopColor="#3F4CB5" />
           </linearGradient>
         </defs>
         {/* horizontal guides */}
@@ -968,7 +968,7 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
           strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
         {data.map((d, i) => (
           <circle key={i} cx={x(i)} cy={y(d.value)} r={i === active ? 5 : 3}
-            fill="#fff" stroke="#1E7FD8" strokeWidth={i === active ? 3 : 2} />
+            fill="#fff" stroke="#4C5BD4" strokeWidth={i === active ? 3 : 2} />
         ))}
         {/* hover targets */}
         {data.map((d, i) => (
@@ -985,7 +985,7 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
       <div className="flex flex-wrap items-center gap-x-5 gap-y-1 mt-1 text-xs">
         <span className="font-bold text-textPrimary font-outfit">{data[active].label}</span>
         <span className="flex items-center gap-1.5 text-textSecondary">
-          <span className="h-2 w-2 rounded-full" style={{ background: '#1E7FD8' }} />
+          <span className="h-2 w-2 rounded-full" style={{ background: '#4C5BD4' }} />
           Actual <b className="text-textPrimary tabular-nums">{prefix}{data[active].value.toFixed(2)}{suffix}</b>
         </span>
         <span className="flex items-center gap-1.5 text-textSecondary">
@@ -1050,7 +1050,7 @@ function GaugeArc({ used, total, prefix = '₹', suffix = ' Cr' }: {
         <svg viewBox="0 0 160 92" className="w-52">
           <defs>
             <linearGradient id={`ga${gid}`} x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#0FB5C8" /><stop offset="55%" stopColor="#1E7FD8" /><stop offset="100%" stopColor="#6A2FD6" />
+              <stop offset="0%" stopColor="#5A67D8" /><stop offset="55%" stopColor="#4C5BD4" /><stop offset="100%" stopColor="#3F4CB5" />
             </linearGradient>
           </defs>
           <path d={D} fill="none" stroke="rgb(var(--bg-secondary))" strokeWidth="14" strokeLinecap="round" />
@@ -3514,7 +3514,7 @@ export default function App() {
                         {(() => {
                           const agg = requests.reduce((a, r) => { a[r.department] = (a[r.department] || 0) + r.totalCost; return a; }, {} as Record<string, number>);
                           const data = Object.entries(agg).map(([label, value]) => ({ label, value: Math.round(value / 1000) }));
-                          return <BarList data={data} color="#1E76D4" prefix="₹" suffix="K" />;
+                          return <BarList data={data} color="#3E6FC4" prefix="₹" suffix="K" />;
                         })()}
                       </div>
                     </div>
@@ -4588,7 +4588,7 @@ export default function App() {
                         <h3 className="font-outfit font-bold text-textPrimary">Spend by Department{dashDept !== 'All' && <span className="text-brand font-semibold"> · {dashDept}</span>}</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Share of total, with change vs last year</p>
-                      <BreakdownBars rows={dash.byDept} tint="#1E76D4" />
+                      <BreakdownBars rows={dash.byDept} tint="#3E6FC4" />
                     </div>
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <div className="flex items-center gap-2">
@@ -4613,7 +4613,7 @@ export default function App() {
                         <h3 className="font-outfit font-bold text-textPrimary">Where the ₹{dash.savings.toFixed(1)} L Came From</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Savings attributed by lever (₹ Lakh)</p>
-                      <BreakdownBars rows={dash.levers} tint="#6A2FD6" suffix=" L" />
+                      <BreakdownBars rows={dash.levers} tint="#4C5BD4" suffix=" L" />
                     </div>
                   </div>
 
@@ -4660,7 +4660,7 @@ export default function App() {
                                 </td>
                                 <td className="text-right tabular-nums text-pos font-bold">₹{v.savings.toFixed(1)} L</td>
                                 <td className="py-2.5">
-                                  <Sparkline data={v.trend} stroke="#1E76D4" className="w-16 h-6 ml-auto" />
+                                  <Sparkline data={v.trend} stroke="#3E6FC4" className="w-16 h-6 ml-auto" />
                                 </td>
                               </tr>
                             ))}
@@ -4689,7 +4689,7 @@ export default function App() {
                               </div>
                               <div className="relative h-2.5 rounded-full bg-secondary overflow-hidden">
                                 <div className="h-full rounded-full transition-all duration-700"
-                                  style={{ width: `${(s.days / worst) * 100}%`, background: 'linear-gradient(90deg,#0FB5C8,#1E7FD8)' }} />
+                                  style={{ width: `${(s.days / worst) * 100}%`, background: 'linear-gradient(90deg,#5A67D8,#4C5BD4)' }} />
                                 <span className="absolute top-0 bottom-0 w-0.5 bg-textFaint/70"
                                   style={{ left: `${(s.prevDays / worst) * 100}%` }} />
                               </div>

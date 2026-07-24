@@ -2554,34 +2554,31 @@ video {
     <body> and on .login-aurora (the app shell + the login page).
   */
   --canvas-aurora:
-    radial-gradient( 95% 75% at  2% -4%, rgba( 13, 190, 210, 0.46) 0%, transparent 62%),
-    radial-gradient( 85% 70% at 100% -2%, rgba(122,  47, 224, 0.38) 0%, transparent 60%),
-    radial-gradient( 95% 78% at 97% 102%, rgba( 25, 118, 220, 0.42) 0%, transparent 64%),
-    radial-gradient( 90% 75% at -4% 102%, rgba( 96,  58, 224, 0.34) 0%, transparent 62%),
-    linear-gradient(150deg, #E9F7FC 0%, #E6EFFD 44%, #EBE6FC 100%);
+    radial-gradient(120% 90% at 100% 0%, rgba(76, 91, 212, 0.05) 0%, transparent 55%),
+    linear-gradient(180deg, #F8F9FB 0%, #F4F5F8 100%);
 
-  /* Light canvas + white surfaces */
-  --bg-app:        233 240 252;   /* #E9F0FC tinted canvas    */
+  /* Refined Slate — cool near-neutral canvas, crisp white surfaces */
+  --bg-app:        246 247 249;   /* #F6F7F9 calm canvas      */
   --bg-surface:    255 255 255;   /* #FFFFFF card             */
-  --bg-secondary:  226 236 251;   /* #E2ECFB inset panel      */
-  --bg-raised:     211 225 248;   /* #D3E1F8 hover / raised   */
-  --border-color:  214 225 243;   /* #D6E1F3 hairline         */
-  --border-strong: 188 205 234;   /* #BCCDEA stronger line    */
-  --text-primary:   16  26  61;   /* #101A3D poster navy      */
-  --text-secondary: 82  95 128;   /* #525F80 body             */
-  --text-faint:    132 145 175;   /* #8491AF muted            */
+  --bg-secondary:  238 240 244;   /* #EEF0F4 inset panel      */
+  --bg-raised:     229 232 238;   /* #E5E8EE hover / raised   */
+  --border-color:  228 231 236;   /* #E4E7EC hairline         */
+  --border-strong: 209 214 224;   /* #D1D6E0 stronger line    */
+  --text-primary:   27  34  51;   /* #1B2233 ink              */
+  --text-secondary: 88  98 116;   /* #586274 body             */
+  --text-faint:    138 147 166;   /* #8A93A6 muted            */
   --onbrand:       255 255 255;   /* text on colored fills    */
 
-  --accent-budget:     78  62 216;   /* #4E3ED8 blue-violet primary */
-  --accent-savings:    12 150 137;   /* #0C9689 teal success        */
-  --accent-expenses:  219  58  75;   /* #DB3A4B danger              */
-  --accent-approvals: 194 124   9;   /* #C27C09 warning             */
-  --accent-analytics:  30 118 212;   /* #1E76D4 info blue           */
-  --accent-alerts:    212  42  70;   /* #D42A46 alert red           */
+  --accent-budget:     76  91 212;   /* #4C5BD4 calm indigo primary */
+  --accent-savings:    14 159 142;   /* #0E9F8E teal success        */
+  --accent-expenses:  212  69  91;   /* #D4455B danger              */
+  --accent-approvals: 184 121  26;   /* #B8791A warning             */
+  --accent-analytics:  62 111 196;   /* #3E6FC4 info blue           */
+  --accent-alerts:    198  58  80;   /* #C63A50 alert red           */
 
   /* raw decorative colors for glows / grid */
-  --glow-brand: 42 123 216;       /* #2A7BD8 blue  */
-  --glow-gold:  15 194 206;       /* #0FC2CE cyan  */
+  --glow-brand: 76 91 212;        /* #4C5BD4 indigo */
+  --glow-gold:  120 132 224;      /* #7884E0 soft   */
 
   /*
     Brand gradients. All three run teal → blue → violet; they differ only in
@@ -2590,8 +2587,8 @@ video {
     - holo-light: pale, for text sitting on a gradient banner or tile
     Headings no longer take a gradient at all — see .holo-text below.
   */
-  --holo-btn:   linear-gradient(115deg, #0FA8BE 0%, #1E7FD8 30%, #4338CA 55%, #6A2FD6 78%, #0FA8BE 100%);
-  --holo-light: linear-gradient(100deg, #FFFFFF 0%, #C8F4F9 22%, #CFE2FF 46%, #DCCBFF 70%, #FFFFFF 100%);
+  --holo-btn:   linear-gradient(120deg, #5A67D8 0%, #4C5BD4 50%, #3F4CB5 100%);
+  --holo-light: linear-gradient(100deg, #FFFFFF 0%, #EEF0FF 50%, #FFFFFF 100%);
 }
 
 .dark {
@@ -2651,12 +2648,8 @@ body {
 */
 
 .ambient-glow-1 {
-  background:
-    radial-gradient(closest-side at 35% 40%, rgba( 13, 190, 210, 0.85), transparent),
-    radial-gradient(closest-side at 65% 60%, rgba( 30, 150, 226, 0.72), transparent),
-    radial-gradient(closest-side at 50% 30%, rgba( 90, 200, 255, 0.58), transparent),
-    radial-gradient(closest-side at 30% 70%, rgba(140, 225, 235, 0.46), transparent);
-  animation: auroraDrift 20s ease-in-out infinite;
+  /* Calm theme: the floating colour blobs are removed. */
+  display: none;
 }
 
 .dark .ambient-glow-1 {
@@ -2666,12 +2659,8 @@ body {
 }
 
 .ambient-glow-2 {
-  background:
-    radial-gradient(closest-side at 60% 50%, rgba(122,  47, 224, 0.70), transparent),
-    radial-gradient(closest-side at 40% 65%, rgba( 25, 118, 220, 0.72), transparent),
-    radial-gradient(closest-side at 72% 70%, rgba(150, 120, 250, 0.58), transparent),
-    radial-gradient(closest-side at 30% 40%, rgba(140, 190, 255, 0.48), transparent);
-  animation: auroraDrift 26s ease-in-out infinite reverse;
+  /* Calm theme: the floating colour blobs are removed. */
+  display: none;
 }
 
 .dark .ambient-glow-2 {
@@ -2718,12 +2707,11 @@ body {
 */
 
 .bg-brand {
-  background-image: var(--holo-btn);
-  background-size: 260% 100%;
-  animation: holoShift 7s linear infinite;
+  background-image: none;
+  background-color: rgb(var(--accent-budget));
 }
 
-.dark .bg-brand { background-image: var(--holo-btn); }
+.dark .bg-brand { background-image: none; background-color: rgb(var(--accent-budget)); }
 
 /* Holographic shimmer: slides the oversized gradient across the element */
 
@@ -2744,13 +2732,11 @@ body {
 */
 
 .bg-surface {
-  background-color: rgb(var(--bg-surface) / 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background-color: rgb(var(--bg-surface));
 }
 
 .dark .bg-surface {
-  background-color: rgb(var(--bg-surface) / 0.7);
+  background-color: rgb(var(--bg-surface));
 }
 
 /*
@@ -2761,32 +2747,19 @@ body {
 */
 
 .bg-surface.rounded-2xl {
-  border-color: transparent;
-  background-image:
-    linear-gradient(135deg,
-      rgba( 15, 194, 206, 0.13) 0%,
-      rgba( 42, 156, 226, 0.09) 34%,
-      rgba(120, 160, 255, 0.10) 60%,
-      rgba(150, 120, 240, 0.09) 82%,
-      rgba( 15, 194, 206, 0.11) 100%);
-  background-size: 240% 240%;
+  border-color: rgb(var(--border-color));
+  background-image: none;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 0 0 1px rgba(160, 195, 240, 0.6),
-    -12px 0 32px -12px rgba( 15, 194, 206, 0.7),
-     12px 0 32px -12px rgba(120,  70, 235, 0.55),
-    0 22px 48px rgba(19, 46, 110, 0.12);
+    0 1px 2px rgba(20, 28, 51, 0.04),
+    0 10px 24px -14px rgba(20, 28, 51, 0.12);
 }
 
 .bg-surface.rounded-2xl:hover {
+  border-color: rgb(var(--border-strong));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 0 0 1px rgba(140, 180, 235, 0.85),
-    -16px 0 42px -10px rgba( 15, 194, 206, 0.9),
-     16px 0 42px -10px rgba(120,  70, 235, 0.75),
-    0 32px 64px rgba(19, 46, 110, 0.18);
-  transform: translateY(-3px);
-  animation: holoShift 6s linear infinite;
+    0 1px 3px rgba(20, 28, 51, 0.05),
+    0 18px 38px -16px rgba(20, 28, 51, 0.16);
+  transform: translateY(-2px);
 }
 
 .dark .bg-surface.rounded-2xl {
@@ -2830,13 +2803,7 @@ body {
    has room to shimmer without hurting legibility */
 
 .holo-text-light {
-  background-image: var(--holo-light);
-  background-size: 260% auto;
-  -webkit-background-clip: text;
-          background-clip: text;
-  -webkit-text-fill-color: transparent;
-          color: transparent;
-  animation: holoShift 5s linear infinite;
+  color: #ffffff;
 }
 
 /*
@@ -2850,26 +2817,11 @@ body {
   background-image: var(--canvas-aurora);
 }
 
-/* slow-rotating prismatic light sweep */
+/* Calm theme: the rotating prismatic sweep and drifting colour wash are removed. */
 
-.login-sweep {
-  background: conic-gradient(from 0deg,
-    transparent 0deg,   rgba( 15, 194, 206, 0.26) 40deg,
-    transparent 95deg,  rgba( 42, 123, 216, 0.28) 165deg,
-    transparent 215deg, rgba(120,  70, 235, 0.24) 285deg,
-    transparent 335deg);
-  animation: spinSlow 28s linear infinite;
-}
+.login-sweep { display: none; }
 
-/* drifting soft aurora wash */
-
-.login-wash {
-  background:
-    radial-gradient(closest-side at 25% 30%, rgba( 15, 194, 206, 0.20), transparent),
-    radial-gradient(closest-side at 80% 72%, rgba(106,  47, 214, 0.18), transparent),
-    radial-gradient(closest-side at 62% 18%, rgba( 30, 127, 216, 0.20), transparent);
-  animation: auroraDrift 22s ease-in-out infinite;
-}
+.login-wash { display: none; }
 
 @keyframes spinSlow { to { transform: rotate(360deg); } }
 
@@ -2888,11 +2840,11 @@ body {
   isolation: isolate;
   overflow: hidden;
   border-radius: 18px;
-  background: linear-gradient(140deg, #0FB5C8 0%, #1E7FD8 38%, #4338CA 68%, #6A2FD6 100%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(140deg, #5460CE 0%, #4C5BD4 45%, #3C48A8 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow:
-    0 14px 30px -10px rgba(30, 70, 180, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    0 12px 26px -12px rgba(30, 38, 92, 0.40),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
 }
 
@@ -2908,7 +2860,7 @@ body {
   top: -46px; right: -34px;
   width: 128px; height: 128px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgb(var(--tint) / 0.9), transparent 68%);
+  background: radial-gradient(circle, rgb(var(--tint) / 0.55), transparent 68%);
   filter: blur(16px);
   z-index: 0;
 }
@@ -2929,11 +2881,11 @@ body {
 }
 
 .stat-tile:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
   box-shadow:
-    0 26px 48px -12px rgba(30, 70, 180, 0.55),
-    0 0 30px -10px rgb(var(--tint) / 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    0 22px 42px -14px rgba(30, 38, 92, 0.48),
+    0 0 24px -12px rgb(var(--tint) / 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .stat-tile:hover::after { transform: translateX(125%); }
@@ -3001,21 +2953,20 @@ body {
   position: relative;
   overflow: hidden;
   border-radius: 22px;
-  background: linear-gradient(120deg, #0C93AA 0%, #1A6FCE 32%, #3B31BE 64%, #6A2FD6 100%);
+  background: linear-gradient(120deg, #4C5BD4 0%, #414FBC 52%, #333E96 100%);
   box-shadow:
-    0 18px 40px -14px rgba(30, 70, 180, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    0 16px 36px -16px rgba(30, 38, 92, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
-/* soft prismatic wash + fine grid so the banner has depth */
+/* soft light sheen + faint grid so the banner keeps a little depth */
 
 .panel-hero::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(80% 130% at 88% 8%, rgba( 34, 211, 238, 0.34), transparent 58%),
-    radial-gradient(70% 120% at 4% 96%, rgba(139,  92, 246, 0.32), transparent 60%);
+    radial-gradient(90% 130% at 88% 6%, rgba(255, 255, 255, 0.10), transparent 60%);
 }
 
 .panel-hero::after {
@@ -3023,8 +2974,8 @@ body {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
   background-size: 34px 34px;
   -webkit-mask-image: radial-gradient(120% 100% at 70% 20%, #000 0%, transparent 78%);
           mask-image: radial-gradient(120% 100% at 70% 20%, #000 0%, transparent 78%);
@@ -3058,7 +3009,7 @@ body {
 .hero-ctl-on {
   background: #fff;
   border-color: #fff;
-  color: #1E3A8A;
+  color: #3F4CB5;
 }
 
 .hero-ctl-on:hover { background: #fff; }
@@ -3083,7 +3034,7 @@ body {
 
 button.bg-brand:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 30px rgba(42, 123, 216, 0.35);
+  box-shadow: 0 8px 22px rgba(76, 91, 212, 0.30);
 }
 
 /*
@@ -3098,7 +3049,7 @@ button:not(:disabled) {
 }
 
 button:not(:disabled):not(.bg-brand):hover {
-  box-shadow: 0 6px 18px rgba(42, 123, 216, 0.18);
+  box-shadow: 0 4px 14px rgba(20, 28, 51, 0.10);
 }
 
 button:not(:disabled):active {
@@ -3111,8 +3062,8 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: rgb(58 130 226) !important;
-  box-shadow: 0 0 0 3px rgba(58, 130, 226, 0.2);
+  border-color: rgb(76 91 212) !important;
+  box-shadow: 0 0 0 3px rgba(76, 91, 212, 0.18);
 }
 
 /* Tables: quiet zebra striping + soft blue row hover */
