@@ -121,7 +121,7 @@ const reqSummary = (r: { productName: string; productQty: number; targetPrice: n
 };
 
 // ---- Lightweight SVG charts (categorical palette, CVD-safe on the light canvas) ----
-const CHART_COLORS = ['#2F7268', '#4A6C8C', '#B07A1E', '#8A5A7A', '#C0485A', '#7A756B'];
+const CHART_COLORS = ['#2F7268', '#4A6C8C', '#B07A1E', '#8F5E6A', '#C0485A', '#7A756B'];
 
 // Status colors — drawn from the brand's teal → blue → violet sweep where the
 // meaning allows, deep enough to stay legible as text on the light canvas.
@@ -133,9 +133,9 @@ const STATUS_META: Record<string, { color: string; rgb: string; short: string; i
   'Needs Clarification': { color: '#C4652A', rgb: '196 101 42', short: 'Clarify', icon: AlertCircle },
   'Sourcing': { color: '#4A6C8C', rgb: '74 108 140', short: 'Sourcing', icon: Search },
   'Approved': { color: '#2F7268', rgb: '47 114 104', short: 'Approved', icon: CheckCircle2 },
-  'PO Confirmed': { color: '#8A5A7A', rgb: '138 90 122', short: 'PO Confirmed', icon: Package },
+  'PO Confirmed': { color: '#8F5E6A', rgb: '143 94 106', short: 'PO Confirmed', icon: Package },
   'Rejected': { color: '#C0485A', rgb: '192 72 90', short: 'Rejected', icon: X },
-  'Paid': { color: '#7E5A93', rgb: '126 90 147', short: 'Paid', icon: Landmark },
+  'Paid': { color: '#7A505C', rgb: '122 80 92', short: 'Paid', icon: Landmark },
 };
 const statusColor = (s: string) => STATUS_META[s]?.color ?? '#64748B';
 const statusRgb = (s: string) => STATUS_META[s]?.rgb ?? '100 116 139';
