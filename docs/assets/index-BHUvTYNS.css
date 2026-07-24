@@ -1774,6 +1774,10 @@ video {
   background-color: rgb(var(--accent-savings) / 0.2);
 }
 
+.bg-pos\/5{
+  background-color: rgb(var(--accent-savings) / 0.05);
+}
+
 .bg-raised{
   --tw-bg-opacity: 1;
   background-color: rgb(var(--bg-raised) / var(--tw-bg-opacity, 1));

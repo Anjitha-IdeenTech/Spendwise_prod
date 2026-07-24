@@ -614,6 +614,217 @@ const spendAnalytics = {
 };
 
 /* ===================================================================
+   Transaction-level spend ledger — the source of truth behind the CEO
+   dashboard. Every KPI and chart is DERIVED from these rows, so the
+   branch / department / category / date filters genuinely cross-filter the
+   whole board (pick Bangalore + IT + March and every number re-computes).
+   The ledger is generated once, deterministically (seeded), so the demo
+   is stable across reloads.
+   =================================================================== */
+
+const DASH_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
+const DASH_BRANCHES = ['Bangalore', 'Mumbai', 'Kochi', 'Delhi', 'Chennai'];
+const DASH_DEPTS = ['IT & Infrastructure', 'Operations', 'Facilities', 'Marketing', 'Finance'];
+const DASH_CATS = ['IT Hardware', 'Datacenter Equipment', 'Software Licenses', 'Office Furniture', 'Professional Services', 'MRO Supplies'];
+const DASH_LEVERS = ['AI autonomous negotiation', 'Rate contract enforcement', 'Demand consolidation', 'Vendor switch on scorecard', 'Tail-spend catalogue'];
+
+// Sampling weights that reproduce the marketing narrative's mix.
+const BRANCH_W = [35, 26, 19, 12, 8];
+const DEPT_W = [42, 24, 16, 10, 8];
+const MONTH_W = [0.38, 0.52, 0.61, 0.74, 0.69, 0.88, 1.14];
+const LEVER_W = [39, 27, 17, 11, 6];
+// Category mix depends on the department buying (IT buys hardware, Facilities buys furniture…).
+const DEPT_CAT_W: Record<string, number[]> = {
+  'IT & Infrastructure': [40, 30, 22, 1, 5, 2],
+  'Operations':          [15, 10, 10, 10, 25, 30],
+  'Facilities':          [4, 2, 2, 45, 12, 35],
+  'Marketing':           [15, 1, 25, 10, 44, 5],
+  'Finance':             [15, 1, 40, 5, 34, 5],
+};
+const CAT_VENDORS: Record<string, { name: string; w: number }[]> = {
+  'IT Hardware':           [{ name: 'Dell Technologies', w: 5 }, { name: 'HP Enterprise', w: 3 }, { name: 'Lenovo', w: 2 }],
+  'Datacenter Equipment':  [{ name: 'Cisco Systems', w: 5 }, { name: 'Schneider Electric', w: 3 }, { name: 'Juniper Networks', w: 2 }],
+  'Software Licenses':     [{ name: 'Microsoft', w: 4 }, { name: 'Adobe', w: 3 }, { name: 'Atlassian', w: 2 }],
+  'Office Furniture':      [{ name: 'Featherlite Office', w: 5 }, { name: 'Godrej Interio', w: 3 }, { name: 'Steelcase', w: 2 }],
+  'Professional Services': [{ name: 'Deloitte Advisory', w: 4 }, { name: 'KPMG', w: 3 }, { name: 'EY Consulting', w: 3 }],
+  'MRO Supplies':          [{ name: 'Grainger', w: 4 }, { name: 'CleanServe', w: 3 }, { name: 'Redington India', w: 3 }],
+};
+const CAT_BASE: Record<string, number> = { // ₹ Lakh per line before the random factor
+  'IT Hardware': 0.9, 'Datacenter Equipment': 2.0, 'Software Licenses': 0.75,
+  'Office Furniture': 0.58, 'Professional Services': 1.05, 'MRO Supplies': 0.3,
+};
+const VENDOR_RATING: Record<string, number> = {
+  'Dell Technologies': 4.8, 'HP Enterprise': 4.5, 'Lenovo': 4.4, 'Cisco Systems': 4.6,
+  'Schneider Electric': 4.4, 'Juniper Networks': 4.3, 'Microsoft': 4.7, 'Adobe': 4.5,
+  'Atlassian': 4.4, 'Featherlite Office': 4.3, 'Godrej Interio': 4.2, 'Steelcase': 4.5,
+  'Deloitte Advisory': 4.6, 'KPMG': 4.5, 'EY Consulting': 4.4, 'Grainger': 4.3,
+  'CleanServe': 4.1, 'Redington India': 4.5,
+};
+// Year-on-year growth per dimension, so the breakdown "vs last year" chips read true.
+const BRANCH_YOY: Record<string, number> = { Bangalore: 0.17, Mumbai: 0.16, Kochi: 0.21, Delhi: -0.06, Chennai: 0.48 };
+const DEPT_YOY: Record<string, number> = { 'IT & Infrastructure': 0.28, Operations: 0.06, Facilities: 0.13, Marketing: -0.06, Finance: 0.39 };
+const CAT_YOY: Record<string, number> = { 'IT Hardware': 0.30, 'Datacenter Equipment': 0.35, 'Software Licenses': 0.04, 'Office Furniture': -0.10, 'Professional Services': 0.13, 'MRO Supplies': 0.05 };
+
+interface Txn {
+  month: number; branch: string; department: string; category: string; vendor: string;
+  amount: number; budget: number; savings: number; lever: string; cycleDays: number;
+  onTime: boolean; onContract: boolean; matched: boolean; withinPolicy: boolean; competitive: boolean;
+  anomaly?: { title: string; severity: 'High' | 'Medium' | 'Low'; note: string };
+}
+
+// Small seeded PRNG (mulberry32) + weighted pick, so the ledger is deterministic.
+function mulberry32(seed: number) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const wpick = <T,>(rng: () => number, items: T[], weights: number[]): T => {
+  const total = weights.reduce((s, w) => s + w, 0);
+  let r = rng() * total;
+  for (let i = 0; i < items.length; i++) { if ((r -= weights[i]) <= 0) return items[i]; }
+  return items[items.length - 1];
+};
+
+const DASH_TXNS: Txn[] = (() => {
+  const rng = mulberry32(20260724);
+  const txns: Txn[] = [];
+  for (let i = 0; i < 412; i++) {
+    const branch = wpick(rng, DASH_BRANCHES, BRANCH_W);
+    const department = wpick(rng, DASH_DEPTS, DEPT_W);
+    const category = wpick(rng, DASH_CATS, DEPT_CAT_W[department]);
+    const vs = CAT_VENDORS[category];
+    const vendor = wpick(rng, vs.map(v => v.name), vs.map(v => v.w));
+    const month = wpick(rng, [0, 1, 2, 3, 4, 5, 6], MONTH_W);
+    const amount = Math.round(CAT_BASE[category] * (0.5 + rng() * 1.2) * 100000);
+    const util = 0.62 + rng() * 0.4 + month * 0.014;  // later months run tighter to budget (~85% used, July tips over)
+    const savings = rng() < 0.85 ? Math.round(amount * (0.04 + rng() * 0.075)) : 0;
+    txns.push({
+      month, branch, department, category, vendor, amount,
+      budget: Math.round(amount / util), savings,
+      lever: wpick(rng, DASH_LEVERS, LEVER_W),
+      cycleDays: +(3 + rng() * 6.8).toFixed(1),
+      onTime: rng() < 0.92, onContract: rng() < 0.78, matched: rng() < 0.965,
+      withinPolicy: rng() < 0.94, competitive: rng() < 0.88,
+    });
+  }
+  // Flag a spread of transactions as caught anomalies (varied branch/category/vendor).
+  const anomalyTemplates: NonNullable<Txn['anomaly']>[] = [
+    { title: 'Duplicate invoice detected', severity: 'High',   note: 'Invoice matches an earlier one line-for-line' },
+    { title: 'Price above contract rate',  severity: 'High',   note: 'Unit rate billed higher than the agreed contract' },
+    { title: 'Split PO to dodge approval', severity: 'Medium', note: 'Multiple POs raised the same day under the limit' },
+    { title: 'Off-contract maverick buy',  severity: 'Medium', note: 'Bought outside the preferred vendor list' },
+    { title: 'Delivery short-received',    severity: 'Low',    note: 'Received quantity is under the ordered quantity' },
+    { title: 'Unusual price spike',        severity: 'Low',    note: 'Line price well above the 3-month average' },
+  ];
+  const byAmount = txns.map((_, idx) => idx).sort((a, b) => txns[b].amount - txns[a].amount);
+  [3, 20, 45, 90, 160, 250].forEach((pos, k) => { if (byAmount[pos] != null) txns[byAmount[pos]].anomaly = anomalyTemplates[k]; });
+  return txns;
+})();
+
+// Recompute the entire dashboard from the ledger for a given filter combination.
+function deriveDashboard(txns: Txn[], f: { from: number; to: number; branch: string; dept: string; category: string }) {
+  const a = Math.min(f.from, f.to), b = Math.max(f.from, f.to);
+  const catMatch = (t: Txn) =>
+    (f.branch === 'All' || t.branch === f.branch) &&
+    (f.dept === 'All' || t.department === f.dept) &&
+    (f.category === 'All' || t.category === f.category);
+  const full = txns.filter(t => catMatch(t) && t.month >= a && t.month <= b);   // date + categorical
+  const catAll = txns.filter(catMatch);                                          // categorical only (for sparklines / prev)
+  const sum = (arr: Txn[], sel: (t: Txn) => number) => arr.reduce((s, t) => s + sel(t), 0);
+
+  // Monthly series across all 7 months with the categorical filters applied.
+  const monthly = (sel: (arr: Txn[]) => number) => DASH_MONTHS.map((_, m) => sel(catAll.filter(t => t.month === m)));
+  const mSpend = monthly(arr => sum(arr, t => t.amount) / 1e7);   // ₹ Cr
+  const mSavings = monthly(arr => sum(arr, t => t.savings) / 1e5); // ₹ Lakh
+  const mCycle = monthly(arr => (arr.length ? sum(arr, t => t.cycleDays) / arr.length : 0));
+  const mAnoms = monthly(arr => arr.filter(t => t.anomaly).length);
+  const winSum = (series: number[], lo: number, hi: number) => (lo > hi ? 0 : series.slice(lo, hi + 1).reduce((s, v) => s + v, 0));
+  const len = b - a + 1;
+  const pA = Math.max(0, a - len), pB = a - 1;
+
+  const spend = sum(full, t => t.amount) / 1e7;
+  const budget = sum(full, t => t.budget) / 1e7;
+  const savings = sum(full, t => t.savings) / 1e5;
+  const savingsPct = spend > 0 ? (savings * 1e5) / (spend * 1e7) * 100 : 0;
+  const cycleAvg = full.length ? sum(full, t => t.cycleDays) / full.length : 0;
+  const anomAll = full.filter(t => t.anomaly);
+  const budgetUsed = budget > 0 ? (spend / budget) * 100 : 0;
+  const prevCycleArr = catAll.filter(t => t.month >= pA && t.month <= pB);
+
+  const groupBy = (key: (t: Txn) => string, universe: string[], yoy: Record<string, number>): BreakdownRow[] =>
+    universe.map(label => {
+      const rows = full.filter(t => key(t) === label);
+      const value = sum(rows, t => t.amount) / 1e7;
+      return { label, value, prev: value / (1 + (yoy[label] ?? 0)), meta: `${rows.length} orders` };
+    }).filter(r => r.value > 0);
+
+  const vendorNames = Array.from(new Set(full.map(t => t.vendor)));
+  const topVendors = vendorNames.map(name => {
+    const rows = full.filter(t => t.vendor === name);
+    const trend = [];
+    for (let m = a; m <= b; m++) trend.push(sum(rows.filter(t => t.month === m), t => t.amount) / 1e7);
+    return {
+      name, spend: sum(rows, t => t.amount) / 1e7, orders: rows.length,
+      savings: sum(rows, t => t.savings) / 1e5,
+      onTime: rows.length ? Math.round((rows.filter(t => t.onTime).length / rows.length) * 100) : 0,
+      rating: VENDOR_RATING[name] ?? 4.4,
+      trend: trend.length > 1 ? trend : [0, trend[0] ?? 0],
+    };
+  }).sort((x, y) => y.spend - x.spend).slice(0, 6);
+
+  const stageDefs = [
+    { label: 'Request → Approval', p: 0.10 }, { label: 'Approval → Sourcing', p: 0.18 },
+    { label: 'Sourcing → PO', p: 0.29 }, { label: 'PO → Receipt', p: 0.35 }, { label: 'Receipt → Payment', p: 0.08 },
+  ];
+  const cyclePrev = cycleAvg * 1.75;
+  const cycleStages = stageDefs.map(s => ({ label: s.label, days: +(cycleAvg * s.p).toFixed(1), prevDays: +(cyclePrev * s.p).toFixed(1) }));
+
+  const pctOf = (sel: (t: Txn) => boolean) => (full.length ? Math.round((full.filter(sel).length / full.length) * 100) : 0);
+  const compliance = [
+    { label: 'On contract', pct: pctOf(t => t.onContract), target: 80 },
+    { label: '3-way matched', pct: pctOf(t => t.matched), target: 95 },
+    { label: 'Within policy', pct: pctOf(t => t.withinPolicy), target: 90 },
+    { label: 'Competitive bid', pct: pctOf(t => t.competitive), target: 85 },
+  ];
+
+  const months = DASH_MONTHS.slice(a, b + 1).map((label, i) => ({
+    label, value: +mSpend[a + i].toFixed(3),
+    budget: +(sum(full.filter(t => t.month === a + i), t => t.budget) / 1e7).toFixed(3),
+  }));
+
+  return {
+    rangeLabel: `${DASH_MONTHS[a]}–${DASH_MONTHS[b]}`,
+    fullRange: a === 0 && b === DASH_MONTHS.length - 1,
+    noCat: f.branch === 'All' && f.dept === 'All' && f.category === 'All',
+    months, over: months.some(m => m.value > m.budget),
+    spend, budget, budgetUsed, savings, savingsPct, cycleAvg, poCount: full.length, vendors: vendorNames.length,
+    anomCount: anomAll.length, anomTotalL: sum(anomAll, t => t.amount) / 1e5,
+    anomalies: [...anomAll].sort((x, y) => y.amount - x.amount).slice(0, 6).map(t => ({
+      title: t.anomaly!.title, severity: t.anomaly!.severity, note: t.anomaly!.note,
+      vendor: t.vendor, branch: t.branch, amount: `₹${(t.amount / 1e5).toFixed(2)} L`,
+    })),
+    spark: { spend: mSpend, savings: mSavings, cycle: mCycle, anomalies: mAnoms },
+    prev: {
+      spend: winSum(mSpend, pA, pB) || spend,
+      savings: winSum(mSavings, pA, pB) || savings,
+      cycle: prevCycleArr.length ? sum(prevCycleArr, t => t.cycleDays) / prevCycleArr.length : cycleAvg,
+      anomalies: winSum(mAnoms, pA, pB),
+    },
+    byBranch: groupBy(t => t.branch, DASH_BRANCHES, BRANCH_YOY),
+    byDept: groupBy(t => t.department, DASH_DEPTS, DEPT_YOY),
+    byCategory: groupBy(t => t.category, DASH_CATS, CAT_YOY),
+    levers: DASH_LEVERS.map(label => ({
+      label, value: sum(full.filter(t => t.lever === label), t => t.savings) / 1e5,
+      meta: `${full.filter(t => t.lever === label && t.savings > 0).length} deals`,
+    })).filter(r => r.value > 0) as BreakdownRow[],
+    topVendors, cycleStages, compliance,
+  };
+}
+
+/* ===================================================================
    Reusable data-display primitives
    Used by the dashboard, and by KPI tiles across every scene.
    =================================================================== */
@@ -1082,21 +1293,10 @@ export default function App() {
   const [dashBranch, setDashBranch] = useState('All');
   const [dashDept, setDashDept] = useState('All');
   const [dashCategory, setDashCategory] = useState('All');
-  // Slice the monthly spend series to the picked range and recompute the totals.
-  const dash = (() => {
-    const toIdx = (v: string) => Math.min(Math.max(parseInt(v.slice(5, 7), 10) - 1, 0), spendAnalytics.byMonth.length - 1);
-    let a = toIdx(dashFrom), b = toIdx(dashTo);
-    if (a > b) [a, b] = [b, a];
-    const months = spendAnalytics.byMonth.slice(a, b + 1);
-    const spend = months.reduce((s, m) => s + m.value, 0);
-    const budget = months.reduce((s, m) => s + m.budget, 0);
-    const len = b - a + 1;
-    const prevSpend = spendAnalytics.byMonth.slice(Math.max(0, a - len), a).reduce((s, m) => s + m.value, 0);
-    const over = months.some(m => m.value > m.budget);
-    const rangeLabel = months.length ? `${spendAnalytics.byMonth[a].label}–${spendAnalytics.byMonth[b].label}` : '—';
-    const full = dashFrom === DASH_MONTH_MIN && dashTo === DASH_MONTH_MAX;
-    return { months, spend, budget, prevSpend: prevSpend || spend, over, rangeLabel, full };
-  })();
+  // Everything on the dashboard is derived live from the transaction ledger for
+  // the current filter combination — true cross-filtering across all four filters.
+  const dashToIdx = (v: string) => Math.min(Math.max(parseInt(v.slice(5, 7), 10) - 1, 0), DASH_MONTHS.length - 1);
+  const dash = deriveDashboard(DASH_TXNS, { from: dashToIdx(dashFrom), to: dashToIdx(dashTo), branch: dashBranch, dept: dashDept, category: dashCategory });
 
   // Drag-to-reorder role nav; first item = landing screen on login (#5).
   // Role-keyed so Employee, SCM Buyer, Manager and CEO each persist their own order.
@@ -4229,10 +4429,10 @@ export default function App() {
                     title="Spend Dashboard"
                     subtitle="A clear view of company spending, savings and alerts."
                     stats={[
-                      { label: 'Total audited', value: '₹4.58 Cr' },
-                      { label: 'AI savings', value: '₹28.45 L' },
-                      { label: 'Budget used', value: '84.8%' },
-                      { label: 'Cycle time', value: '6.4 d' },
+                      { label: 'Total spend', value: `₹${dash.spend.toFixed(2)} Cr` },
+                      { label: 'AI savings', value: `₹${dash.savings.toFixed(1)} L` },
+                      { label: 'Budget used', value: `${dash.budgetUsed.toFixed(1)}%` },
+                      { label: 'Cycle time', value: `${dash.cycleAvg.toFixed(1)} d` },
                     ]}
                   />
 
@@ -4270,7 +4470,7 @@ export default function App() {
                     </div>
                     <div className="ml-auto flex items-center gap-2">
                       <span className="rounded-full bg-brand/10 text-brand px-3 py-1.5 text-xs font-bold tabular-nums">{dash.rangeLabel} · ₹{dash.spend.toFixed(2)} Cr</span>
-                      {!dash.full && (
+                      {!dash.fullRange && (
                         <button onClick={() => { setDashFrom(DASH_MONTH_MIN); setDashTo(DASH_MONTH_MAX); }} className="text-xs font-semibold text-textFaint hover:text-textPrimary">Reset</button>
                       )}
                     </div>
@@ -4315,38 +4515,46 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* KPI row — each tile carries its own trend and movement */}
+                  {dash.poCount === 0 ? (
+                    <div className="p-12 text-center bg-surface border border-borderTheme rounded-2xl shadow-sm">
+                      <Filter className="h-8 w-8 mx-auto text-textFaint mb-2" />
+                      <p className="text-sm font-semibold text-textPrimary">No spend matches these filters</p>
+                      <p className="text-xs text-textFaint mt-1">Try widening the date range, branch, department or category.</p>
+                    </div>
+                  ) : (
+                  <>
+                  {/* KPI row — every tile recomputes from the filtered ledger */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 font-outfit">
-                    <StatTile icon={Landmark} tint="78 62 216" value={`₹${dash.spend.toFixed(2)} Cr`} label={dash.full ? 'Total Spend' : 'Spend in Period'}
-                      caption={dash.full ? 'FY 2026 · 5 branches' : `${dash.rangeLabel} 2026 · ${dash.months.length} month${dash.months.length === 1 ? '' : 's'}`} delay={0} spark={spendAnalytics.sparks.spend}
-                      curr={dash.spend} prev={dash.prevSpend} />
-                    <StatTile icon={TrendingUp} tint="12 150 137" value="₹28.45 L" label="AI Savings"
-                      caption="6.2% of total spend" meter={62} delay={60} spark={spendAnalytics.sparks.savings}
-                      curr={spendAnalytics.headline.savings} prev={spendAnalytics.headline.savingsPrev} />
-                    <StatTile icon={Timer} tint="30 118 212" value="6.4 days" label="Avg Cycle Time"
-                      caption="request → payment" delay={120} spark={spendAnalytics.sparks.cycle}
-                      curr={spendAnalytics.headline.cycleDays} prev={spendAnalytics.headline.cycleDaysPrev} lowerIsBetter />
-                    <StatTile icon={ShieldAlert} tint="219 58 75" value="4" label="Blocked Anomalies"
-                      caption="₹9.32 L stopped this quarter" delay={180} spark={spendAnalytics.sparks.anomalies}
-                      curr={spendAnalytics.headline.anomalies} prev={spendAnalytics.headline.anomaliesPrev} lowerIsBetter />
+                    <StatTile icon={Landmark} tint="78 62 216" value={`₹${dash.spend.toFixed(2)} Cr`} label={dash.fullRange && dash.noCat ? 'Total Spend' : 'Spend (filtered)'}
+                      caption={[dash.fullRange ? `${dash.poCount} orders` : `${dash.rangeLabel} 2026`, dashBranch !== 'All' ? dashBranch : null, dashDept !== 'All' ? dashDept : null, dashCategory !== 'All' ? dashCategory : null].filter(Boolean).join(' · ')}
+                      delay={0} spark={dash.spark.spend} curr={dash.spend} prev={dash.prev.spend} />
+                    <StatTile icon={TrendingUp} tint="12 150 137" value={`₹${dash.savings.toFixed(1)} L`} label="AI Savings"
+                      caption={`${dash.savingsPct.toFixed(1)}% of spend`} meter={Math.min(Math.round(dash.savingsPct * 8), 100)} delay={60} spark={dash.spark.savings}
+                      curr={dash.savings} prev={dash.prev.savings} />
+                    <StatTile icon={Timer} tint="30 118 212" value={`${dash.cycleAvg.toFixed(1)} days`} label="Avg Cycle Time"
+                      caption="request → payment" delay={120} spark={dash.spark.cycle}
+                      curr={dash.cycleAvg} prev={dash.prev.cycle} lowerIsBetter />
+                    <StatTile icon={ShieldAlert} tint="219 58 75" value={String(dash.anomCount)} label="Blocked Anomalies"
+                      caption={`₹${dash.anomTotalL.toFixed(2)} L stopped`} delay={180} spark={dash.spark.anomalies}
+                      curr={dash.anomCount} prev={dash.prev.anomalies} lowerIsBetter />
                   </div>
 
                   {/* Budget position + actual-vs-budget trend */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <h3 className="font-outfit font-bold text-textPrimary">Budget Position</h3>
-                      <p className="text-[11px] text-textFaint mb-3">FY 2026 allocation vs committed</p>
-                      <GaugeArc used={spendAnalytics.headline.audited} total={spendAnalytics.headline.budget} />
+                      <p className="text-[11px] text-textFaint mb-3">{dash.rangeLabel} · committed vs allocation</p>
+                      <GaugeArc used={dash.spend} total={dash.budget} />
                       <div className="mt-4 pt-4 border-t border-borderTheme grid grid-cols-2 gap-3 text-center">
                         <div>
                           <p className="text-lg font-extrabold font-outfit text-textPrimary tabular-nums">
-                            <CountUp value={spendAnalytics.headline.poCount} />
+                            <CountUp value={dash.poCount} />
                           </p>
                           <p className="text-[10px] font-bold uppercase tracking-wider text-textFaint">POs raised</p>
                         </div>
                         <div>
                           <p className="text-lg font-extrabold font-outfit text-textPrimary tabular-nums">
-                            <CountUp value={spendAnalytics.headline.vendors} />
+                            <CountUp value={dash.vendors} />
                           </p>
                           <p className="text-[10px] font-bold uppercase tracking-wider text-textFaint">Active vendors</p>
                         </div>
@@ -4380,7 +4588,7 @@ export default function App() {
                         <h3 className="font-outfit font-bold text-textPrimary">Spend by Department{dashDept !== 'All' && <span className="text-brand font-semibold"> · {dashDept}</span>}</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Share of total, with change vs last year</p>
-                      <BreakdownBars rows={focusRows(spendAnalytics.byDepartment, dashDept)} tint="#1E76D4" />
+                      <BreakdownBars rows={dash.byDept} tint="#1E76D4" />
                     </div>
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <div className="flex items-center gap-2">
@@ -4388,7 +4596,7 @@ export default function App() {
                         <h3 className="font-outfit font-bold text-textPrimary">Spend by Category{dashCategory !== 'All' && <span className="text-pos font-semibold"> · {dashCategory}</span>}</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Share of total, with change vs last year</p>
-                      <BreakdownBars rows={focusRows(spendAnalytics.byCategory, dashCategory)} tint="#0C9689" />
+                      <BreakdownBars rows={dash.byCategory} tint="#0C9689" />
                     </div>
                   </div>
 
@@ -4397,15 +4605,15 @@ export default function App() {
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <h3 className="font-outfit font-bold text-textPrimary">Spend by Branch{dashBranch !== 'All' && <span className="text-brand font-semibold"> · {dashBranch}</span>}</h3>
                       <p className="text-[11px] text-textFaint mb-4">Where capital is deployed (₹ Crore)</p>
-                      <DonutChart data={focusRows(spendAnalytics.byBranch, dashBranch)} prefix="₹" />
+                      <DonutChart data={dash.byBranch} prefix="₹" />
                     </div>
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <div className="flex items-center gap-2">
                         <Zap className="h-4 w-4 text-gold" />
-                        <h3 className="font-outfit font-bold text-textPrimary">Where the ₹28.45 L Came From</h3>
+                        <h3 className="font-outfit font-bold text-textPrimary">Where the ₹{dash.savings.toFixed(1)} L Came From</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Savings attributed by lever (₹ Lakh)</p>
-                      <BreakdownBars rows={spendAnalytics.savingsLevers} tint="#6A2FD6" suffix=" L" />
+                      <BreakdownBars rows={dash.levers} tint="#6A2FD6" suffix=" L" />
                     </div>
                   </div>
 
@@ -4430,7 +4638,7 @@ export default function App() {
                             </tr>
                           </thead>
                           <tbody>
-                            {spendAnalytics.topVendors.map(v => (
+                            {dash.topVendors.map(v => (
                               <tr key={v.name} className="border-t border-borderTheme/60">
                                 <td className="py-2.5">
                                   <div className="flex items-center gap-2">
@@ -4468,8 +4676,8 @@ export default function App() {
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Average days — grey marker is where it sat before AI</p>
                       <div className="space-y-3">
-                        {spendAnalytics.cycleStages.map(s => {
-                          const worst = Math.max(...spendAnalytics.cycleStages.map(c => Math.max(c.days, c.prevDays)));
+                        {dash.cycleStages.map(s => {
+                          const worst = Math.max(...dash.cycleStages.map(c => Math.max(c.days, c.prevDays)), 0.1);
                           return (
                             <div key={s.label}>
                               <div className="flex items-baseline justify-between text-xs mb-1">
@@ -4492,8 +4700,8 @@ export default function App() {
                       <div className="mt-4 pt-4 border-t border-borderTheme">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-textFaint mb-2.5">Policy compliance</p>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
-                          {spendAnalytics.compliance.map(c => {
-                            const ok = c.lowerIsBetter ? c.pct <= c.target : c.pct >= c.target;
+                          {dash.compliance.map(c => {
+                            const ok = c.pct >= c.target;
                             return (
                               <div key={c.label}>
                                 <div className="flex items-baseline justify-between text-[11px]">
@@ -4511,20 +4719,27 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* What the fraud audit actually caught */}
+                  {/* What the audit agent caught — filtered along with the rest of the board */}
                   <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                       <div className="flex items-center gap-2">
                         <ScanLine className="h-4 w-4 text-neg" />
                         <h3 className="font-outfit font-bold text-textPrimary">Issues We Caught</h3>
                       </div>
-                      <span className="text-[11px] text-textFaint">₹9.32 L of exposure stopped before payment</span>
+                      <span className="text-[11px] text-textFaint">{dash.anomCount === 0 ? 'Nothing flagged in this view' : `₹${dash.anomTotalL.toFixed(2)} L of exposure stopped before payment`}</span>
                     </div>
+                    {dash.anomalies.length === 0 ? (
+                      <div className="mt-4 p-6 text-center rounded-xl bg-pos/5 border border-pos/20">
+                        <CheckCircle2 className="h-6 w-6 mx-auto text-pos mb-1.5" />
+                        <p className="text-xs font-semibold text-textPrimary">No issues in this selection</p>
+                        <p className="text-[11px] text-textFaint mt-0.5">Everything here passed the automated audit.</p>
+                      </div>
+                    ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                      {spendAnalytics.anomalies.map(a => {
+                      {dash.anomalies.map((a, i) => {
                         const tone = a.severity === 'High' ? '219 58 75' : a.severity === 'Medium' ? '194 124 9' : '30 118 212';
                         return (
-                          <div key={a.title} className="req-tile p-4 pl-5" style={{ '--tint': tone } as React.CSSProperties}>
+                          <div key={i} className="req-tile p-4 pl-5" style={{ '--tint': tone } as React.CSSProperties}>
                             <div className="flex items-start justify-between gap-2">
                               <p className="text-xs font-bold text-textPrimary">{a.title}</p>
                               <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0"
@@ -4532,14 +4747,17 @@ export default function App() {
                             </div>
                             <p className="text-[11px] text-textSecondary mt-1.5">{a.note}</p>
                             <div className="flex items-center justify-between mt-2 text-[11px]">
-                              <span className="text-textFaint">{a.vendor}</span>
+                              <span className="text-textFaint">{a.vendor} · {a.branch}</span>
                               <span className="font-bold text-textPrimary tabular-nums">{a.amount}</span>
                             </div>
                           </div>
                         );
                       })}
                     </div>
+                    )}
                   </div>
+                  </>
+                  )}
                 </div>
               )}
               
