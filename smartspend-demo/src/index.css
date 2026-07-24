@@ -40,31 +40,31 @@
     <body> and on .login-aurora (the app shell + the login page).
   */
   --canvas-aurora:
-    radial-gradient(120% 90% at 100% 0%, rgba(76, 91, 212, 0.05) 0%, transparent 55%),
-    linear-gradient(180deg, #F8F9FB 0%, #F4F5F8 100%);
+    radial-gradient(120% 90% at 100% 0%, rgba(47, 114, 104, 0.05) 0%, transparent 55%),
+    linear-gradient(180deg, #F7F5F0 0%, #F3F0E9 100%);
 
-  /* Refined Slate — cool near-neutral canvas, crisp white surfaces */
-  --bg-app:        246 247 249;   /* #F6F7F9 calm canvas      */
+  /* Warm Ivory — warm ivory canvas, crisp white surfaces, muted teal accent */
+  --bg-app:        245 243 238;   /* #F5F3EE warm ivory       */
   --bg-surface:    255 255 255;   /* #FFFFFF card             */
-  --bg-secondary:  238 240 244;   /* #EEF0F4 inset panel      */
-  --bg-raised:     229 232 238;   /* #E5E8EE hover / raised   */
-  --border-color:  228 231 236;   /* #E4E7EC hairline         */
-  --border-strong: 209 214 224;   /* #D1D6E0 stronger line    */
-  --text-primary:   27  34  51;   /* #1B2233 ink              */
-  --text-secondary: 88  98 116;   /* #586274 body             */
-  --text-faint:    138 147 166;   /* #8A93A6 muted            */
+  --bg-secondary:  239 235 227;   /* #EFEBE3 sand inset       */
+  --bg-raised:     232 226 216;   /* #E8E2D8 hover / raised   */
+  --border-color:  231 225 214;   /* #E7E1D6 hairline         */
+  --border-strong: 216 208 194;   /* #D8D0C2 stronger line    */
+  --text-primary:   38  34  27;   /* #26221B warm ink         */
+  --text-secondary:107 100  89;   /* #6B6459 body             */
+  --text-faint:    154 145 132;   /* #9A9184 muted            */
   --onbrand:       255 255 255;   /* text on colored fills    */
 
-  --accent-budget:     76  91 212;   /* #4C5BD4 calm indigo primary */
-  --accent-savings:    14 159 142;   /* #0E9F8E teal success        */
-  --accent-expenses:  212  69  91;   /* #D4455B danger              */
-  --accent-approvals: 184 121  26;   /* #B8791A warning             */
-  --accent-analytics:  62 111 196;   /* #3E6FC4 info blue           */
-  --accent-alerts:    198  58  80;   /* #C63A50 alert red           */
+  --accent-budget:     47 114 104;   /* #2F7268 muted teal primary */
+  --accent-savings:    47 114 104;   /* #2F7268 teal success       */
+  --accent-expenses:  192  72  90;   /* #C0485A danger             */
+  --accent-approvals: 176 122  30;   /* #B07A1E warning / gold     */
+  --accent-analytics:  74 108 140;   /* #4A6C8C info blue          */
+  --accent-alerts:    174  63  82;   /* #AE3F52 alert red          */
 
   /* raw decorative colors for glows / grid */
-  --glow-brand: 76 91 212;        /* #4C5BD4 indigo */
-  --glow-gold:  120 132 224;      /* #7884E0 soft   */
+  --glow-brand: 47 114 104;       /* #2F7268 teal */
+  --glow-gold:  199 151  73;      /* #C69749 warm */
 
   /*
     Brand gradients. All three run teal → blue → violet; they differ only in
@@ -73,8 +73,8 @@
     - holo-light: pale, for text sitting on a gradient banner or tile
     Headings no longer take a gradient at all — see .holo-text below.
   */
-  --holo-btn:   linear-gradient(120deg, #5A67D8 0%, #4C5BD4 50%, #3F4CB5 100%);
-  --holo-light: linear-gradient(100deg, #FFFFFF 0%, #EEF0FF 50%, #FFFFFF 100%);
+  --holo-btn:   linear-gradient(120deg, #37837A 0%, #2F7268 52%, #22514A 100%);
+  --holo-light: linear-gradient(100deg, #FFFFFF 0%, #EAF3F0 50%, #FFFFFF 100%);
 }
 
 .dark {
@@ -299,7 +299,7 @@ body {
   isolation: isolate;
   overflow: hidden;
   border-radius: 18px;
-  background: linear-gradient(140deg, #5460CE 0%, #4C5BD4 45%, #3C48A8 100%);
+  background: linear-gradient(140deg, #37837A 0%, #2F7268 45%, #234E48 100%);
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow:
     0 12px 26px -12px rgba(30, 38, 92, 0.40),
@@ -397,9 +397,9 @@ body {
   position: relative;
   overflow: hidden;
   border-radius: 22px;
-  background: linear-gradient(120deg, #4C5BD4 0%, #414FBC 52%, #333E96 100%);
+  background: linear-gradient(120deg, #37837A 0%, #2F7268 52%, #234E48 100%);
   box-shadow:
-    0 16px 36px -16px rgba(30, 38, 92, 0.45),
+    0 16px 36px -16px rgba(28, 52, 46, 0.42),
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 /* soft light sheen + faint grid so the banner keeps a little depth */
@@ -446,7 +446,7 @@ body {
 .hero-ctl-on {
   background: #fff;
   border-color: #fff;
-  color: #3F4CB5;
+  color: #275F57;
 }
 .hero-ctl-on:hover { background: #fff; }
 
@@ -468,7 +468,7 @@ body {
 /* Buttons: subtle lift + soft brand shadow on the primary action buttons */
 button.bg-brand:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 22px rgba(76, 91, 212, 0.30);
+  box-shadow: 0 8px 22px rgba(47, 114, 104, 0.30);
 }
 
 /*
@@ -492,8 +492,8 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: rgb(76 91 212) !important;
-  box-shadow: 0 0 0 3px rgba(76, 91, 212, 0.18);
+  border-color: rgb(47 114 104) !important;
+  box-shadow: 0 0 0 3px rgba(47, 114, 104, 0.18);
 }
 
 /* Tables: quiet zebra striping + soft blue row hover */
