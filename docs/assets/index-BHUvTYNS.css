@@ -765,10 +765,6 @@ video {
   margin-top: 0.75rem;
 }
 
-.mt-3\.5{
-  margin-top: 0.875rem;
-}
-
 .mt-4{
   margin-top: 1rem;
 }
@@ -918,6 +914,10 @@ video {
 
 .h-\[34rem\]{
   height: 34rem;
+}
+
+.h-\[3px\]{
+  height: 3px;
 }
 
 .h-\[400px\]{
@@ -2338,12 +2338,20 @@ video {
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
+.text-white\/55{
+  color: rgb(255 255 255 / 0.55);
+}
+
 .text-white\/60{
   color: rgb(255 255 255 / 0.6);
 }
 
 .text-white\/70{
   color: rgb(255 255 255 / 0.7);
+}
+
+.text-white\/85{
+  color: rgb(255 255 255 / 0.85);
 }
 
 .placeholder-textFaint::-moz-placeholder{
@@ -2374,6 +2382,10 @@ video {
 
 .opacity-75{
   opacity: 0.75;
+}
+
+.opacity-80{
+  opacity: 0.8;
 }
 
 .shadow{
@@ -2542,31 +2554,34 @@ video {
     <body> and on .login-aurora (the app shell + the login page).
   */
   --canvas-aurora:
-    radial-gradient(120% 90% at 100% 0%, rgba(47, 114, 104, 0.05) 0%, transparent 55%),
-    linear-gradient(180deg, #F7F5F0 0%, #F3F0E9 100%);
+    radial-gradient( 95% 75% at  2% -4%, rgba( 13, 190, 210, 0.46) 0%, transparent 62%),
+    radial-gradient( 85% 70% at 100% -2%, rgba(122,  47, 224, 0.38) 0%, transparent 60%),
+    radial-gradient( 95% 78% at 97% 102%, rgba( 25, 118, 220, 0.42) 0%, transparent 64%),
+    radial-gradient( 90% 75% at -4% 102%, rgba( 96,  58, 224, 0.34) 0%, transparent 62%),
+    linear-gradient(150deg, #E9F7FC 0%, #E6EFFD 44%, #EBE6FC 100%);
 
-  /* Warm Ivory — warm ivory canvas, crisp white surfaces, muted teal accent */
-  --bg-app:        245 243 238;   /* #F5F3EE warm ivory       */
+  /* Light canvas + white surfaces */
+  --bg-app:        233 240 252;   /* #E9F0FC tinted canvas    */
   --bg-surface:    255 255 255;   /* #FFFFFF card             */
-  --bg-secondary:  239 235 227;   /* #EFEBE3 sand inset       */
-  --bg-raised:     232 226 216;   /* #E8E2D8 hover / raised   */
-  --border-color:  231 225 214;   /* #E7E1D6 hairline         */
-  --border-strong: 216 208 194;   /* #D8D0C2 stronger line    */
-  --text-primary:   38  34  27;   /* #26221B warm ink         */
-  --text-secondary:107 100  89;   /* #6B6459 body             */
-  --text-faint:    154 145 132;   /* #9A9184 muted            */
+  --bg-secondary:  226 236 251;   /* #E2ECFB inset panel      */
+  --bg-raised:     211 225 248;   /* #D3E1F8 hover / raised   */
+  --border-color:  214 225 243;   /* #D6E1F3 hairline         */
+  --border-strong: 188 205 234;   /* #BCCDEA stronger line    */
+  --text-primary:   16  26  61;   /* #101A3D poster navy      */
+  --text-secondary: 82  95 128;   /* #525F80 body             */
+  --text-faint:    132 145 175;   /* #8491AF muted            */
   --onbrand:       255 255 255;   /* text on colored fills    */
 
-  --accent-budget:     47 114 104;   /* #2F7268 muted teal primary */
-  --accent-savings:    47 114 104;   /* #2F7268 teal success       */
-  --accent-expenses:  192  72  90;   /* #C0485A danger             */
-  --accent-approvals: 176 122  30;   /* #B07A1E warning / gold     */
-  --accent-analytics:  74 108 140;   /* #4A6C8C info blue          */
-  --accent-alerts:    174  63  82;   /* #AE3F52 alert red          */
+  --accent-budget:     78  62 216;   /* #4E3ED8 blue-violet primary */
+  --accent-savings:    12 150 137;   /* #0C9689 teal success        */
+  --accent-expenses:  219  58  75;   /* #DB3A4B danger              */
+  --accent-approvals: 194 124   9;   /* #C27C09 warning             */
+  --accent-analytics:  30 118 212;   /* #1E76D4 info blue           */
+  --accent-alerts:    212  42  70;   /* #D42A46 alert red           */
 
   /* raw decorative colors for glows / grid */
-  --glow-brand: 47 114 104;       /* #2F7268 teal */
-  --glow-gold:  199 151  73;      /* #C69749 warm */
+  --glow-brand: 42 123 216;       /* #2A7BD8 blue  */
+  --glow-gold:  15 194 206;       /* #0FC2CE cyan  */
 
   /*
     Brand gradients. All three run teal → blue → violet; they differ only in
@@ -2575,8 +2590,8 @@ video {
     - holo-light: pale, for text sitting on a gradient banner or tile
     Headings no longer take a gradient at all — see .holo-text below.
   */
-  --holo-btn:   linear-gradient(120deg, #37837A 0%, #2F7268 52%, #22514A 100%);
-  --holo-light: linear-gradient(100deg, #FFFFFF 0%, #EAF3F0 50%, #FFFFFF 100%);
+  --holo-btn:   linear-gradient(115deg, #0FA8BE 0%, #1E7FD8 30%, #4338CA 55%, #6A2FD6 78%, #0FA8BE 100%);
+  --holo-light: linear-gradient(100deg, #FFFFFF 0%, #C8F4F9 22%, #CFE2FF 46%, #DCCBFF 70%, #FFFFFF 100%);
 }
 
 .dark {
@@ -2636,8 +2651,12 @@ body {
 */
 
 .ambient-glow-1 {
-  /* Calm theme: the floating colour blobs are removed. */
-  display: none;
+  background:
+    radial-gradient(closest-side at 35% 40%, rgba( 13, 190, 210, 0.85), transparent),
+    radial-gradient(closest-side at 65% 60%, rgba( 30, 150, 226, 0.72), transparent),
+    radial-gradient(closest-side at 50% 30%, rgba( 90, 200, 255, 0.58), transparent),
+    radial-gradient(closest-side at 30% 70%, rgba(140, 225, 235, 0.46), transparent);
+  animation: auroraDrift 20s ease-in-out infinite;
 }
 
 .dark .ambient-glow-1 {
@@ -2647,8 +2666,12 @@ body {
 }
 
 .ambient-glow-2 {
-  /* Calm theme: the floating colour blobs are removed. */
-  display: none;
+  background:
+    radial-gradient(closest-side at 60% 50%, rgba(122,  47, 224, 0.70), transparent),
+    radial-gradient(closest-side at 40% 65%, rgba( 25, 118, 220, 0.72), transparent),
+    radial-gradient(closest-side at 72% 70%, rgba(150, 120, 250, 0.58), transparent),
+    radial-gradient(closest-side at 30% 40%, rgba(140, 190, 255, 0.48), transparent);
+  animation: auroraDrift 26s ease-in-out infinite reverse;
 }
 
 .dark .ambient-glow-2 {
@@ -2695,11 +2718,12 @@ body {
 */
 
 .bg-brand {
-  background-image: none;
-  background-color: rgb(var(--accent-budget));
+  background-image: var(--holo-btn);
+  background-size: 260% 100%;
+  animation: holoShift 7s linear infinite;
 }
 
-.dark .bg-brand { background-image: none; background-color: rgb(var(--accent-budget)); }
+.dark .bg-brand { background-image: var(--holo-btn); }
 
 /* Holographic shimmer: slides the oversized gradient across the element */
 
@@ -2720,11 +2744,13 @@ body {
 */
 
 .bg-surface {
-  background-color: rgb(var(--bg-surface));
+  background-color: rgb(var(--bg-surface) / 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .dark .bg-surface {
-  background-color: rgb(var(--bg-surface));
+  background-color: rgb(var(--bg-surface) / 0.7);
 }
 
 /*
@@ -2735,19 +2761,32 @@ body {
 */
 
 .bg-surface.rounded-2xl {
-  border-color: rgb(var(--border-color));
-  background-image: none;
+  border-color: transparent;
+  background-image:
+    linear-gradient(135deg,
+      rgba( 15, 194, 206, 0.13) 0%,
+      rgba( 42, 156, 226, 0.09) 34%,
+      rgba(120, 160, 255, 0.10) 60%,
+      rgba(150, 120, 240, 0.09) 82%,
+      rgba( 15, 194, 206, 0.11) 100%);
+  background-size: 240% 240%;
   box-shadow:
-    0 1px 2px rgba(20, 28, 51, 0.04),
-    0 10px 24px -14px rgba(20, 28, 51, 0.12);
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 0 0 1px rgba(160, 195, 240, 0.6),
+    -12px 0 32px -12px rgba( 15, 194, 206, 0.7),
+     12px 0 32px -12px rgba(120,  70, 235, 0.55),
+    0 22px 48px rgba(19, 46, 110, 0.12);
 }
 
 .bg-surface.rounded-2xl:hover {
-  border-color: rgb(var(--border-strong));
   box-shadow:
-    0 1px 3px rgba(20, 28, 51, 0.05),
-    0 18px 38px -16px rgba(20, 28, 51, 0.16);
-  transform: translateY(-2px);
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 0 0 1px rgba(140, 180, 235, 0.85),
+    -16px 0 42px -10px rgba( 15, 194, 206, 0.9),
+     16px 0 42px -10px rgba(120,  70, 235, 0.75),
+    0 32px 64px rgba(19, 46, 110, 0.18);
+  transform: translateY(-3px);
+  animation: holoShift 6s linear infinite;
 }
 
 .dark .bg-surface.rounded-2xl {
@@ -2791,7 +2830,13 @@ body {
    has room to shimmer without hurting legibility */
 
 .holo-text-light {
-  color: #ffffff;
+  background-image: var(--holo-light);
+  background-size: 260% auto;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+          color: transparent;
+  animation: holoShift 5s linear infinite;
 }
 
 /*
@@ -2805,11 +2850,26 @@ body {
   background-image: var(--canvas-aurora);
 }
 
-/* Calm theme: the rotating prismatic sweep and drifting colour wash are removed. */
+/* slow-rotating prismatic light sweep */
 
-.login-sweep { display: none; }
+.login-sweep {
+  background: conic-gradient(from 0deg,
+    transparent 0deg,   rgba( 15, 194, 206, 0.26) 40deg,
+    transparent 95deg,  rgba( 42, 123, 216, 0.28) 165deg,
+    transparent 215deg, rgba(120,  70, 235, 0.24) 285deg,
+    transparent 335deg);
+  animation: spinSlow 28s linear infinite;
+}
 
-.login-wash { display: none; }
+/* drifting soft aurora wash */
+
+.login-wash {
+  background:
+    radial-gradient(closest-side at 25% 30%, rgba( 15, 194, 206, 0.20), transparent),
+    radial-gradient(closest-side at 80% 72%, rgba(106,  47, 214, 0.18), transparent),
+    radial-gradient(closest-side at 62% 18%, rgba( 30, 127, 216, 0.20), transparent);
+  animation: auroraDrift 22s ease-in-out infinite;
+}
 
 @keyframes spinSlow { to { transform: rotate(360deg); } }
 
@@ -2828,11 +2888,11 @@ body {
   isolation: isolate;
   overflow: hidden;
   border-radius: 18px;
-  background: linear-gradient(140deg, #37837A 0%, #2F7268 45%, #234E48 100%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(140deg, #0FB5C8 0%, #1E7FD8 38%, #4338CA 68%, #6A2FD6 100%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
-    0 12px 26px -12px rgba(30, 38, 92, 0.40),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    0 14px 30px -10px rgba(30, 70, 180, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
 }
 
@@ -2848,7 +2908,7 @@ body {
   top: -46px; right: -34px;
   width: 128px; height: 128px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgb(var(--tint) / 0.55), transparent 68%);
+  background: radial-gradient(circle, rgb(var(--tint) / 0.9), transparent 68%);
   filter: blur(16px);
   z-index: 0;
 }
@@ -2869,11 +2929,11 @@ body {
 }
 
 .stat-tile:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px);
   box-shadow:
-    0 22px 42px -14px rgba(30, 38, 92, 0.48),
-    0 0 24px -12px rgb(var(--tint) / 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    0 26px 48px -12px rgba(30, 70, 180, 0.55),
+    0 0 30px -10px rgb(var(--tint) / 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .stat-tile:hover::after { transform: translateX(125%); }
@@ -2941,20 +3001,21 @@ body {
   position: relative;
   overflow: hidden;
   border-radius: 22px;
-  background: linear-gradient(120deg, #56A79C 0%, #4A9A8E 55%, #3B8479 100%);
+  background: linear-gradient(120deg, #0C93AA 0%, #1A6FCE 32%, #3B31BE 64%, #6A2FD6 100%);
   box-shadow:
-    0 16px 36px -16px rgba(40, 78, 70, 0.30),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    0 18px 40px -14px rgba(30, 70, 180, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
-/* soft light sheen + faint grid so the banner keeps a little depth */
+/* soft prismatic wash + fine grid so the banner has depth */
 
 .panel-hero::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(90% 130% at 88% 6%, rgba(255, 255, 255, 0.10), transparent 60%);
+    radial-gradient(80% 130% at 88% 8%, rgba( 34, 211, 238, 0.34), transparent 58%),
+    radial-gradient(70% 120% at 4% 96%, rgba(139,  92, 246, 0.32), transparent 60%);
 }
 
 .panel-hero::after {
@@ -2962,8 +3023,8 @@ body {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 34px 34px;
   -webkit-mask-image: radial-gradient(120% 100% at 70% 20%, #000 0%, transparent 78%);
           mask-image: radial-gradient(120% 100% at 70% 20%, #000 0%, transparent 78%);
@@ -2997,7 +3058,7 @@ body {
 .hero-ctl-on {
   background: #fff;
   border-color: #fff;
-  color: #275F57;
+  color: #1E3A8A;
 }
 
 .hero-ctl-on:hover { background: #fff; }
@@ -3022,7 +3083,7 @@ body {
 
 button.bg-brand:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 22px rgba(47, 114, 104, 0.30);
+  box-shadow: 0 10px 30px rgba(42, 123, 216, 0.35);
 }
 
 /*
@@ -3037,7 +3098,7 @@ button:not(:disabled) {
 }
 
 button:not(:disabled):not(.bg-brand):hover {
-  box-shadow: 0 4px 14px rgba(20, 28, 51, 0.10);
+  box-shadow: 0 6px 18px rgba(42, 123, 216, 0.18);
 }
 
 button:not(:disabled):active {
@@ -3050,8 +3111,8 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: rgb(47 114 104) !important;
-  box-shadow: 0 0 0 3px rgba(47, 114, 104, 0.18);
+  border-color: rgb(58 130 226) !important;
+  box-shadow: 0 0 0 3px rgba(58, 130, 226, 0.2);
 }
 
 /* Tables: quiet zebra striping + soft blue row hover */

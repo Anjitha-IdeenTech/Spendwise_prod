@@ -121,21 +121,21 @@ const reqSummary = (r: { productName: string; productQty: number; targetPrice: n
 };
 
 // ---- Lightweight SVG charts (categorical palette, CVD-safe on the light canvas) ----
-const CHART_COLORS = ['#2F7268', '#4A6C8C', '#B07A1E', '#8F5E6A', '#C0485A', '#7A756B'];
+const CHART_COLORS = ['#1E76D4', '#0C9689', '#6A2FD6', '#C27C09', '#C43D7E', '#64748B'];
 
 // Status colors — drawn from the brand's teal → blue → violet sweep where the
 // meaning allows, deep enough to stay legible as text on the light canvas.
 // `rgb` carries the same colour as raw channels so CSS can build tinted glows
 // and halos from it via rgb(var(--tint) / <alpha>).
 const STATUS_META: Record<string, { color: string; rgb: string; short: string; icon: LucideIcon }> = {
-  'Draft': { color: '#7A756B', rgb: '122 117 107', short: 'Draft', icon: FileText },
-  'Pending Approval': { color: '#B07A1E', rgb: '176 122 30', short: 'Pending', icon: Clock },
-  'Needs Clarification': { color: '#C4652A', rgb: '196 101 42', short: 'Clarify', icon: AlertCircle },
-  'Sourcing': { color: '#4A6C8C', rgb: '74 108 140', short: 'Sourcing', icon: Search },
-  'Approved': { color: '#2F7268', rgb: '47 114 104', short: 'Approved', icon: CheckCircle2 },
-  'PO Confirmed': { color: '#8F5E6A', rgb: '143 94 106', short: 'PO Confirmed', icon: Package },
-  'Rejected': { color: '#C0485A', rgb: '192 72 90', short: 'Rejected', icon: X },
-  'Paid': { color: '#7A505C', rgb: '122 80 92', short: 'Paid', icon: Landmark },
+  'Draft': { color: '#64748B', rgb: '100 116 139', short: 'Draft', icon: FileText },
+  'Pending Approval': { color: '#C27C09', rgb: '194 124 9', short: 'Pending', icon: Clock },
+  'Needs Clarification': { color: '#D9622B', rgb: '217 98 43', short: 'Clarify', icon: AlertCircle },
+  'Sourcing': { color: '#1E76D4', rgb: '30 118 212', short: 'Sourcing', icon: Search },
+  'Approved': { color: '#0C9689', rgb: '12 150 137', short: 'Approved', icon: CheckCircle2 },
+  'PO Confirmed': { color: '#4E3ED8', rgb: '78 62 216', short: 'PO Confirmed', icon: Package },
+  'Rejected': { color: '#DB3A4B', rgb: '219 58 75', short: 'Rejected', icon: X },
+  'Paid': { color: '#6A2FD6', rgb: '106 47 214', short: 'Paid', icon: Landmark },
 };
 const statusColor = (s: string) => STATUS_META[s]?.color ?? '#64748B';
 const statusRgb = (s: string) => STATUS_META[s]?.rgb ?? '100 116 139';
@@ -151,9 +151,9 @@ const statusStage = (s: string) => STATUS_STAGE[s] ?? 0;
 // The three coloured filter dots on "My Requests" collapse the eight raw
 // statuses into three plain buckets the client understands at a glance.
 const STATUS_GROUPS: { key: 'action' | 'progress' | 'done'; label: string; color: string; rgb: string; statuses: string[] }[] = [
-  { key: 'action',   label: 'Needs attention', color: '#B07A1E', rgb: '176 122 30',  statuses: ['Draft', 'Pending Approval', 'Needs Clarification', 'Rejected'] },
-  { key: 'progress', label: 'In progress',      color: '#4A6C8C', rgb: '74 108 140',  statuses: ['Sourcing', 'Approved'] },
-  { key: 'done',     label: 'Completed',        color: '#2F7268', rgb: '47 114 104',  statuses: ['PO Confirmed', 'Paid'] },
+  { key: 'action',   label: 'Needs attention', color: '#C27C09', rgb: '194 124 9',  statuses: ['Draft', 'Pending Approval', 'Needs Clarification', 'Rejected'] },
+  { key: 'progress', label: 'In progress',      color: '#1E76D4', rgb: '30 118 212', statuses: ['Sourcing', 'Approved'] },
+  { key: 'done',     label: 'Completed',        color: '#0C9689', rgb: '12 150 137', statuses: ['PO Confirmed', 'Paid'] },
 ];
 const groupOf = (s: string): 'action' | 'progress' | 'done' => STATUS_GROUPS.find(g => g.statuses.includes(s))?.key ?? 'action';
 
@@ -239,7 +239,7 @@ function RequestCard({ r, onOpen, onPoke }: { r: RequestItem; onOpen: () => void
   const stage = statusStage(r.status);
   const last = r.history[r.history.length - 1];
   const settled = r.status === 'Paid' || r.status === 'PO Confirmed';
-  const urgencyTone = r.urgency === 'High' ? '#C0485A' : r.urgency === 'Medium' ? '#B07A1E' : '#2F7268';
+  const urgencyTone = r.urgency === 'High' ? '#DB3A4B' : r.urgency === 'Medium' ? '#C27C09' : '#0C9689';
   const pct = Math.round((stage / (STAGE_LABELS.length - 1)) * 100);
   return (
     <div
@@ -373,31 +373,30 @@ function StatTile({ icon: Icon, tint, value, label, caption, meter, delay = 0, s
   prev?: number;
   lowerIsBetter?: boolean;
 }) {
-  const tintCss = `rgb(${tint})`;
-  const tintStroke = `rgb(${tint.split(' ').join(', ')})`;   // SVG-safe comma form
   return (
     <div
-      className="relative overflow-hidden rounded-2xl bg-surface border border-borderTheme shadow-sm p-4 animate-fadeIn"
+      className="stat-tile p-3.5 animate-fadeIn"
       style={{ '--tint': tint, animationDelay: `${delay}ms` } as React.CSSProperties}
     >
-      {/* icon chip carries the only colour, with the movement chip opposite it */}
       <div className="flex items-start justify-between gap-2">
-        <span className="grid h-10 w-10 place-items-center rounded-xl shrink-0" style={{ background: `rgb(${tint} / 0.12)`, color: tintCss }}>
-          <Icon className="h-5 w-5" />
-        </span>
+        <p className="text-[26px] font-extrabold text-white font-outfit leading-none tabular-nums">
+          <CountUp value={value} />
+        </p>
+        <div className="glass-chip h-7 w-7 rounded-lg grid place-items-center shrink-0">
+          <Icon className="h-3.5 w-3.5 text-white" />
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-white/85">{label}</p>
         {curr !== undefined && prev !== undefined && (
-          <DeltaChip curr={curr} prev={prev} lowerIsBetter={lowerIsBetter} />
+          <DeltaChip curr={curr} prev={prev} lowerIsBetter={lowerIsBetter} onDark />
         )}
       </div>
-      <p className="text-[26px] font-extrabold text-textPrimary font-outfit leading-none tabular-nums mt-3.5">
-        <CountUp value={value} />
-      </p>
-      <p className="text-xs font-bold text-textSecondary mt-2">{label}</p>
-      {caption && <p className="text-[11px] text-textFaint mt-0.5 truncate">{caption}</p>}
-      {spark && spark.length > 1 && <Sparkline data={spark} stroke={tintStroke} className="w-full h-7 mt-2.5" />}
+      {caption && <p className="text-[10px] text-white/55 mt-1 truncate">{caption}</p>}
+      {spark && <Sparkline data={spark} stroke="#fff" className="w-full h-7 mt-1.5 opacity-80" />}
       {meter !== undefined && (
-        <div className="mt-2.5 h-1.5 rounded-full bg-secondary overflow-hidden">
-          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${meter}%`, background: tintCss }} />
+        <div className="mt-2 h-[3px] rounded-full bg-white/15 overflow-hidden">
+          <div className="stat-meter" style={{ width: `${meter}%` }} />
         </div>
       )}
     </div>
@@ -488,7 +487,7 @@ function DonutChart({ data, prefix = '', suffix = '' }: { data: Datum[]; prefix?
 }
 
 // Horizontal magnitude bars — single hue, sorted, direct-labeled.
-function BarList({ data, color = '#2F7268', prefix = '', suffix = '' }: { data: Datum[]; color?: string; prefix?: string; suffix?: string }) {
+function BarList({ data, color = '#1E76D4', prefix = '', suffix = '' }: { data: Datum[]; color?: string; prefix?: string; suffix?: string }) {
   const max = Math.max(...data.map(d => d.value), 1);
   return (
     <div className="space-y-3">
@@ -945,11 +944,11 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[200px]" role="img" aria-label="Monthly spend against budget">
         <defs>
           <linearGradient id={`ta${gid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#2F7268" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#2F7268" stopOpacity="0.02" />
+            <stop offset="0%" stopColor="#1E7FD8" stopOpacity="0.38" />
+            <stop offset="100%" stopColor="#6A2FD6" stopOpacity="0.02" />
           </linearGradient>
           <linearGradient id={`tl${gid}`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#37837A" /><stop offset="55%" stopColor="#2F7268" /><stop offset="100%" stopColor="#22514A" />
+            <stop offset="0%" stopColor="#0FB5C8" /><stop offset="55%" stopColor="#1E7FD8" /><stop offset="100%" stopColor="#6A2FD6" />
           </linearGradient>
         </defs>
         {/* horizontal guides */}
@@ -969,7 +968,7 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
           strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
         {data.map((d, i) => (
           <circle key={i} cx={x(i)} cy={y(d.value)} r={i === active ? 5 : 3}
-            fill="#fff" stroke="#2F7268" strokeWidth={i === active ? 3 : 2} />
+            fill="#fff" stroke="#1E7FD8" strokeWidth={i === active ? 3 : 2} />
         ))}
         {/* hover targets */}
         {data.map((d, i) => (
@@ -986,7 +985,7 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
       <div className="flex flex-wrap items-center gap-x-5 gap-y-1 mt-1 text-xs">
         <span className="font-bold text-textPrimary font-outfit">{data[active].label}</span>
         <span className="flex items-center gap-1.5 text-textSecondary">
-          <span className="h-2 w-2 rounded-full" style={{ background: '#2F7268' }} />
+          <span className="h-2 w-2 rounded-full" style={{ background: '#1E7FD8' }} />
           Actual <b className="text-textPrimary tabular-nums">{prefix}{data[active].value.toFixed(2)}{suffix}</b>
         </span>
         <span className="flex items-center gap-1.5 text-textSecondary">
@@ -1002,7 +1001,7 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
 
 // Ranked breakdown: share bar, absolute value, share-of-total and movement,
 // so one row answers "how big", "how much of the pie" and "which way".
-function BreakdownBars({ rows, prefix = '₹', suffix = ' Cr', tint = '#2F7268', decimals = 2 }: {
+function BreakdownBars({ rows, prefix = '₹', suffix = ' Cr', tint = '#1E76D4', decimals = 2 }: {
   rows: BreakdownRow[]; prefix?: string; suffix?: string; tint?: string; decimals?: number;
 }) {
   const sorted = [...rows].sort((a, b) => b.value - a.value);
@@ -1051,7 +1050,7 @@ function GaugeArc({ used, total, prefix = '₹', suffix = ' Cr' }: {
         <svg viewBox="0 0 160 92" className="w-52">
           <defs>
             <linearGradient id={`ga${gid}`} x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#37837A" /><stop offset="55%" stopColor="#2F7268" /><stop offset="100%" stopColor="#22514A" />
+              <stop offset="0%" stopColor="#0FB5C8" /><stop offset="55%" stopColor="#1E7FD8" /><stop offset="100%" stopColor="#6A2FD6" />
             </linearGradient>
           </defs>
           <path d={D} fill="none" stroke="rgb(var(--bg-secondary))" strokeWidth="14" strokeLinecap="round" />
@@ -2057,7 +2056,7 @@ export default function App() {
               {pokes.some(p => p.to === userRole) && (
                 <div className="mb-6 space-y-2 max-w-6xl mx-auto">
                   {pokes.map((p, i) => p.to !== userRole ? null : (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl border shadow-sm animate-fadeIn" style={{ background: 'rgb(var(--accent-budget) / 0.08)', borderColor: 'rgb(var(--accent-budget) / 0.25)' }}>
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl border shadow-sm animate-fadeIn" style={{ background: '#1E76D414', borderColor: '#1E76D440' }}>
                       <span className="h-8 w-8 rounded-full bg-brand/15 flex items-center justify-center flex-shrink-0"><Bell className="h-4 w-4 text-brand" /></span>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-textPrimary">Reminder from {p.from}</p>
@@ -3515,7 +3514,7 @@ export default function App() {
                         {(() => {
                           const agg = requests.reduce((a, r) => { a[r.department] = (a[r.department] || 0) + r.totalCost; return a; }, {} as Record<string, number>);
                           const data = Object.entries(agg).map(([label, value]) => ({ label, value: Math.round(value / 1000) }));
-                          return <BarList data={data} color="#4A6C8C" prefix="₹" suffix="K" />;
+                          return <BarList data={data} color="#1E76D4" prefix="₹" suffix="K" />;
                         })()}
                       </div>
                     </div>
@@ -4526,16 +4525,16 @@ export default function App() {
                   <>
                   {/* KPI row — every tile recomputes from the filtered ledger */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 font-outfit">
-                    <StatTile icon={Landmark} tint="47 114 104" value={`₹${dash.spend.toFixed(2)} Cr`} label={dash.fullRange && dash.noCat ? 'Total Spend' : 'Spend (filtered)'}
+                    <StatTile icon={Landmark} tint="78 62 216" value={`₹${dash.spend.toFixed(2)} Cr`} label={dash.fullRange && dash.noCat ? 'Total Spend' : 'Spend (filtered)'}
                       caption={[dash.fullRange ? `${dash.poCount} orders` : `${dash.rangeLabel} 2026`, dashBranch !== 'All' ? dashBranch : null, dashDept !== 'All' ? dashDept : null, dashCategory !== 'All' ? dashCategory : null].filter(Boolean).join(' · ')}
                       delay={0} spark={dash.spark.spend} curr={dash.spend} prev={dash.prev.spend} />
-                    <StatTile icon={TrendingUp} tint="47 114 104" value={`₹${dash.savings.toFixed(1)} L`} label="AI Savings"
+                    <StatTile icon={TrendingUp} tint="12 150 137" value={`₹${dash.savings.toFixed(1)} L`} label="AI Savings"
                       caption={`${dash.savingsPct.toFixed(1)}% of spend`} meter={Math.min(Math.round(dash.savingsPct * 8), 100)} delay={60} spark={dash.spark.savings}
                       curr={dash.savings} prev={dash.prev.savings} />
-                    <StatTile icon={Timer} tint="74 108 140" value={`${dash.cycleAvg.toFixed(1)} days`} label="Avg Cycle Time"
+                    <StatTile icon={Timer} tint="30 118 212" value={`${dash.cycleAvg.toFixed(1)} days`} label="Avg Cycle Time"
                       caption="request → payment" delay={120} spark={dash.spark.cycle}
                       curr={dash.cycleAvg} prev={dash.prev.cycle} lowerIsBetter />
-                    <StatTile icon={ShieldAlert} tint="192 72 90" value={String(dash.anomCount)} label="Blocked Anomalies"
+                    <StatTile icon={ShieldAlert} tint="219 58 75" value={String(dash.anomCount)} label="Blocked Anomalies"
                       caption={`₹${dash.anomTotalL.toFixed(2)} L stopped`} delay={180} spark={dash.spark.anomalies}
                       curr={dash.anomCount} prev={dash.prev.anomalies} lowerIsBetter />
                   </div>
@@ -4589,7 +4588,7 @@ export default function App() {
                         <h3 className="font-outfit font-bold text-textPrimary">Spend by Department{dashDept !== 'All' && <span className="text-brand font-semibold"> · {dashDept}</span>}</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Share of total, with change vs last year</p>
-                      <BreakdownBars rows={dash.byDept} tint="#4A6C8C" />
+                      <BreakdownBars rows={dash.byDept} tint="#1E76D4" />
                     </div>
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <div className="flex items-center gap-2">
@@ -4597,7 +4596,7 @@ export default function App() {
                         <h3 className="font-outfit font-bold text-textPrimary">Spend by Category{dashCategory !== 'All' && <span className="text-pos font-semibold"> · {dashCategory}</span>}</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Share of total, with change vs last year</p>
-                      <BreakdownBars rows={dash.byCategory} tint="#2F7268" />
+                      <BreakdownBars rows={dash.byCategory} tint="#0C9689" />
                     </div>
                   </div>
 
@@ -4614,7 +4613,7 @@ export default function App() {
                         <h3 className="font-outfit font-bold text-textPrimary">Where the ₹{dash.savings.toFixed(1)} L Came From</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Savings attributed by lever (₹ Lakh)</p>
-                      <BreakdownBars rows={dash.levers} tint="#B07A1E" suffix=" L" />
+                      <BreakdownBars rows={dash.levers} tint="#6A2FD6" suffix=" L" />
                     </div>
                   </div>
 
@@ -4661,7 +4660,7 @@ export default function App() {
                                 </td>
                                 <td className="text-right tabular-nums text-pos font-bold">₹{v.savings.toFixed(1)} L</td>
                                 <td className="py-2.5">
-                                  <Sparkline data={v.trend} stroke="#2F7268" className="w-16 h-6 ml-auto" />
+                                  <Sparkline data={v.trend} stroke="#1E76D4" className="w-16 h-6 ml-auto" />
                                 </td>
                               </tr>
                             ))}
@@ -4690,7 +4689,7 @@ export default function App() {
                               </div>
                               <div className="relative h-2.5 rounded-full bg-secondary overflow-hidden">
                                 <div className="h-full rounded-full transition-all duration-700"
-                                  style={{ width: `${(s.days / worst) * 100}%`, background: 'linear-gradient(90deg,#37837A,#2F7268)' }} />
+                                  style={{ width: `${(s.days / worst) * 100}%`, background: 'linear-gradient(90deg,#0FB5C8,#1E7FD8)' }} />
                                 <span className="absolute top-0 bottom-0 w-0.5 bg-textFaint/70"
                                   style={{ left: `${(s.prevDays / worst) * 100}%` }} />
                               </div>
@@ -4738,7 +4737,7 @@ export default function App() {
                     ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                       {dash.anomalies.map((a, i) => {
-                        const tone = a.severity === 'High' ? '192 72 90' : a.severity === 'Medium' ? '176 122 30' : '74 108 140';
+                        const tone = a.severity === 'High' ? '219 58 75' : a.severity === 'Medium' ? '194 124 9' : '30 118 212';
                         return (
                           <div key={i} className="req-tile p-4 pl-5" style={{ '--tint': tone } as React.CSSProperties}>
                             <div className="flex items-start justify-between gap-2">
