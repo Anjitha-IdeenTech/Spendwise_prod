@@ -946,10 +946,10 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
         <defs>
           <linearGradient id={`ta${gid}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.38" />
-            <stop offset="100%" stopColor="#EC4899" stopOpacity="0.02" />
+            <stop offset="100%" stopColor="#818CF8" stopOpacity="0.02" />
           </linearGradient>
           <linearGradient id={`tl${gid}`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#8B5CF6" /><stop offset="55%" stopColor="#C026D3" /><stop offset="100%" stopColor="#EC4899" />
+            <stop offset="0%" stopColor="#8B5CF6" /><stop offset="55%" stopColor="#818CF8" /><stop offset="100%" stopColor="#6366F1" />
           </linearGradient>
         </defs>
         {/* horizontal guides */}
@@ -1051,7 +1051,7 @@ function GaugeArc({ used, total, prefix = '₹', suffix = ' Cr' }: {
         <svg viewBox="0 0 160 92" className="w-52">
           <defs>
             <linearGradient id={`ga${gid}`} x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#8B5CF6" /><stop offset="55%" stopColor="#C026D3" /><stop offset="100%" stopColor="#EC4899" />
+              <stop offset="0%" stopColor="#8B5CF6" /><stop offset="55%" stopColor="#818CF8" /><stop offset="100%" stopColor="#6366F1" />
             </linearGradient>
           </defs>
           <path d={D} fill="none" stroke="rgb(var(--bg-secondary))" strokeWidth="14" strokeLinecap="round" />
@@ -4597,7 +4597,7 @@ export default function App() {
                         <h3 className="font-outfit font-bold text-textPrimary">Spend by Category{dashCategory !== 'All' && <span className="text-pos font-semibold"> · {dashCategory}</span>}</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Share of total, with change vs last year</p>
-                      <BreakdownBars rows={dash.byCategory} tint="#DB2777" />
+                      <BreakdownBars rows={dash.byCategory} tint="#6366F1" />
                     </div>
                   </div>
 
@@ -4614,7 +4614,7 @@ export default function App() {
                         <h3 className="font-outfit font-bold text-textPrimary">Where the ₹{dash.savings.toFixed(1)} L Came From</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Savings attributed by lever (₹ Lakh)</p>
-                      <BreakdownBars rows={dash.levers} tint="#C026D3" suffix=" L" />
+                      <BreakdownBars rows={dash.levers} tint="#8B5CF6" suffix=" L" />
                     </div>
                   </div>
 
@@ -4690,7 +4690,7 @@ export default function App() {
                               </div>
                               <div className="relative h-2.5 rounded-full bg-secondary overflow-hidden">
                                 <div className="h-full rounded-full transition-all duration-700"
-                                  style={{ width: `${(s.days / worst) * 100}%`, background: 'linear-gradient(90deg,#8B5CF6,#C026D3)' }} />
+                                  style={{ width: `${(s.days / worst) * 100}%`, background: 'linear-gradient(90deg,#8B5CF6,#6366F1)' }} />
                                 <span className="absolute top-0 bottom-0 w-0.5 bg-textFaint/70"
                                   style={{ left: `${(s.prevDays / worst) * 100}%` }} />
                               </div>

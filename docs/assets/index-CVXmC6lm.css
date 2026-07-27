@@ -2540,16 +2540,17 @@ video {
   --ink-btn:       20  20  27;   /* #14141B */
 
   /*
-    The app canvas — near-white with a violet bloom top-left, pink top-right and
-    softer fuchsia / violet lower corners, mirroring the reference hero. Painted
-    on <body> and on .login-aurora (the app shell + the login page).
+    The app canvas — a soft lavender-white carrying a violet bloom top-left, a
+    cool periwinkle/indigo bloom top-right and light-violet lower corners, with
+    only a whisper of pink. Kept a touch more present so frosted panels pick up
+    a cool glassy tint. Painted on <body> and on .login-aurora (app + login).
   */
   --canvas-aurora:
-    radial-gradient( 72% 58% at  6% 10%, rgba(124,  58, 237, 0.24) 0%, transparent 60%),
-    radial-gradient( 68% 56% at 98%  8%, rgba(236,  72, 153, 0.22) 0%, transparent 60%),
-    radial-gradient( 64% 58% at 92% 96%, rgba(192,  38, 211, 0.14) 0%, transparent 62%),
-    radial-gradient( 62% 58% at  2% 98%, rgba(139,  92, 246, 0.13) 0%, transparent 62%),
-    linear-gradient(150deg, #FBFAFE 0%, #FDFAFC 48%, #FBF7FE 100%);
+    radial-gradient( 72% 58% at  6% 10%, rgba(124,  58, 237, 0.26) 0%, transparent 60%),
+    radial-gradient( 68% 56% at 98%  8%, rgba( 99, 102, 241, 0.24) 0%, transparent 60%),
+    radial-gradient( 64% 58% at 92% 96%, rgba(167, 139, 250, 0.16) 0%, transparent 62%),
+    radial-gradient( 62% 58% at  2% 98%, rgba(236,  72, 153, 0.09) 0%, transparent 62%),
+    linear-gradient(150deg, #F5F3FE 0%, #F4F3FD 50%, #F6F3FD 100%);
 
   /* Light canvas + white surfaces */
   --bg-app:        250 250 253;   /* #FAFAFD near-white canvas */
@@ -2572,7 +2573,7 @@ video {
 
   /* raw decorative colors for glows */
   --glow-brand: 139  92 246;      /* #8B5CF6 violet */
-  --glow-gold:  236  72 153;      /* #EC4899 pink   */
+  --glow-gold:  129 140 248;      /* #818CF8 periwinkle */
 
   /*
     Brand gradients. Both run violet → fuchsia → pink; they differ only in
@@ -2641,7 +2642,7 @@ body {
   Floating aurora blobs — large, heavily blurred, multi-hue radial gradients.
   Rendered behind the app on the two decorative divs in App.tsx. Effective
   opacity lands around 10–15% after the blur + the divs' own opacity-60.
-  Glow 1 is the violet (left) bloom, glow 2 the pink/fuchsia (right) bloom.
+  Glow 1 is the violet (left) bloom, glow 2 the cool periwinkle/indigo (right).
 */
 
 .ambient-glow-1 {
@@ -2661,10 +2662,10 @@ body {
 
 .ambient-glow-2 {
   background:
-    radial-gradient(closest-side at 60% 50%, rgba(236,  72, 153, 0.72), transparent),
-    radial-gradient(closest-side at 40% 65%, rgba(192,  38, 211, 0.68), transparent),
-    radial-gradient(closest-side at 72% 70%, rgba(244, 114, 182, 0.56), transparent),
-    radial-gradient(closest-side at 30% 40%, rgba(249, 168, 212, 0.46), transparent);
+    radial-gradient(closest-side at 60% 50%, rgba( 99, 102, 241, 0.68), transparent),
+    radial-gradient(closest-side at 40% 65%, rgba(129, 140, 248, 0.60), transparent),
+    radial-gradient(closest-side at 72% 70%, rgba(167, 139, 250, 0.52), transparent),
+    radial-gradient(closest-side at 30% 40%, rgba(236,  72, 153, 0.30), transparent);
   animation: auroraDrift 26s ease-in-out infinite reverse;
 }
 
@@ -2738,9 +2739,9 @@ body {
 */
 
 .bg-surface {
-  background-color: rgb(var(--bg-surface) / 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background-color: rgb(var(--bg-surface) / 0.6);
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
 }
 
 .dark .bg-surface {
@@ -2758,26 +2759,25 @@ body {
   border-color: transparent;
   background-image:
     linear-gradient(135deg,
-      rgba(139,  92, 246, 0.12) 0%,
-      rgba(167, 139, 250, 0.08) 34%,
-      rgba(236,  72, 153, 0.09) 62%,
-      rgba(192,  38, 211, 0.08) 82%,
+      rgba(139,  92, 246, 0.11) 0%,
+      rgba(129, 140, 248, 0.08) 38%,
+      rgba(167, 139, 250, 0.09) 66%,
       rgba(139,  92, 246, 0.10) 100%);
   background-size: 240% 240%;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 0 0 1px rgba(214, 205, 236, 0.7),
-    -12px 0 32px -12px rgba(139,  92, 246, 0.55),
-     12px 0 32px -12px rgba(236,  72, 153, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 0 0 1px rgba(206, 199, 245, 0.75),
+    -14px 0 34px -14px rgba(139,  92, 246, 0.5),
+     14px 0 34px -14px rgba(129, 140, 248, 0.5),
     0 22px 48px rgba(76, 29, 149, 0.12);
 }
 
 .bg-surface.rounded-2xl:hover {
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
     0 0 0 1px rgba(196, 181, 253, 0.85),
-    -16px 0 42px -10px rgba(139,  92, 246, 0.7),
-     16px 0 42px -10px rgba(236,  72, 153, 0.65),
+    -18px 0 44px -10px rgba(139,  92, 246, 0.6),
+     18px 0 44px -10px rgba(129, 140, 248, 0.6),
     0 32px 64px rgba(76, 29, 149, 0.18);
   transform: translateY(-3px);
   animation: holoShift 6s linear infinite;
@@ -2879,11 +2879,14 @@ body {
   isolation: isolate;
   overflow: hidden;
   border-radius: 18px;
-  background-color: rgb(var(--bg-surface) / 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgb(var(--border-color));
-  box-shadow: 0 10px 26px -14px rgba(76, 29, 149, 0.18);
+  background-color: rgb(var(--bg-surface) / 0.6);
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 0 0 1px rgba(206, 199, 245, 0.6),
+    0 12px 28px -16px rgba(76, 29, 149, 0.22);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
@@ -2981,22 +2984,25 @@ body {
   overflow: hidden;
   border-radius: 22px;
   background:
-    linear-gradient(120deg, rgba(124, 58, 237, 0.10) 0%, rgba(192, 38, 211, 0.07) 52%, rgba(236, 72, 153, 0.09) 100%),
-    rgb(var(--bg-surface) / 0.72);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgb(var(--border-color));
-  box-shadow: 0 14px 34px -18px rgba(76, 29, 149, 0.22);
+    linear-gradient(120deg, rgba(124, 58, 237, 0.12) 0%, rgba(99, 102, 241, 0.09) 55%, rgba(167, 139, 250, 0.10) 100%),
+    rgb(var(--bg-surface) / 0.6);
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 0 0 1px rgba(206, 199, 245, 0.6),
+    0 14px 34px -18px rgba(76, 29, 149, 0.22);
 }
 
-/* very soft violet/pink corner blooms — a gentle tint, not a bright slab */
+/* very soft violet/periwinkle corner blooms — a gentle cool tint */
 
 .panel-hero::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(70% 120% at 92% 6%, rgba(236, 72, 153, 0.12), transparent 60%),
+    radial-gradient(70% 120% at 92% 6%, rgba(99, 102, 241, 0.14), transparent 60%),
     radial-gradient(60% 120% at 4% 98%, rgba(124, 58, 237, 0.12), transparent 62%);
 }
 
