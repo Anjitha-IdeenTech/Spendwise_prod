@@ -247,9 +247,8 @@ function RequestCard({ r, onOpen, onPoke }: { r: RequestItem; onOpen: () => void
       className="request-card group relative cursor-pointer overflow-hidden rounded-2xl bg-surface border border-borderTheme transition-colors duration-200 hover:border-brand/40"
       style={{ '--tint': rgb } as React.CSSProperties}
     >
-      {/* top accent bar + soft corner glow that lifts on hover */}
-      <span className="absolute inset-x-0 top-0 h-1.5" style={{ background: `rgb(${rgb})` }} />
-      <span className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full blur-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: `rgb(${rgb} / 0.22)` }} />
+      {/* top stays pure white; only a soft corner glow lifts on hover */}
+      <span className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full blur-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: `rgb(${rgb} / 0.18)` }} />
 
       <div className="relative p-5">
         {/* header: icon chip + id + status, urgency on the right */}

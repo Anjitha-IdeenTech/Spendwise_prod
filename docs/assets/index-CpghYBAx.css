@@ -2544,15 +2544,15 @@ video {
   --ink-btn:       20  20  27;   /* #14141B */
 
   /*
-    The app canvas — a flat, professional near-white. No decorative blooms
-    (this theme is white-primary and gradient-light). A whisper of a cool
-    vertical wash only. Painted on <body> and on .login-aurora.
+    The app canvas — a soft, cool blue-grey backdrop so white cards pop
+    against it (not stark white), but the gradient is kept low-intensity /
+    gentle. Painted on <body> and on .login-aurora.
   */
   --canvas-aurora:
-    linear-gradient(180deg, #FBFCFE 0%, #F4F7FB 100%);
+    linear-gradient(160deg, #EAF0F8 0%, #F4F7FC 52%, #E9EFF7 100%);
 
   /* Light canvas + white surfaces */
-  --bg-app:        250 251 253;   /* #FAFBFD flat near-white app bg */
+  --bg-app:        238 243 250;   /* #EEF3FA soft cool blue-grey bg */
   --bg-surface:    255 255 255;   /* #FFFFFF card / primary white   */
   --bg-secondary:  241 245 249;   /* #F1F5F9 slate-100 inset        */
   --bg-raised:     226 232 240;   /* #E2E8F0 slate-200 hover        */
