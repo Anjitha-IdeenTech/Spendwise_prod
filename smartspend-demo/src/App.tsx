@@ -121,7 +121,7 @@ const reqSummary = (r: { productName: string; productQty: number; targetPrice: n
 };
 
 // ---- Lightweight SVG charts (categorical palette, CVD-safe on the light canvas) ----
-const CHART_COLORS = ['#7C3AED', '#EC4899', '#6366F1', '#0D9476', '#F59E0B', '#64748B'];
+const CHART_COLORS = ['#7C3AED', '#A855F7', '#6366F1', '#0D9476', '#F59E0B', '#64748B'];
 
 // Status colors — drawn from the brand's violet → fuchsia → pink sweep where the
 // meaning allows, deep enough to stay legible as text on the light canvas.
@@ -135,7 +135,7 @@ const STATUS_META: Record<string, { color: string; rgb: string; short: string; i
   'Approved': { color: '#0C9689', rgb: '12 150 137', short: 'Approved', icon: CheckCircle2 },
   'PO Confirmed': { color: '#7C3AED', rgb: '124 58 237', short: 'PO Confirmed', icon: Package },
   'Rejected': { color: '#DB3A4B', rgb: '219 58 75', short: 'Rejected', icon: X },
-  'Paid': { color: '#C026D3', rgb: '192 38 211', short: 'Paid', icon: Landmark },
+  'Paid': { color: '#9333EA', rgb: '147 51 234', short: 'Paid', icon: Landmark },
 };
 const statusColor = (s: string) => STATUS_META[s]?.color ?? '#64748B';
 const statusRgb = (s: string) => STATUS_META[s]?.rgb ?? '100 116 139';
@@ -1809,7 +1809,7 @@ export default function App() {
           <div className="login-sweep absolute inset-[-50%] z-0 pointer-events-none" />
           <div className="login-wash absolute inset-0 z-0 pointer-events-none" />
           <div className="absolute -top-24 -left-20 w-96 h-96 rounded-full bg-[#C4B5FD]/30 blur-[90px] z-0 pointer-events-none" />
-          <div className="absolute top-1/3 right-1/3 w-[34rem] h-[34rem] rounded-full bg-[#F9A8D4]/22 blur-[110px] z-0 pointer-events-none" />
+          <div className="absolute top-1/3 right-1/3 w-[34rem] h-[34rem] rounded-full bg-[#CBB0F5]/24 blur-[110px] z-0 pointer-events-none" />
           <div className="absolute bottom-[-6rem] left-1/4 w-[28rem] h-[28rem] rounded-full bg-[#CDBDFF]/20 blur-[100px] z-0 pointer-events-none" />
 
           <div className="lg:w-7/12 flex flex-col justify-between p-8 lg:p-16 text-textPrimary relative z-10">
