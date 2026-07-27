@@ -2540,51 +2540,49 @@ video {
   --ink-btn:       20  20  27;   /* #14141B */
 
   /*
-    The app canvas — a soft lavender-white carrying a violet bloom top-left, a
-    purple bloom top-right and light-violet lower corners (no pink). Kept a
-    touch more present so frosted panels pick up a purple glassy tint. Painted
-    on <body> and on .login-aurora (app + login).
+    The app canvas — a soft near-white carrying a very pale blue-violet bloom
+    top-left and a pale purple bloom top-right (holographic, minimal — light
+    shades only, nothing bright). Painted on <body> and on .login-aurora.
   */
   --canvas-aurora:
-    radial-gradient( 72% 58% at  6% 10%, rgba(124,  58, 237, 0.36) 0%, transparent 60%),
-    radial-gradient( 68% 56% at 98%  8%, rgba(147,  51, 234, 0.30) 0%, transparent 60%),
-    radial-gradient( 64% 58% at 92% 96%, rgba(167, 139, 250, 0.22) 0%, transparent 62%),
-    radial-gradient( 62% 58% at  2% 98%, rgba(139,  92, 246, 0.18) 0%, transparent 62%),
-    linear-gradient(150deg, #F1EDFC 0%, #F0ECFB 50%, #F2EDFC 100%);
+    radial-gradient( 58% 50% at  8%  6%, rgba(139, 148, 236, 0.14) 0%, transparent 60%),
+    radial-gradient( 56% 50% at 96%  8%, rgba(196, 181, 253, 0.14) 0%, transparent 60%),
+    radial-gradient( 54% 54% at 90% 96%, rgba(165, 190, 255, 0.10) 0%, transparent 62%),
+    radial-gradient( 54% 54% at  4% 96%, rgba(221, 214, 254, 0.10) 0%, transparent 62%),
+    linear-gradient(150deg, #F7F8FD 0%, #F8F7FD 50%, #F6F8FE 100%);
 
   /* Light canvas + white surfaces */
-  --bg-app:        250 250 253;   /* #FAFAFD near-white canvas */
+  --bg-app:        247 248 253;   /* #F7F8FD cool near-white  */
   --bg-surface:    255 255 255;   /* #FFFFFF card             */
-  --bg-secondary:  245 243 250;   /* #F5F3FA lilac inset      */
-  --bg-raised:     237 233 247;   /* #EDE9F7 hover / raised   */
-  --border-color:  231 227 242;   /* #E7E3F2 lilac hairline   */
-  --border-strong: 214 205 236;   /* #D6CDEC stronger line    */
-  --text-primary:   17  17  23;   /* #111117 near-black       */
-  --text-secondary: 92  92 104;   /* #5C5C68 body             */
-  --text-faint:    150 150 163;   /* #9696A3 muted            */
+  --bg-secondary:  242 243 250;   /* #F2F3FA cool inset       */
+  --bg-raised:     233 235 247;   /* #E9EBF7 hover / raised   */
+  --border-color:  226 228 242;   /* #E2E4F2 cool hairline    */
+  --border-strong: 206 210 234;   /* #CED2EA stronger line    */
+  --text-primary:   22  22  32;   /* #161620 near-black       */
+  --text-secondary: 92  94 114;   /* #5C5E72 body             */
+  --text-faint:    150 152 172;   /* #9698AC muted            */
   --onbrand:       255 255 255;   /* text on colored fills    */
 
-  --accent-budget:    124  58 237;   /* #7C3AED violet primary */
-  --accent-savings:    13 148 118;   /* #0D9476 emerald success */
-  --accent-expenses:  225  29  72;   /* #E11D48 rose danger     */
-  --accent-approvals: 202 111  17;   /* #CA6F11 amber warning   */
-  --accent-analytics:  99 102 241;   /* #6366F1 indigo info     */
-  --accent-alerts:    225  29  72;   /* #E11D48 rose alert      */
+  /* Muted, refined accents — slate-violet + slate-blue, nothing bright */
+  --accent-budget:     99  86 168;   /* #6356A8 muted slate-violet */
+  --accent-savings:    22 138 120;   /* #168A78 muted teal-green   */
+  --accent-expenses:  200  70  92;   /* #C8465C muted rose         */
+  --accent-approvals: 176 122  46;   /* #B07A2E muted amber        */
+  --accent-analytics:  93 121 190;   /* #5D79BE muted slate-blue   */
+  --accent-alerts:    200  70  92;   /* #C8465C muted rose alert   */
 
-  /* raw decorative colors for glows */
-  --glow-brand: 139  92 246;      /* #8B5CF6 violet */
-  --glow-gold:  129 140 248;      /* #818CF8 periwinkle */
+  /* raw decorative colors — pale holographic blue + purple */
+  --glow-brand: 139 148 236;      /* #8B94EC pale blue-violet */
+  --glow-gold:  196 181 253;      /* #C4B5FD pale purple      */
 
   /*
-    Brand gradients. Both run violet → fuchsia → pink; they differ only in
-    lightness so each stays legible where it is used.
-    - holo-btn  : now unused for buttons (they are flat ink) — kept as the
-                  violet→pink slice for any decorative sweep.
-    - holo-light: pale, for text sitting on a gradient banner or tile.
-    Headings no longer take a gradient at all — see .holo-text below.
+    Holographic gradients — a pale, pearlescent blue → lilac → purple sweep
+    used for the iridescent glass edges/sheen. Light shades only.
+    - holo-sheen: the iridescent wash laid over frosted card surfaces.
+    - holo-light: paler still, for text/edges sitting on a glass surface.
   */
-  --holo-btn:   linear-gradient(115deg, #8B5CF6 0%, #9333EA 30%, #C026D3 58%, #EC4899 82%, #8B5CF6 100%);
-  --holo-light: linear-gradient(100deg, #FFFFFF 0%, #EADBFF 24%, #F3D9FF 48%, #FFD6EC 72%, #FFFFFF 100%);
+  --holo-sheen: linear-gradient(115deg, #C7D2FE 0%, #DDD6FE 34%, #E9D5FF 62%, #C7D2FE 100%);
+  --holo-light: linear-gradient(100deg, #FFFFFF 0%, #DCE4FF 26%, #ECE4FF 50%, #F0E6FF 74%, #FFFFFF 100%);
 }
 
 .dark {
@@ -2647,11 +2645,10 @@ body {
 
 .ambient-glow-1 {
   background:
-    radial-gradient(closest-side at 35% 40%, rgba(124,  58, 237, 0.85), transparent),
-    radial-gradient(closest-side at 65% 60%, rgba(139,  92, 246, 0.70), transparent),
-    radial-gradient(closest-side at 50% 30%, rgba(167, 139, 250, 0.56), transparent),
-    radial-gradient(closest-side at 30% 70%, rgba(196, 181, 253, 0.44), transparent);
-  animation: auroraDrift 20s ease-in-out infinite;
+    radial-gradient(closest-side at 38% 42%, rgba(139, 148, 236, 0.52), transparent),
+    radial-gradient(closest-side at 62% 58%, rgba(165, 190, 255, 0.42), transparent),
+    radial-gradient(closest-side at 46% 30%, rgba(199, 210, 254, 0.40), transparent);
+  animation: auroraDrift 22s ease-in-out infinite;
 }
 
 .dark .ambient-glow-1 {
@@ -2662,11 +2659,10 @@ body {
 
 .ambient-glow-2 {
   background:
-    radial-gradient(closest-side at 60% 50%, rgba(147,  51, 234, 0.66), transparent),
-    radial-gradient(closest-side at 40% 65%, rgba(124,  58, 237, 0.60), transparent),
-    radial-gradient(closest-side at 72% 70%, rgba(167, 139, 250, 0.52), transparent),
-    radial-gradient(closest-side at 30% 40%, rgba(139,  92, 246, 0.42), transparent);
-  animation: auroraDrift 26s ease-in-out infinite reverse;
+    radial-gradient(closest-side at 60% 50%, rgba(196, 181, 253, 0.50), transparent),
+    radial-gradient(closest-side at 40% 62%, rgba(167, 139, 250, 0.40), transparent),
+    radial-gradient(closest-side at 70% 68%, rgba(221, 214, 254, 0.40), transparent);
+  animation: auroraDrift 28s ease-in-out infinite reverse;
 }
 
 .dark .ambient-glow-2 {
@@ -2759,28 +2755,28 @@ body {
   border-color: transparent;
   background-image:
     linear-gradient(135deg,
-      rgba(139,  92, 246, 0.11) 0%,
-      rgba(129, 140, 248, 0.08) 38%,
-      rgba(167, 139, 250, 0.09) 66%,
-      rgba(139,  92, 246, 0.10) 100%);
-  background-size: 240% 240%;
+      rgba(199, 210, 254, 0.16) 0%,
+      rgba(221, 214, 254, 0.10) 34%,
+      rgba(233, 213, 255, 0.13) 66%,
+      rgba(199, 210, 254, 0.16) 100%);
+  background-size: 220% 220%;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 0 0 1px rgba(206, 199, 245, 0.75),
-    -14px 0 34px -14px rgba(139,  92, 246, 0.5),
-     14px 0 34px -14px rgba(129, 140, 248, 0.5),
-    0 22px 48px rgba(76, 29, 149, 0.12);
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 0 0 1px rgba(214, 219, 246, 0.85),
+    -16px 0 40px -16px rgba(139, 148, 236, 0.42),
+     16px 0 40px -16px rgba(196, 181, 253, 0.42),
+    0 20px 46px rgba(80, 70, 140, 0.10);
 }
 
 .bg-surface.rounded-2xl:hover {
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 0 0 1px rgba(196, 181, 253, 0.85),
-    -18px 0 44px -10px rgba(139,  92, 246, 0.6),
-     18px 0 44px -10px rgba(129, 140, 248, 0.6),
-    0 32px 64px rgba(76, 29, 149, 0.18);
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 0 0 1px rgba(190, 198, 240, 0.95),
+    -20px 0 48px -14px rgba(139, 148, 236, 0.55),
+     20px 0 48px -14px rgba(196, 181, 253, 0.55),
+    0 30px 60px rgba(80, 70, 140, 0.16);
   transform: translateY(-3px);
-  animation: holoShift 6s linear infinite;
+  animation: holoShift 7s linear infinite;
 }
 
 .dark .bg-surface.rounded-2xl {
@@ -2880,13 +2876,15 @@ body {
   overflow: hidden;
   border-radius: 18px;
   background-color: rgb(var(--bg-surface) / 0.5);
-  backdrop-filter: blur(28px) saturate(175%);
-  -webkit-backdrop-filter: blur(28px) saturate(175%);
-  border: 1px solid rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(28px) saturate(165%);
+  -webkit-backdrop-filter: blur(28px) saturate(165%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 0 0 1px rgba(206, 199, 245, 0.6),
-    0 12px 28px -16px rgba(76, 29, 149, 0.22);
+    0 0 0 1px rgba(214, 219, 246, 0.7),
+    -10px 0 26px -16px rgba(139, 148, 236, 0.38),
+     10px 0 26px -16px rgba(196, 181, 253, 0.38),
+    0 12px 28px -16px rgba(80, 70, 140, 0.16);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
@@ -2984,26 +2982,26 @@ body {
   overflow: hidden;
   border-radius: 22px;
   background:
-    linear-gradient(120deg, rgba(124, 58, 237, 0.13) 0%, rgba(99, 102, 241, 0.10) 55%, rgba(167, 139, 250, 0.11) 100%),
+    linear-gradient(120deg, rgba(199, 210, 254, 0.20) 0%, rgba(221, 214, 254, 0.13) 52%, rgba(233, 213, 255, 0.18) 100%),
     rgb(var(--bg-surface) / 0.5);
-  backdrop-filter: blur(28px) saturate(175%);
-  -webkit-backdrop-filter: blur(28px) saturate(175%);
-  border: 1px solid rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(28px) saturate(165%);
+  -webkit-backdrop-filter: blur(28px) saturate(165%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 0 0 1px rgba(206, 199, 245, 0.6),
-    0 14px 34px -18px rgba(76, 29, 149, 0.22);
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 0 0 1px rgba(214, 219, 246, 0.7),
+    0 14px 34px -18px rgba(80, 70, 140, 0.18);
 }
 
-/* very soft violet/periwinkle corner blooms — a gentle cool tint */
+/* pale holographic corner blooms — a gentle blue/purple iridescence */
 
 .panel-hero::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(70% 120% at 92% 6%, rgba(99, 102, 241, 0.14), transparent 60%),
-    radial-gradient(60% 120% at 4% 98%, rgba(124, 58, 237, 0.12), transparent 62%);
+    radial-gradient(70% 120% at 92% 6%, rgba(196, 181, 253, 0.18), transparent 60%),
+    radial-gradient(60% 120% at 4% 98%, rgba(139, 148, 236, 0.16), transparent 62%);
 }
 
 .panel-hero::after { display: none; }

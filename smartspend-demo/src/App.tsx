@@ -121,7 +121,7 @@ const reqSummary = (r: { productName: string; productQty: number; targetPrice: n
 };
 
 // ---- Lightweight SVG charts (categorical palette, CVD-safe on the light canvas) ----
-const CHART_COLORS = ['#7C3AED', '#A855F7', '#6366F1', '#0D9476', '#F59E0B', '#64748B'];
+const CHART_COLORS = ['#6356A8', '#9B86C6', '#5D79BE', '#0D9476', '#F59E0B', '#64748B'];
 
 // Status colors — drawn from the brand's violet → fuchsia → pink sweep where the
 // meaning allows, deep enough to stay legible as text on the light canvas.
@@ -131,11 +131,11 @@ const STATUS_META: Record<string, { color: string; rgb: string; short: string; i
   'Draft': { color: '#64748B', rgb: '100 116 139', short: 'Draft', icon: FileText },
   'Pending Approval': { color: '#C27C09', rgb: '194 124 9', short: 'Pending', icon: Clock },
   'Needs Clarification': { color: '#D9622B', rgb: '217 98 43', short: 'Clarify', icon: AlertCircle },
-  'Sourcing': { color: '#6366F1', rgb: '99 102 241', short: 'Sourcing', icon: Search },
+  'Sourcing': { color: '#5D79BE', rgb: '93 121 190', short: 'Sourcing', icon: Search },
   'Approved': { color: '#0C9689', rgb: '12 150 137', short: 'Approved', icon: CheckCircle2 },
-  'PO Confirmed': { color: '#7C3AED', rgb: '124 58 237', short: 'PO Confirmed', icon: Package },
+  'PO Confirmed': { color: '#6356A8', rgb: '99 86 168', short: 'PO Confirmed', icon: Package },
   'Rejected': { color: '#DB3A4B', rgb: '219 58 75', short: 'Rejected', icon: X },
-  'Paid': { color: '#9333EA', rgb: '147 51 234', short: 'Paid', icon: Landmark },
+  'Paid': { color: '#7A63A8', rgb: '122 99 168', short: 'Paid', icon: Landmark },
 };
 const statusColor = (s: string) => STATUS_META[s]?.color ?? '#64748B';
 const statusRgb = (s: string) => STATUS_META[s]?.rgb ?? '100 116 139';
@@ -152,7 +152,7 @@ const statusStage = (s: string) => STATUS_STAGE[s] ?? 0;
 // statuses into three plain buckets the client understands at a glance.
 const STATUS_GROUPS: { key: 'action' | 'progress' | 'done'; label: string; color: string; rgb: string; statuses: string[] }[] = [
   { key: 'action',   label: 'Needs attention', color: '#C27C09', rgb: '194 124 9',  statuses: ['Draft', 'Pending Approval', 'Needs Clarification', 'Rejected'] },
-  { key: 'progress', label: 'In progress',      color: '#6366F1', rgb: '99 102 241', statuses: ['Sourcing', 'Approved'] },
+  { key: 'progress', label: 'In progress',      color: '#5D79BE', rgb: '93 121 190', statuses: ['Sourcing', 'Approved'] },
   { key: 'done',     label: 'Completed',        color: '#0C9689', rgb: '12 150 137', statuses: ['PO Confirmed', 'Paid'] },
 ];
 const groupOf = (s: string): 'action' | 'progress' | 'done' => STATUS_GROUPS.find(g => g.statuses.includes(s))?.key ?? 'action';
@@ -488,7 +488,7 @@ function DonutChart({ data, prefix = '', suffix = '' }: { data: Datum[]; prefix?
 }
 
 // Horizontal magnitude bars — single hue, sorted, direct-labeled.
-function BarList({ data, color = '#7C3AED', prefix = '', suffix = '' }: { data: Datum[]; color?: string; prefix?: string; suffix?: string }) {
+function BarList({ data, color = '#6356A8', prefix = '', suffix = '' }: { data: Datum[]; color?: string; prefix?: string; suffix?: string }) {
   const max = Math.max(...data.map(d => d.value), 1);
   return (
     <div className="space-y-3">
@@ -945,11 +945,11 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[200px]" role="img" aria-label="Monthly spend against budget">
         <defs>
           <linearGradient id={`ta${gid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.38" />
-            <stop offset="100%" stopColor="#818CF8" stopOpacity="0.02" />
+            <stop offset="0%" stopColor="#7C6FBC" stopOpacity="0.38" />
+            <stop offset="100%" stopColor="#8894C8" stopOpacity="0.02" />
           </linearGradient>
           <linearGradient id={`tl${gid}`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#8B5CF6" /><stop offset="55%" stopColor="#818CF8" /><stop offset="100%" stopColor="#6366F1" />
+            <stop offset="0%" stopColor="#7C6FBC" /><stop offset="55%" stopColor="#8894C8" /><stop offset="100%" stopColor="#5D79BE" />
           </linearGradient>
         </defs>
         {/* horizontal guides */}
@@ -969,7 +969,7 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
           strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
         {data.map((d, i) => (
           <circle key={i} cx={x(i)} cy={y(d.value)} r={i === active ? 5 : 3}
-            fill="#fff" stroke="#8B5CF6" strokeWidth={i === active ? 3 : 2} />
+            fill="#fff" stroke="#7C6FBC" strokeWidth={i === active ? 3 : 2} />
         ))}
         {/* hover targets */}
         {data.map((d, i) => (
@@ -986,7 +986,7 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
       <div className="flex flex-wrap items-center gap-x-5 gap-y-1 mt-1 text-xs">
         <span className="font-bold text-textPrimary font-outfit">{data[active].label}</span>
         <span className="flex items-center gap-1.5 text-textSecondary">
-          <span className="h-2 w-2 rounded-full" style={{ background: '#8B5CF6' }} />
+          <span className="h-2 w-2 rounded-full" style={{ background: '#7C6FBC' }} />
           Actual <b className="text-textPrimary tabular-nums">{prefix}{data[active].value.toFixed(2)}{suffix}</b>
         </span>
         <span className="flex items-center gap-1.5 text-textSecondary">
@@ -1002,7 +1002,7 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
 
 // Ranked breakdown: share bar, absolute value, share-of-total and movement,
 // so one row answers "how big", "how much of the pie" and "which way".
-function BreakdownBars({ rows, prefix = '₹', suffix = ' Cr', tint = '#7C3AED', decimals = 2 }: {
+function BreakdownBars({ rows, prefix = '₹', suffix = ' Cr', tint = '#6356A8', decimals = 2 }: {
   rows: BreakdownRow[]; prefix?: string; suffix?: string; tint?: string; decimals?: number;
 }) {
   const sorted = [...rows].sort((a, b) => b.value - a.value);
@@ -1051,7 +1051,7 @@ function GaugeArc({ used, total, prefix = '₹', suffix = ' Cr' }: {
         <svg viewBox="0 0 160 92" className="w-52">
           <defs>
             <linearGradient id={`ga${gid}`} x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#8B5CF6" /><stop offset="55%" stopColor="#818CF8" /><stop offset="100%" stopColor="#6366F1" />
+              <stop offset="0%" stopColor="#7C6FBC" /><stop offset="55%" stopColor="#8894C8" /><stop offset="100%" stopColor="#5D79BE" />
             </linearGradient>
           </defs>
           <path d={D} fill="none" stroke="rgb(var(--bg-secondary))" strokeWidth="14" strokeLinecap="round" />
@@ -2057,7 +2057,7 @@ export default function App() {
               {pokes.some(p => p.to === userRole) && (
                 <div className="mb-6 space-y-2 max-w-6xl mx-auto">
                   {pokes.map((p, i) => p.to !== userRole ? null : (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl border shadow-sm animate-fadeIn" style={{ background: '#7C3AED14', borderColor: '#7C3AED40' }}>
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl border shadow-sm animate-fadeIn" style={{ background: '#6356A814', borderColor: '#6356A840' }}>
                       <span className="h-8 w-8 rounded-full bg-brand/15 flex items-center justify-center flex-shrink-0"><Bell className="h-4 w-4 text-brand" /></span>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-textPrimary">Reminder from {p.from}</p>
@@ -3515,7 +3515,7 @@ export default function App() {
                         {(() => {
                           const agg = requests.reduce((a, r) => { a[r.department] = (a[r.department] || 0) + r.totalCost; return a; }, {} as Record<string, number>);
                           const data = Object.entries(agg).map(([label, value]) => ({ label, value: Math.round(value / 1000) }));
-                          return <BarList data={data} color="#7C3AED" prefix="₹" suffix="K" />;
+                          return <BarList data={data} color="#6356A8" prefix="₹" suffix="K" />;
                         })()}
                       </div>
                     </div>
@@ -4589,7 +4589,7 @@ export default function App() {
                         <h3 className="font-outfit font-bold text-textPrimary">Spend by Department{dashDept !== 'All' && <span className="text-brand font-semibold"> · {dashDept}</span>}</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Share of total, with change vs last year</p>
-                      <BreakdownBars rows={dash.byDept} tint="#7C3AED" />
+                      <BreakdownBars rows={dash.byDept} tint="#6356A8" />
                     </div>
                     <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
                       <div className="flex items-center gap-2">
@@ -4597,7 +4597,7 @@ export default function App() {
                         <h3 className="font-outfit font-bold text-textPrimary">Spend by Category{dashCategory !== 'All' && <span className="text-pos font-semibold"> · {dashCategory}</span>}</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Share of total, with change vs last year</p>
-                      <BreakdownBars rows={dash.byCategory} tint="#6366F1" />
+                      <BreakdownBars rows={dash.byCategory} tint="#5D79BE" />
                     </div>
                   </div>
 
@@ -4614,7 +4614,7 @@ export default function App() {
                         <h3 className="font-outfit font-bold text-textPrimary">Where the ₹{dash.savings.toFixed(1)} L Came From</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Savings attributed by lever (₹ Lakh)</p>
-                      <BreakdownBars rows={dash.levers} tint="#8B5CF6" suffix=" L" />
+                      <BreakdownBars rows={dash.levers} tint="#7C6FBC" suffix=" L" />
                     </div>
                   </div>
 
@@ -4661,7 +4661,7 @@ export default function App() {
                                 </td>
                                 <td className="text-right tabular-nums text-pos font-bold">₹{v.savings.toFixed(1)} L</td>
                                 <td className="py-2.5">
-                                  <Sparkline data={v.trend} stroke="#7C3AED" className="w-16 h-6 ml-auto" />
+                                  <Sparkline data={v.trend} stroke="#6356A8" className="w-16 h-6 ml-auto" />
                                 </td>
                               </tr>
                             ))}
@@ -4690,7 +4690,7 @@ export default function App() {
                               </div>
                               <div className="relative h-2.5 rounded-full bg-secondary overflow-hidden">
                                 <div className="h-full rounded-full transition-all duration-700"
-                                  style={{ width: `${(s.days / worst) * 100}%`, background: 'linear-gradient(90deg,#8B5CF6,#6366F1)' }} />
+                                  style={{ width: `${(s.days / worst) * 100}%`, background: 'linear-gradient(90deg,#7C6FBC,#5D79BE)' }} />
                                 <span className="absolute top-0 bottom-0 w-0.5 bg-textFaint/70"
                                   style={{ left: `${(s.prevDays / worst) * 100}%` }} />
                               </div>
