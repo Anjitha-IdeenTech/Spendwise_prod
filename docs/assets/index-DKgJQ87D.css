@@ -1701,6 +1701,10 @@ video {
   background-color: rgb(var(--accent-savings) / 0.15);
 }
 
+.bg-black\/\[0\.06\]{
+  background-color: rgb(0 0 0 / 0.06);
+}
+
 .bg-borderTheme{
   --tw-bg-opacity: 1;
   background-color: rgb(var(--border-color) / var(--tw-bg-opacity, 1));
@@ -1725,6 +1729,10 @@ video {
 
 .bg-brand\/40{
   background-color: rgb(var(--accent-budget) / 0.4);
+}
+
+.bg-brand\/5{
+  background-color: rgb(var(--accent-budget) / 0.05);
 }
 
 .bg-gold{
@@ -2333,27 +2341,6 @@ video {
   color: rgb(var(--text-secondary) / 0.6);
 }
 
-.text-white{
-  --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-
-.text-white\/55{
-  color: rgb(255 255 255 / 0.55);
-}
-
-.text-white\/60{
-  color: rgb(255 255 255 / 0.6);
-}
-
-.text-white\/70{
-  color: rgb(255 255 255 / 0.7);
-}
-
-.text-white\/85{
-  color: rgb(255 255 255 / 0.85);
-}
-
 .placeholder-textFaint::-moz-placeholder{
   --tw-placeholder-opacity: 1;
   color: rgb(var(--text-faint) / var(--tw-placeholder-opacity, 1));
@@ -2384,8 +2371,8 @@ video {
   opacity: 0.75;
 }
 
-.opacity-80{
-  opacity: 0.8;
+.opacity-90{
+  opacity: 0.9;
 }
 
 .shadow{
@@ -2892,18 +2879,17 @@ body {
   isolation: isolate;
   overflow: hidden;
   border-radius: 18px;
-  background: linear-gradient(140deg, #8B5CF6 0%, #9333EA 40%, #C026D3 70%, #EC4899 100%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow:
-    0 14px 30px -10px rgba(124, 58, 237, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  background-color: rgb(var(--bg-surface) / 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgb(var(--border-color));
+  box-shadow: 0 10px 26px -14px rgba(76, 29, 149, 0.18);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 /*
-  Status-tinted corner bloom. It sits ABOVE the tile gradient (the fill is
-  opaque, so a z-index:-1 layer would never be seen) and below the content,
-  which .stat-tile > * lifts onto its own layer.
+  Status-tinted corner bloom — a soft wash of the tile's --tint in the top
+  corner, the only real colour on the otherwise white glass card.
 */
 
 .stat-tile::before {
@@ -2912,43 +2898,32 @@ body {
   top: -46px; right: -34px;
   width: 128px; height: 128px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgb(var(--tint) / 0.9), transparent 68%);
-  filter: blur(16px);
+  background: radial-gradient(circle, rgb(var(--tint) / 0.20), transparent 68%);
+  filter: blur(20px);
   z-index: 0;
 }
 
 .stat-tile > * { position: relative; z-index: 1; }
 
-/* diagonal sheen, sweeps across on hover */
+/* the diagonal white sheen is dropped on the calm light card */
 
-.stat-tile::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.24) 47%, transparent 62%);
-  transform: translateX(-125%);
-  transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 2;
-}
+.stat-tile::after { display: none; }
 
 .stat-tile:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
+  border-color: rgb(var(--tint) / 0.5);
   box-shadow:
-    0 26px 48px -12px rgba(124, 58, 237, 0.55),
-    0 0 30px -10px rgb(var(--tint) / 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    0 20px 40px -16px rgb(var(--tint) / 0.32),
+    0 8px 20px -12px rgba(76, 29, 149, 0.16);
 }
-
-.stat-tile:hover::after { transform: translateX(125%); }
 
 /* Share-of-total meter along the bottom of a stat tile */
 
 .stat-meter {
   height: 3px;
   border-radius: 99px;
-  background: linear-gradient(90deg, rgb(var(--tint)), rgba(255, 255, 255, 0.85));
-  box-shadow: 0 0 10px rgb(var(--tint) / 0.8);
+  background: linear-gradient(90deg, rgb(var(--tint) / 0.55), rgb(var(--tint)));
+  box-shadow: 0 0 8px rgb(var(--tint) / 0.35);
   transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -3005,34 +2980,27 @@ body {
   position: relative;
   overflow: hidden;
   border-radius: 22px;
-  background: linear-gradient(120deg, #6D28D9 0%, #9333EA 38%, #C026D3 66%, #DB2777 100%);
-  box-shadow:
-    0 18px 40px -14px rgba(124, 58, 237, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  background:
+    linear-gradient(120deg, rgba(124, 58, 237, 0.10) 0%, rgba(192, 38, 211, 0.07) 52%, rgba(236, 72, 153, 0.09) 100%),
+    rgb(var(--bg-surface) / 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgb(var(--border-color));
+  box-shadow: 0 14px 34px -18px rgba(76, 29, 149, 0.22);
 }
 
-/* soft prismatic wash + fine grid so the banner has depth */
+/* very soft violet/pink corner blooms — a gentle tint, not a bright slab */
 
 .panel-hero::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(80% 130% at 88% 8%, rgba(244, 114, 182, 0.34), transparent 58%),
-    radial-gradient(70% 120% at 4% 96%, rgba(167, 139, 250, 0.32), transparent 60%);
+    radial-gradient(70% 120% at 92% 6%, rgba(236, 72, 153, 0.12), transparent 60%),
+    radial-gradient(60% 120% at 4% 98%, rgba(124, 58, 237, 0.12), transparent 62%);
 }
 
-.panel-hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-  background-size: 34px 34px;
-  -webkit-mask-image: radial-gradient(120% 100% at 70% 20%, #000 0%, transparent 78%);
-          mask-image: radial-gradient(120% 100% at 70% 20%, #000 0%, transparent 78%);
-}
+.panel-hero::after { display: none; }
 
 /* Glass chip used on gradient surfaces (hero + stat tiles) */
 
@@ -3044,28 +3012,27 @@ body {
 }
 
 /*
-  Controls living inside a .panel-hero. The scene toggles were styled for a
-  light surface; on the gradient they need to invert — translucent white by
-  default, solid white with brand ink when selected.
+  Controls living inside a .panel-hero (now a light glass banner). Quiet light
+  chips by default; a solid violet fill with white text when selected.
 */
 
 .hero-ctl {
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  color: #fff;
+  background: rgb(var(--bg-secondary));
+  border: 1px solid rgb(var(--border-color));
+  color: rgb(var(--text-secondary));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 
-.hero-ctl:hover { background: rgba(255, 255, 255, 0.26); }
+.hero-ctl:hover { background: rgb(var(--bg-raised)); }
 
 .hero-ctl-on {
-  background: #fff;
-  border-color: #fff;
-  color: #6D28D9;
+  background: rgb(var(--accent-budget));
+  border-color: rgb(var(--accent-budget));
+  color: #fff;
 }
 
-.hero-ctl-on:hover { background: #fff; }
+.hero-ctl-on:hover { background: rgb(var(--accent-budget)); }
 
 /* Respect reduced-motion: keep the colour, drop the movement */
 

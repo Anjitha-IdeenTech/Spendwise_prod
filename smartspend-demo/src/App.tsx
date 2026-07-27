@@ -314,9 +314,9 @@ function RequestCard({ r, onOpen, onPoke }: { r: RequestItem; onOpen: () => void
 }
 
 /**
- * Gradient banner heading every scene — the shared identity across the demo.
- * `stats` renders glass KPI chips on the right; `right` takes bespoke controls
- * (toggles, badges), which should use .hero-ctl so they read on the gradient.
+ * Soft glass banner heading every scene — a light lavender-tinted panel with
+ * dark text. `stats` renders quiet KPI chips on the right; `right` takes
+ * bespoke controls (toggles, badges), which should use .hero-ctl.
  */
 function SceneHeader({ icon: Icon, title, subtitle, stats, right, className = '' }: {
   icon: LucideIcon;
@@ -330,22 +330,22 @@ function SceneHeader({ icon: Icon, title, subtitle, stats, right, className = ''
     <div className={`panel-hero px-6 py-5 ${className}`}>
       <div className="relative flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="glass-chip h-12 w-12 rounded-2xl grid place-items-center shrink-0">
-            <Icon className="h-6 w-6 text-white" />
+          <div className="h-12 w-12 rounded-2xl grid place-items-center shrink-0 bg-brand/10 border border-borderTheme">
+            <Icon className="h-6 w-6 text-brand" />
           </div>
           <div>
-            <h2 className="font-outfit text-2xl font-extrabold text-white leading-tight">{title}</h2>
-            {subtitle && <p className="text-xs text-white/70 mt-0.5 max-w-2xl">{subtitle}</p>}
+            <h2 className="font-outfit text-2xl font-extrabold text-textPrimary leading-tight">{title}</h2>
+            {subtitle && <p className="text-xs text-textSecondary mt-0.5 max-w-2xl">{subtitle}</p>}
           </div>
         </div>
         {(!!stats?.length || right) && (
           <div className="flex flex-wrap items-center gap-2.5">
             {stats?.map(s => (
-              <div key={s.label} className="glass-chip rounded-2xl px-4 py-2 text-center">
-                <p className="text-xl font-extrabold text-white font-outfit leading-none tabular-nums">
+              <div key={s.label} className="rounded-2xl px-4 py-2 text-center bg-brand/5 border border-borderTheme">
+                <p className="text-xl font-extrabold text-textPrimary font-outfit leading-none tabular-nums">
                   <CountUp value={s.value} />
                 </p>
-                <p className="text-[9px] font-bold uppercase tracking-wider text-white/70 mt-1">{s.label}</p>
+                <p className="text-[9px] font-bold uppercase tracking-wider text-textSecondary mt-1">{s.label}</p>
               </div>
             ))}
             {right}
@@ -357,8 +357,9 @@ function SceneHeader({ icon: Icon, title, subtitle, stats, right, className = ''
 }
 
 /**
- * Gradient count tile — the flashy KPI/status card used across scenes. `tint`
- * is raw RGB channels; the glow, meter and hover halo all derive from it.
+ * Calm light KPI/status card — a white glass surface. `tint` (raw RGB channels)
+ * colours only the icon chip, sparkline, corner glow and meter, so the card
+ * stays quiet like the reference's white cards.
  */
 function StatTile({ icon: Icon, tint, value, label, caption, meter, delay = 0, spark, curr, prev, lowerIsBetter }: {
   icon: LucideIcon;
@@ -379,23 +380,23 @@ function StatTile({ icon: Icon, tint, value, label, caption, meter, delay = 0, s
       style={{ '--tint': tint, animationDelay: `${delay}ms` } as React.CSSProperties}
     >
       <div className="flex items-start justify-between gap-2">
-        <p className="text-[26px] font-extrabold text-white font-outfit leading-none tabular-nums">
+        <p className="text-[26px] font-extrabold text-textPrimary font-outfit leading-none tabular-nums">
           <CountUp value={value} />
         </p>
-        <div className="glass-chip h-7 w-7 rounded-lg grid place-items-center shrink-0">
-          <Icon className="h-3.5 w-3.5 text-white" />
+        <div className="h-7 w-7 rounded-lg grid place-items-center shrink-0" style={{ background: 'rgb(var(--tint) / 0.14)' }}>
+          <Icon className="h-3.5 w-3.5" style={{ color: 'rgb(var(--tint))' }} />
         </div>
       </div>
       <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-white/85">{label}</p>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-textSecondary">{label}</p>
         {curr !== undefined && prev !== undefined && (
-          <DeltaChip curr={curr} prev={prev} lowerIsBetter={lowerIsBetter} onDark />
+          <DeltaChip curr={curr} prev={prev} lowerIsBetter={lowerIsBetter} />
         )}
       </div>
-      {caption && <p className="text-[10px] text-white/55 mt-1 truncate">{caption}</p>}
-      {spark && <Sparkline data={spark} stroke="#fff" className="w-full h-7 mt-1.5 opacity-80" />}
+      {caption && <p className="text-[10px] text-textFaint mt-1 truncate">{caption}</p>}
+      {spark && <Sparkline data={spark} stroke={`rgb(${tint})`} className="w-full h-7 mt-1.5 opacity-90" />}
       {meter !== undefined && (
-        <div className="mt-2 h-[3px] rounded-full bg-white/15 overflow-hidden">
+        <div className="mt-2 h-[3px] rounded-full bg-black/[0.06] overflow-hidden">
           <div className="stat-meter" style={{ width: `${meter}%` }} />
         </div>
       )}
@@ -2713,7 +2714,7 @@ export default function App() {
                     subtitle="We check your branch has the funds available — instantly."
                     right={
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">Simulate</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-textFaint">Simulate</span>
                         <button
                           onClick={() => { setBudgetBreach(false); setBudgetAction("default"); }}
                           className={`px-3 py-2 rounded-full text-xs font-bold hero-ctl ${!budgetBreach ? 'hero-ctl-on' : ''}`}
@@ -2829,7 +2830,7 @@ export default function App() {
                     subtitle="We look for existing supplier contracts and agreed rates."
                     right={
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">Contract exists?</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-textFaint">Contract exists?</span>
                         <button
                           onClick={() => setHasContract(true)}
                           className={`px-3.5 py-2 rounded-full text-xs font-bold hero-ctl ${hasContract ? 'hero-ctl-on' : ''}`}
