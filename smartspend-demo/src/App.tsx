@@ -248,7 +248,7 @@ function RequestCard({ r, onOpen, onPoke }: { r: RequestItem; onOpen: () => void
       style={{ '--tint': rgb } as React.CSSProperties}
     >
       {/* top accent bar + soft corner glow that lifts on hover */}
-      <span className="absolute inset-x-0 top-0 h-1.5" style={{ background: `linear-gradient(90deg, rgb(${rgb}), rgb(${rgb} / 0.2))` }} />
+      <span className="absolute inset-x-0 top-0 h-1.5" style={{ background: `rgb(${rgb})` }} />
       <span className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full blur-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: `rgb(${rgb} / 0.22)` }} />
 
       <div className="relative p-5">
@@ -291,7 +291,7 @@ function RequestCard({ r, onOpen, onPoke }: { r: RequestItem; onOpen: () => void
         {/* lifecycle progress */}
         <div className="mt-4">
           <div className="h-2 rounded-full bg-secondary overflow-hidden">
-            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: `linear-gradient(90deg, rgb(${rgb} / 0.55), rgb(${rgb}))` }} />
+            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: `rgb(${rgb})` }} />
           </div>
           <div className="mt-2 flex items-center justify-between">
             <span className="text-[11px] font-bold" style={{ color }}>{STAGE_LABELS[Math.min(stage, STAGE_LABELS.length - 1)]}</span>
@@ -500,7 +500,7 @@ function BarList({ data, color = '#6356A8', prefix = '', suffix = '' }: { data: 
           </div>
           <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
             <div className="h-full rounded-full transition-all duration-700 ease-out"
-              style={{ width: `${(d.value / max) * 100}%`, background: `linear-gradient(90deg, ${color}, ${color}bb)` }} />
+              style={{ width: `${(d.value / max) * 100}%`, background: color }} />
           </div>
         </div>
       ))}
@@ -945,11 +945,11 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[200px]" role="img" aria-label="Monthly spend against budget">
         <defs>
           <linearGradient id={`ta${gid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7C6FBC" stopOpacity="0.38" />
-            <stop offset="100%" stopColor="#8894C8" stopOpacity="0.02" />
+            <stop offset="0%" stopColor="#6356A8" stopOpacity="0.38" />
+            <stop offset="100%" stopColor="#6356A8" stopOpacity="0.02" />
           </linearGradient>
           <linearGradient id={`tl${gid}`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#7C6FBC" /><stop offset="55%" stopColor="#8894C8" /><stop offset="100%" stopColor="#5D79BE" />
+            <stop offset="0%" stopColor="#6356A8" /><stop offset="55%" stopColor="#6356A8" /><stop offset="100%" stopColor="#6356A8" />
           </linearGradient>
         </defs>
         {/* horizontal guides */}
@@ -969,7 +969,7 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
           strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
         {data.map((d, i) => (
           <circle key={i} cx={x(i)} cy={y(d.value)} r={i === active ? 5 : 3}
-            fill="#fff" stroke="#7C6FBC" strokeWidth={i === active ? 3 : 2} />
+            fill="#fff" stroke="#6356A8" strokeWidth={i === active ? 3 : 2} />
         ))}
         {/* hover targets */}
         {data.map((d, i) => (
@@ -986,7 +986,7 @@ function TrendArea({ data, prefix = '₹', suffix = ' Cr' }: {
       <div className="flex flex-wrap items-center gap-x-5 gap-y-1 mt-1 text-xs">
         <span className="font-bold text-textPrimary font-outfit">{data[active].label}</span>
         <span className="flex items-center gap-1.5 text-textSecondary">
-          <span className="h-2 w-2 rounded-full" style={{ background: '#7C6FBC' }} />
+          <span className="h-2 w-2 rounded-full" style={{ background: '#6356A8' }} />
           Actual <b className="text-textPrimary tabular-nums">{prefix}{data[active].value.toFixed(2)}{suffix}</b>
         </span>
         <span className="flex items-center gap-1.5 text-textSecondary">
@@ -1024,7 +1024,7 @@ function BreakdownBars({ rows, prefix = '₹', suffix = ' Cr', tint = '#6356A8',
           <div className="flex items-center gap-2 mt-1 pl-5">
             <div className="h-2 flex-1 rounded-full bg-secondary overflow-hidden">
               <div className="h-full rounded-full transition-all duration-700 ease-out"
-                style={{ width: `${(r.value / max) * 100}%`, background: `linear-gradient(90deg, ${tint}, ${tint}99)` }} />
+                style={{ width: `${(r.value / max) * 100}%`, background: tint }} />
             </div>
             <span className="text-[10px] font-bold tabular-nums text-textFaint w-10 text-right">
               {((r.value / total) * 100).toFixed(1)}%
@@ -1051,7 +1051,7 @@ function GaugeArc({ used, total, prefix = '₹', suffix = ' Cr' }: {
         <svg viewBox="0 0 160 92" className="w-52">
           <defs>
             <linearGradient id={`ga${gid}`} x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#7C6FBC" /><stop offset="55%" stopColor="#8894C8" /><stop offset="100%" stopColor="#5D79BE" />
+              <stop offset="0%" stopColor="#6356A8" /><stop offset="55%" stopColor="#6356A8" /><stop offset="100%" stopColor="#6356A8" />
             </linearGradient>
           </defs>
           <path d={D} fill="none" stroke="rgb(var(--bg-secondary))" strokeWidth="14" strokeLinecap="round" />
@@ -4614,7 +4614,7 @@ export default function App() {
                         <h3 className="font-outfit font-bold text-textPrimary">Where the ₹{dash.savings.toFixed(1)} L Came From</h3>
                       </div>
                       <p className="text-[11px] text-textFaint mb-4">Savings attributed by lever (₹ Lakh)</p>
-                      <BreakdownBars rows={dash.levers} tint="#7C6FBC" suffix=" L" />
+                      <BreakdownBars rows={dash.levers} tint="#6356A8" suffix=" L" />
                     </div>
                   </div>
 
@@ -4690,7 +4690,7 @@ export default function App() {
                               </div>
                               <div className="relative h-2.5 rounded-full bg-secondary overflow-hidden">
                                 <div className="h-full rounded-full transition-all duration-700"
-                                  style={{ width: `${(s.days / worst) * 100}%`, background: 'linear-gradient(90deg,#7C6FBC,#5D79BE)' }} />
+                                  style={{ width: `${(s.days / worst) * 100}%`, background: '#6356A8' }} />
                                 <span className="absolute top-0 bottom-0 w-0.5 bg-textFaint/70"
                                   style={{ left: `${(s.prevDays / worst) * 100}%` }} />
                               </div>
