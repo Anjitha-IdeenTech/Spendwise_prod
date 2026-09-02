@@ -1935,7 +1935,15 @@ export default function App() {
   const [editLocation, setEditLocation] = useState<string>("Bangalore Office");
   const [editDepartment, setEditDepartment] = useState<string>("IT & Infrastructure");
   const [editExpenseCategory, setEditExpenseCategory] = useState<string>("IT Hardware & Laptops");
-  const [editDeliveryDate, setEditDeliveryDate] = useState<string>("Jul 25, 2026");
+  // The needed-by date the extraction form opens with. Computed, not fixed: a
+  // hardcoded date quietly becomes a date in the past, and Odoo refuses a
+  // request needed before it was raised — which silently cost every new
+  // request raised after that date had gone by.
+  const [editDeliveryDate, setEditDeliveryDate] = useState<string>(() => {
+    const needed = new Date();
+    needed.setDate(needed.getDate() + 30);
+    return needed.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+  });
   const [editExpenseType, setEditExpenseType] = useState<string>("Capital Expenditure (CapEx)");
   const [extraItems, setExtraItems] = useState<LineItem[]>([]);
   // Products staged directly in the Scene 2 chat composer, before the AI extraction step.
@@ -2716,10 +2724,10 @@ export default function App() {
           {/* MAIN WORKSPACE CONTENT */}
           <main className="flex-grow flex flex-col min-w-0 overflow-y-auto">
             
-            {/* TOP NAVIGATION HEADER — temporarily hidden in full (bar, sidebar toggle,
-                DEMO STEP picker and Back / Next Step). Uncomment this whole block to
-                restore the guided demo walkthrough.
-
+            {/* TOP NAVIGATION HEADER — sidebar toggle, DEMO STEP picker and
+                Back / Next Step. This is the guided walkthrough: it lets you jump
+                straight to any scene instead of reaching it through the chain of
+                in-screen buttons. */}
             <header className={`h-16 px-6 border-b flex items-center justify-between flex-shrink-0 bg-surface/80 backdrop-blur-md border-borderTheme`}>
               <div className="flex items-center space-x-4">
                 <button
@@ -2763,7 +2771,6 @@ export default function App() {
                 </button>
               </div>
             </header>
-            */}
 
 
             {/* WORKSPACE AREA */}
