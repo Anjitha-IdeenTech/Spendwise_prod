@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "odoo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .                 # extends odoo:19 with the anthropic SDK (see Dockerfile)
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8069:8069"          # web UI + your REST API
+      - "8072:8072"          # websocket (live chat, bus, notifications)
+    environment:
+      - HOST=db              # passed to Odoo as --db_host/user/password
+      - USER=odoo
+      - PASSWORD=odoo
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}   # from your shell or a .env file
+    volumes:
+      - odoo-web-data:/var/lib/odoo    # filestore (attachments, sessions) — persist!
+      - ./config:/etc/odoo             # odoo.conf
+      - ./addons:/mnt/extra-addons     # custom modules (live-mounted)
+    restart: unless-stopped
+
+volumes:
+  odoo-db-data:
+  odoo-web-data:
