@@ -32,6 +32,152 @@ const SCENES = [
   { id: 15, name: "Scene 15: Spend Intelligence Analytics" }
 ];
 
+/** The signed-in Odoo user, as returned by /api/smartspend/login. */
+interface OdooUser {
+  id: number;
+  name: string;
+  login: string;
+  email?: string;
+  is_manager?: boolean;
+  is_buyer?: boolean;
+  /** Roles this account may act as — from its Odoo groups, not a free choice. */
+  roles?: string[];
+  defaultRole?: string;
+  company?: string;
+}
+
+/** Master data served by Odoo, replacing the lists this app used to hardcode. */
+interface MasterData {
+  branches: { id: number; name: string; code: string; city: string }[];
+  departments: { id: number; name: string; code: string; approver: string }[];
+  categories: { id: number; name: string; expenseType: string }[];
+  urgencies: string[];
+  sourcingMethods: string[];
+  statuses: string[];
+}
+
+/** The lists the portal falls back to when Odoo cannot be reached. */
+const FALLBACK_BRANCHES = ['Bangalore Office', 'Kochi Head Office', 'Mumbai Office', 'Delhi Office', 'Chennai Office', 'Hyderabad Office'];
+const FALLBACK_DEPARTMENTS = ['IT & Infrastructure', 'Operations', 'Facilities', 'Marketing', 'Finance', 'R&D'];
+const FALLBACK_CATEGORIES = ['IT Hardware & Laptops', 'Datacenter Equipment', 'Software Licenses', 'Office Furniture', 'Professional Services', 'MRO Supplies'];
+const FALLBACK_EXPENSE_TYPES = ['Capital Expenditure (CapEx)', 'Operating Expenditure (OpEx)'];
+
+/** Every role the demo can show, with the label the switcher renders. */
+const ROLE_LABELS: Record<string, string> = {
+  'Employee': 'Employee (Requester)',
+  'Manager': 'Manager (Approver)',
+  'SCM Buyer': 'SCM Buyer (Sourcing)',
+  'Vendor': 'Vendor (External Portal)',
+  'CEO': 'CEO (Spend Intel)',
+};
+
+/**
+ * Sign-in gate. The SmartSpend API is bearer-authenticated, so nothing can be
+ * loaded until the user exchanges their Odoo credentials for a token.
+ */
+function SignInScreen({
+  apiUrl, onApiUrlChange, onSubmit, busy, error,
+}: {
+  apiUrl: string;
+  onApiUrlChange: (v: string) => void;
+  onSubmit: (login: string, password: string) => Promise<boolean>;
+  busy: boolean;
+  error: string;
+}) {
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
+  const [showServer, setShowServer] = useState(false);
+
+  const handle = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!busy && login && password) void onSubmit(login, password);
+  };
+
+  const field =
+    "w-full rounded-xl border border-borderTheme bg-surface px-3.5 py-2.5 text-sm text-textPrimary " +
+    "placeholder:text-textFaint outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/25";
+
+  return (
+    <div className="min-h-screen flex items-center justify-center font-sans login-aurora px-4 relative overflow-hidden">
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full ambient-glow-1 filter blur-[120px] pointer-events-none opacity-60 z-0" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full ambient-glow-2 filter blur-[120px] pointer-events-none opacity-60 z-0" />
+
+      <form
+        onSubmit={handle}
+        className="relative z-10 w-full max-w-sm rounded-2xl border border-borderTheme bg-surface/95 backdrop-blur p-7 shadow-2xl"
+      >
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-brand flex items-center justify-center shadow-lg ring-1 ring-white/25">
+            <Sparkles className="h-5 w-5 text-onbrand" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-textPrimary leading-tight">SmartSpend</h1>
+            <p className="text-xs text-textSecondary">Sign in with your Odoo account</p>
+          </div>
+        </div>
+
+        <div className="mt-6 space-y-3">
+          <div>
+            <label htmlFor="ss-login" className="block text-xs font-semibold text-textSecondary mb-1.5">
+              Email or username
+            </label>
+            <input
+              id="ss-login" className={field} value={login} autoComplete="username" autoFocus
+              onChange={(e) => setLogin(e.target.value)} placeholder="you@company.com"
+            />
+          </div>
+          <div>
+            <label htmlFor="ss-pass" className="block text-xs font-semibold text-textSecondary mb-1.5">
+              Password
+            </label>
+            <input
+              id="ss-pass" type="password" className={field} value={password} autoComplete="current-password"
+              onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
+            />
+          </div>
+        </div>
+
+        {error && (
+          <div
+            role="alert"
+            className="mt-4 flex items-start gap-2 rounded-xl border border-neg/30 bg-neg/10 px-3 py-2.5 text-xs text-neg"
+          >
+            <AlertCircle className="h-4 w-4 shrink-0 mt-px" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={busy || !login || !password}
+          className="mt-5 w-full rounded-xl bg-brand py-2.5 text-sm font-semibold text-onbrand shadow-lg
+                     transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed
+                     focus:outline-none focus:ring-2 focus:ring-brand/40"
+        >
+          {busy ? "Signing in…" : "Sign in"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowServer((v) => !v)}
+          className="mt-4 text-[11px] text-textFaint hover:text-textSecondary transition"
+        >
+          {showServer ? "Hide server settings" : "Server settings"}
+        </button>
+        {showServer && (
+          <div className="mt-2">
+            <label htmlFor="ss-url" className="block text-[11px] text-textFaint mb-1">Odoo URL</label>
+            <input
+              id="ss-url" className={field} value={apiUrl}
+              onChange={(e) => onApiUrlChange(e.target.value)} placeholder="http://127.0.0.1:8019"
+            />
+          </div>
+        )}
+      </form>
+    </div>
+  );
+}
+
 interface ChatMessage {
   sender: 'ai' | 'vendor';
   text: string;
@@ -66,6 +212,16 @@ interface RequestItem {
   selectedSourcingMethod: 'Direct' | 'RFQ' | 'Auction';
   attachments: string[];
   lineItems?: LineItem[];
+  /** References of the Odoo purchase orders raised for this request. */
+  purchaseOrders?: string[];
+  /** Rate contract Odoo matched to this request, and its vendor. */
+  contract?: string;
+  contractVendor?: string;
+  /** Budget Odoo checked it against. */
+  budgetName?: string;
+  budgetAvailable?: number;
+  budgetBreach?: boolean;
+  expenseType?: string;
 }
 
 // Catalog price book — contract rate, opening vendor bid, AI negotiation target (per unit).
@@ -139,6 +295,40 @@ const STATUS_META: Record<string, { color: string; rgb: string; short: string; i
 };
 const statusColor = (s: string) => STATUS_META[s]?.color ?? '#64748B';
 const statusRgb = (s: string) => STATUS_META[s]?.rgb ?? '100 116 139';
+
+/**
+ * What is happening to this request, in the words a requester would use.
+ * Status codes tell you the state; these tell you what it means for you.
+ */
+const plainStatus = (r: RequestItem): { line: string; waitingOn: string } => {
+  const vendor = r.vendor && r.vendor !== 'Pending Sourcing' ? r.vendor : '';
+  const order = r.purchaseOrders?.length ? r.purchaseOrders.join(', ') : '';
+  switch (r.status) {
+    case 'Draft':
+      return { line: 'Not sent yet — finish it and submit when you are ready.', waitingOn: 'You' };
+    case 'Pending Approval':
+      return { line: 'Waiting for your manager to approve it.', waitingOn: 'Your manager' };
+    case 'Needs Clarification':
+      return { line: 'Your manager asked a question — answer it to keep this moving.', waitingOn: 'You' };
+    case 'Sourcing':
+      return { line: 'Approved. The buying team is getting prices.', waitingOn: 'SCM Buyer' };
+    case 'Approved':
+      return { line: 'Approved. Next step is raising the purchase order.', waitingOn: 'SCM Buyer' };
+    case 'PO Confirmed':
+      return {
+        line: order
+          ? `Order ${order} placed${vendor ? ` with ${vendor}` : ''} — waiting for delivery.`
+          : `Order placed${vendor ? ` with ${vendor}` : ''} — waiting for delivery.`,
+        waitingOn: vendor || 'Vendor',
+      };
+    case 'Paid':
+      return { line: 'Delivered and paid. Nothing left to do.', waitingOn: 'Nobody' };
+    case 'Rejected':
+      return { line: 'Your manager turned this down. Raise a new request if you still need it.', waitingOn: 'Nobody' };
+    default:
+      return { line: r.status, waitingOn: '—' };
+  }
+};
 
 // Compact request lifecycle stages (for inline mini-trackers on tiles).
 const STAGE_LABELS = ['Submitted', 'Approved', 'Sourcing', 'PO', 'Received', 'Paid'];
@@ -240,6 +430,7 @@ function RequestCard({ r, onOpen, onPoke }: { r: RequestItem; onOpen: () => void
   const last = r.history[r.history.length - 1];
   const settled = r.status === 'Paid' || r.status === 'PO Confirmed';
   const urgencyTone = r.urgency === 'High' ? '#DB3A4B' : r.urgency === 'Medium' ? '#C27C09' : '#0C9689';
+  const plain = plainStatus(r);
   const pct = Math.round((stage / (STAGE_LABELS.length - 1)) * 100);
   return (
     <div
@@ -297,6 +488,11 @@ function RequestCard({ r, onOpen, onPoke }: { r: RequestItem; onOpen: () => void
             <span className="text-[11px] font-bold" style={{ color }}>{STAGE_LABELS[Math.min(stage, STAGE_LABELS.length - 1)]}</span>
             <span className="text-[10px] font-semibold text-textFaint tabular-nums">Step {stage + 1} of {STAGE_LABELS.length}</span>
           </div>
+          {/* what the stage actually means for the person reading it */}
+          <p className="mt-2 text-[11px] leading-snug text-textSecondary">{plain.line}</p>
+          <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-textFaint">
+            With: {plain.waitingOn}
+          </p>
         </div>
 
         {/* latest update + poke */}
@@ -1113,7 +1309,7 @@ export default function App() {
   const [deliveredQty, setDeliveredQty] = useState<number>(20);
   const [qualityPassed, setQualityPassed] = useState<boolean>(true);
   const [paymentMethod, setPaymentMethod] = useState<string>("Bank Transfer");
-  
+
   // Shared Data Model representing Odoo's live state
   const [requests, setRequests] = useState<RequestItem[]>([
     {
@@ -1262,8 +1458,338 @@ export default function App() {
     }
   ]);
 
+  const [odooApiUrl, setOdooApiUrl] = useState<string>(() => {
+    try {
+      return localStorage.getItem("odooApiUrl") || "http://127.0.0.1:8019";
+    } catch {
+      return "http://127.0.0.1:8019";
+    }
+  });
+  const [odooConnected, setOdooConnected] = useState<boolean>(false);
+  // Calls Odoo did not accept. The portal carries on when one fails — an edit
+  // stays in the browser, a decision or a purchase order falls back to a local
+  // simulation so the walkthrough still runs — so without this the screen
+  // quietly stops matching the backend. Anything listed here is a change Odoo
+  // does NOT have. Keyed by action so a failed save and a failed approval on
+  // the same request are two separate rows, each retried on its own.
+  interface SyncError { key: string; id: string; what: string; message: string; retry: () => void }
+  const [syncErrors, setSyncErrors] = useState<SyncError[]>([]);
+  const noteSyncError = (err: SyncError) =>
+    setSyncErrors(prev => [...prev.filter(e => e.key !== err.key), err]);
+  const clearSyncError = (key: string) =>
+    setSyncErrors(prev => prev.filter(e => e.key !== key));
+
+  /** Why Odoo turned a call down — it answers {"error": "..."} with a real status. */
+  const refusalMessage = async (res: Response) => {
+    const failure = await res.json().catch(() => ({} as any));
+    return (failure?.error as string) || `Odoo refused this (HTTP ${res.status}).`;
+  };
+  /**
+   * Why a call never landed. A TypeError is fetch failing to connect at all —
+   * "Failed to fetch" means nothing to a requester, so say it the way the
+   * sign-in screen already does. Any other Error carries its own message (a 401
+   * has already cleared the session and this screen is about to be sign-in).
+   */
+  const unreachableMessage = (e: unknown, url: string) =>
+    e instanceof TypeError ? `Could not reach ${url}. Is Odoo running?`
+      : e instanceof Error ? e.message
+        : `Could not reach ${url}.`;
+  // Appended when the portal went ahead with a local result anyway, so the
+  // screen and Odoo are knowingly out of step until the retry succeeds.
+  const SIMULATED = ' This screen is showing a local result — Odoo still holds the previous state.';
+  const [isParsing, setIsParsing] = useState<boolean>(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string>("PR-2026-089");
+  const [currentOdooRequestName, setCurrentOdooRequestName] = useState<string>("New");
+  const lastOdooSyncRef = useRef<string>("");
+
+  // ---- Authentication -------------------------------------------------
+  // The API uses Odoo's bearer-token auth: every data call must carry
+  // `Authorization: Bearer <token>`. The token is obtained from /login and
+  // held in localStorage so a page refresh doesn't sign the user out.
+  const [authToken, setAuthToken] = useState<string | null>(() => {
+    try { return localStorage.getItem("smartspend-token"); } catch { return null; }
+  });
+  const [currentUser, setCurrentUser] = useState<OdooUser | null>(() => {
+    try {
+      const raw = localStorage.getItem("smartspend-user");
+      return raw ? (JSON.parse(raw) as OdooUser) : null;
+    } catch { return null; }
+  });
+  const [authError, setAuthError] = useState<string>("");
+  const [authBusy, setAuthBusy] = useState<boolean>(false);
+
+  // Every role the demo can show. Odoo narrows this only when it has actually
+  // answered with the account's roles — a cached sign-in from before that
+  // existed must never cost somebody their screens.
+  const ALL_ROLES = ['Employee', 'Manager', 'SCM Buyer', 'CEO', 'Vendor'];
+  const availableRoles = currentUser?.roles?.length
+    ? [...currentUser.roles, 'Vendor']
+    : ALL_ROLES;
+
+  const clearSession = () => {
+    setAuthToken(null);
+    setCurrentUser(null);
+    setOdooConnected(false);
+    setMasterData(null);
+    try {
+      localStorage.removeItem("smartspend-token");
+      localStorage.removeItem("smartspend-user");
+    } catch { /* ignore */ }
+  };
+
+  /**
+   * fetch() wrapper for the SmartSpend API.
+   * Attaches the bearer token, and signs the user out on 401 so an expired
+   * token surfaces as the login screen rather than silent empty data.
+   */
+  const apiFetch = async (
+    path: string,
+    init: RequestInit = {},
+    url: string = odooApiUrl,
+  ): Promise<Response> => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(init.headers as Record<string, string> | undefined),
+    };
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+    const res = await fetch(`${url}${path}`, { ...init, headers });
+    if (res.status === 401) {
+      clearSession();
+      throw new Error("Session expired — please sign in again.");
+    }
+    return res;
+  };
+
+  const signIn = async (loginName: string, password: string): Promise<boolean> => {
+    setAuthBusy(true);
+    setAuthError("");
+    try {
+      const res = await fetch(`${odooApiUrl}/api/smartspend/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login: loginName, password }),
+      });
+      const data = await res.json().catch(() => ({} as any));
+      if (!res.ok) {
+        setAuthError(data?.error || "Sign in failed.");
+        return false;
+      }
+      setAuthToken(data.token);
+      setCurrentUser(data.user);
+      try {
+        localStorage.setItem("smartspend-token", data.token);
+        localStorage.setItem("smartspend-user", JSON.stringify(data.user));
+      } catch { /* ignore */ }
+      // Sign in as who Odoo says you are, not as whoever the dropdown last held.
+      if (data.user?.defaultRole) handleSsoLogin(data.user.defaultRole);
+      loadMasterData(odooApiUrl, data.token);
+      return true;
+    } catch {
+      setAuthError(`Could not reach ${odooApiUrl}. Is Odoo running?`);
+      return false;
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      if (authToken) {
+        // Revokes the API key server-side so a copied token can't be reused.
+        await fetch(`${odooApiUrl}/api/smartspend/logout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+        });
+      }
+    } catch { /* best effort — clear locally regardless */ }
+    clearSession();
+  };
+
+  // Re-read who the held token belongs to. A session stored before the backend
+  // returned roles has none cached, and Odoo may have changed them since.
+  const refreshCurrentUser = async (url: string = odooApiUrl, token: string | null = authToken) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${url}/api/smartspend/me`, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const user = await res.json();
+      setCurrentUser(user);
+      try { localStorage.setItem("smartspend-user", JSON.stringify(user)); } catch { /* ignore */ }
+    } catch (e) {
+      console.warn("Could not refresh the signed-in user:", e);
+    }
+  };
+
+  // Branches, departments and categories, straight from Odoo.
+  const loadMasterData = async (url: string = odooApiUrl, token: string | null = authToken) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${url}/api/smartspend/master-data`, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) setMasterData(await res.json());
+    } catch (e) {
+      console.warn("Falling back to built-in lists — Odoo master data unreachable:", e);
+    }
+  };
+
+  // Helper to fetch requests from Odoo backend
+  const fetchRequestsFromOdoo = async (url: string = odooApiUrl) => {
+    if (!authToken) return null;
+    try {
+      const res = await apiFetch(`/api/smartspend/requests`, { method: 'GET' }, url);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          lastOdooSyncRef.current = JSON.stringify(data);
+          setRequests(data);
+          setOdooConnected(true);
+          return data;
+        }
+      }
+      setOdooConnected(false);
+    } catch (e) {
+      console.warn("Failed to connect to Odoo backend:", e);
+      setOdooConnected(false);
+    }
+    return null;
+  };
+
+  // Helper to save/submit a request to Odoo backend
+  const submitRequestToOdoo = async (reqItem: RequestItem, url: string = odooApiUrl) => {
+    if (!authToken) return null;
+    // Retrying re-posts this very version. Any later edit re-runs the sync
+    // effect, which replaces this row with one carrying the newer copy.
+    const fail = (message: string) => noteSyncError({
+      key: `save:${reqItem.id}`, id: reqItem.id, what: 'was not saved to Odoo',
+      message, retry: () => submitRequestToOdoo(reqItem, url),
+    });
+    try {
+      const res = await apiFetch(`/api/smartspend/submit`, {
+        method: 'POST',
+        body: JSON.stringify(reqItem),
+      }, url);
+      if (res.ok) {
+        const updated = await res.json();
+        setRequests(prev => {
+          const newState = prev.map(r => r.id === reqItem.id || r.id === updated.id ? updated : r);
+          lastOdooSyncRef.current = JSON.stringify(newState);
+          return newState;
+        });
+        setSelectedRequestId(prev => prev === reqItem.id ? updated.id : prev);
+        clearSyncError(`save:${reqItem.id}`);
+        return updated;
+      }
+      // Odoo refused it. Say so: the requester is the only one who can correct
+      // the request, and nothing else on screen would ever tell them.
+      const message = await refusalMessage(res);
+      console.warn("Odoo refused the save:", message);
+      fail(message);
+    } catch (e) {
+      console.warn("Failed to submit request to Odoo:", e);
+      fail(unreachableMessage(e, url));
+    }
+    return null;
+  };
+
+  // Raise the real purchase order in Odoo for a request.
+  // Returns the refreshed request (with its PO reference) or null when the
+  // backend is unreachable or refuses — the caller then falls back to the
+  // offline simulation so the walkthrough still runs without Odoo.
+  const createPurchaseOrderInOdoo = async (reqId: string, url: string = odooApiUrl) => {
+    if (!authToken) return null;
+    const fail = (message: string) => noteSyncError({
+      key: `po:${reqId}`, id: reqId, what: 'purchase order was not raised in Odoo',
+      message: message + SIMULATED, retry: () => createPurchaseOrderInOdoo(reqId, url),
+    });
+    try {
+      const res = await apiFetch(`/api/smartspend/purchase-order`, {
+        method: 'POST',
+        body: JSON.stringify({ id: reqId }),
+      }, url);
+      if (res.ok) {
+        const updated = await res.json();
+        setRequests(prev => {
+          const newState = prev.map(r => (r.id === reqId || r.id === updated.id ? updated : r));
+          lastOdooSyncRef.current = JSON.stringify(newState);
+          return newState;
+        });
+        clearSyncError(`po:${reqId}`);
+        return updated as RequestItem;
+      }
+      const message = await refusalMessage(res);
+      console.warn("Odoo refused to raise the purchase order:", message);
+      fail(message);
+    } catch (e) {
+      console.warn("Failed to raise the purchase order in Odoo:", e);
+      fail(unreachableMessage(e, url));
+    }
+    return null;
+  };
+
+  // Helper to reset Odoo backend database
+  const resetOdooDatabase = async (url: string = odooApiUrl) => {
+    if (!authToken) return false;
+    try {
+      const res = await apiFetch(`/api/smartspend/reset`, { method: 'POST' }, url);
+      if (res.ok) {
+        await fetchRequestsFromOdoo(url);
+        return true;
+      }
+    } catch (e) {
+      console.warn("Failed to reset Odoo database:", e);
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    if (!authToken) return;
+    fetchRequestsFromOdoo();
+    loadMasterData();
+    refreshCurrentUser();
+  }, [odooApiUrl, authToken]);
+
+
+  useEffect(() => {
+    const requestsStr = JSON.stringify(requests);
+    if (requestsStr === lastOdooSyncRef.current) {
+      return;
+    }
+    let lastRequests: RequestItem[] = [];
+    try {
+      lastRequests = JSON.parse(lastOdooSyncRef.current);
+    } catch {
+      lastRequests = [];
+    }
+    lastOdooSyncRef.current = requestsStr;
+    if (lastRequests.length === 0) {
+      return;
+    }
+    for (const req of requests) {
+      const oldReq = lastRequests.find(r => r.id === req.id);
+      if (!oldReq || JSON.stringify(oldReq) !== JSON.stringify(req)) {
+        submitRequestToOdoo(req);
+      }
+    }
+  }, [requests]);
+  
+  // requests state has been relocated above the Odoo API helpers to satisfy TS scoping.
+
   const currentRequest = requests.find(r => r.id === selectedRequestId) || requests[0];
+  // The rate-contract and budget screens used to run on two presenter switches.
+  // When Odoo has an answer for this request, that answer is the starting point
+  // — the switches stay, so the walkthrough can still show either outcome.
+  useEffect(() => {
+    if (!currentRequest) return;
+    if (currentRequest.contract !== undefined) setHasContract(!!currentRequest.contract);
+    if (currentRequest.budgetBreach !== undefined) setBudgetBreach(!!currentRequest.budgetBreach);
+  }, [currentRequest?.id, currentRequest?.contract, currentRequest?.budgetBreach]);
 
   // Received quantity per requisition line (GRN) — keyed to the current request.
   const [deliveredQtys, setDeliveredQtys] = useState<number[]>([]);
@@ -1427,6 +1953,19 @@ export default function App() {
 
   // Contract selection State
   const [hasContract, setHasContract] = useState<boolean>(false);
+  const [masterData, setMasterData] = useState<MasterData | null>(null);
+
+  // Odoo owns these lists now; the hardcoded ones are only a fallback for when
+  // the backend is unreachable, so the walkthrough still runs offline.
+  const branchOptions = masterData?.branches.length
+    ? masterData.branches.map(b => b.name) : FALLBACK_BRANCHES;
+  const departmentOptions = masterData?.departments.length
+    ? masterData.departments.map(d => d.name) : FALLBACK_DEPARTMENTS;
+  const categoryOptions = masterData?.categories.length
+    ? masterData.categories.map(c => c.name) : FALLBACK_CATEGORIES;
+  const expenseTypeOptions = masterData?.categories.length
+    ? Array.from(new Set(masterData.categories.map(c => c.expenseType))) : FALLBACK_EXPENSE_TYPES;
+
 
   // SCM Buyer Portal Local States
   const [scmTab, setScmTab] = useState<'requests' | 'bidding' | 'discovery'>('requests');
@@ -1443,6 +1982,9 @@ export default function App() {
 
   // PO Approval & Vendor Acknowledgment States
   const [poApprovedByHead, setPoApprovedByHead] = useState<boolean>(false);
+  // Raising the Odoo purchase order from the tracking screen.
+  const [poBusy, setPoBusy] = useState<boolean>(false);
+  const [poError, setPoError] = useState<string>("");
   const [poAcknowledgedByVendor, setPoAcknowledgedByVendor] = useState<boolean>(false);
 
   // Manager Clarification Prompt State
@@ -1546,11 +2088,59 @@ export default function App() {
     }
   };
 
-  const handleChatSubmit = (e?: React.FormEvent) => {
+  const handleChatSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!chatInputText.trim() && chatItems.length === 0) return;
 
-    parseSpeechText(chatInputText, chatItems);
+    setIsParsing(true);
+    let parsedSuccessfully = false;
+
+    // Whatever is staged in the composer belongs to this requisition too, so it
+    // travels with the sentence — otherwise Odoo answers with the sentence's
+    // lines alone and the staged products never reach the extraction form.
+    const stagedItems = chatItems
+      .filter(it => it.productName.trim())
+      .map(it => ({
+        productName: it.productName.trim(),
+        productQty: it.productQty || 1,
+        targetPrice: it.targetPrice || 0,
+      }));
+
+    if (chatInputText.trim() || stagedItems.length) {
+      try {
+        const res = await apiFetch(`/api/smartspend/parse`, {
+          method: 'POST',
+          body: JSON.stringify({ text: chatInputText, items: stagedItems }),
+        });
+        if (res.ok) {
+          const reqData = await res.json();
+          if (reqData && reqData.id) {
+            setEditProductName(reqData.productName || "");
+            setEditProductQty(reqData.productQty || 1);
+            setEditTargetPrice(reqData.targetPrice || 0);
+            setEditLocation(reqData.location || "Bangalore Office");
+            setEditExpenseCategory(reqData.expenseCategory || "IT Hardware & Laptops");
+            setEditDepartment(reqData.department || "IT & Infrastructure");
+            setExtraItems(reqData.lineItems?.slice(1).map((ln: any) => ({
+              productName: ln.productName,
+              productQty: ln.productQty,
+              targetPrice: ln.targetPrice,
+            })) || []);
+            setCurrentOdooRequestName(reqData.id);
+            parsedSuccessfully = true;
+          }
+        }
+      } catch (e) {
+        console.warn("Odoo parse failed, falling back to local simulation", e);
+      }
+    }
+
+    if (!parsedSuccessfully) {
+      parseSpeechText(chatInputText, chatItems);
+      setCurrentOdooRequestName("New");
+    }
+
+    setIsParsing(false);
     setChatInputText("");
     setChatItems([]);
     setActiveScene(4); // Go to extraction form
@@ -1577,11 +2167,12 @@ export default function App() {
     setTimeout(() => setPokeToast(''), 2800);
   };
 
-  const createRequisitionFromForm = () => {
-    const newId = `PR-2026-0${90 + requests.length}`;
+  const createRequisitionFromForm = async () => {
+    const isNew = currentOdooRequestName === "New";
+    const reqId = isNew ? `PR-2026-0${90 + requests.length}` : currentOdooRequestName;
     const allItems: LineItem[] = [{ productName: editProductName, productQty: editProductQty, targetPrice: editTargetPrice }, ...extraItems.filter(it => it.productName.trim())];
     const newReq: RequestItem = {
-      id: newId,
+      id: reqId,
       productName: editProductName,
       productQty: linesQty(allItems),
       targetPrice: editTargetPrice,
@@ -1606,8 +2197,8 @@ export default function App() {
       attachments: attachedFiles
     };
 
-    setRequests(prev => [newReq, ...prev]);
-    setSelectedRequestId(newId);
+    setRequests(prev => [newReq, ...prev.filter(r => r.id !== reqId)]);
+    setSelectedRequestId(reqId);
     setAttachedFiles([]);
     setExtraItems([]);
 
@@ -1615,24 +2206,86 @@ export default function App() {
     setActiveScene(5);
   };
 
-  // Manager Approval Action
-  const handleManagerApprove = (id: string) => {
-    setRequests(prev => prev.map(r => {
-      if (r.id === id) {
-        return {
-          ...r,
-          status: "Approved",
-          history: [...r.history, { title: "Approved by Manager", date: "Now", desc: "Approved by Operational Manager" }]
-        };
+  /**
+   * Send a manager's decision to Odoo, which is what actually moves the
+   * request: it checks the role, writes the state, records the comment on the
+   * request thread and returns the saved record.
+   * Returns null when the backend is unreachable, so the caller can simulate.
+   */
+  const decideInOdoo = async (id: string, decision: 'approve' | 'reject' | 'clarify', comment?: string) => {
+    if (!authToken) return null;
+    const what = decision === 'approve' ? 'approval was not recorded in Odoo'
+      : decision === 'reject' ? 'rejection was not recorded in Odoo'
+        : 'clarification request was not recorded in Odoo';
+    const fail = (message: string) => noteSyncError({
+      key: `decide:${id}`, id, what,
+      message: message + SIMULATED, retry: () => decideInOdoo(id, decision, comment),
+    });
+    try {
+      const res = await apiFetch(`/api/smartspend/decide`, {
+        method: 'POST',
+        body: JSON.stringify({ id, decision, comment: comment || '' }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setRequests(prev => {
+          const newState = prev.map(r => (r.id === id ? updated : r));
+          lastOdooSyncRef.current = JSON.stringify(newState);
+          return newState;
+        });
+        clearSyncError(`decide:${id}`);
+        return updated as RequestItem;
       }
-      return r;
-    }));
+      const message = await refusalMessage(res);
+      console.warn("Odoo refused the decision:", message);
+      fail(message);
+    } catch (e) {
+      console.warn("Failed to send the decision to Odoo:", e);
+      fail(unreachableMessage(e, odooApiUrl));
+    }
+    return null;
+  };
+
+  // Manager Approval Action
+  const handleManagerApprove = async (id: string) => {
+    const decided = await decideInOdoo(id, 'approve');
+    if (!decided) {
+      setRequests(prev => prev.map(r => {
+        if (r.id === id) {
+          return {
+            ...r,
+            status: "Approved",
+            history: [...r.history, { title: "Approved by Manager", date: "Now", desc: "Approved by Operational Manager" }]
+          };
+        }
+        return r;
+      }));
+    }
     setActiveScene(11); // Route to order tracking
   };
 
+  const handleManagerReject = async (id: string) => {
+    const decided = await decideInOdoo(id, 'reject');
+    if (!decided) {
+      setRequests(prev => prev.map(r => r.id === id ? {
+        ...r,
+        status: "Rejected",
+        history: [...r.history, { title: "Rejected", date: "Now", desc: "Rejected by Manager" }],
+      } : r));
+    }
+  };
+
   // Manager Request Information Loop
-  const handleRequestInfoSubmit = (id: string) => {
+  const handleRequestInfoSubmit = async (id: string) => {
     if (!managerQueryText.trim()) return;
+
+    const decided = await decideInOdoo(id, 'clarify', managerQueryText);
+    if (decided) {
+      setManagerQueryText("");
+      setShowManagerQueryBox(false);
+      alert("Clarification request sent back to the employee.");
+      return;
+    }
 
     setRequests(prev => prev.map(r => {
       if (r.id === id) {
@@ -1794,6 +2447,23 @@ export default function App() {
     setNegotiationComplete(false);
   };
 
+  // The API is bearer-authenticated: without a token there is nothing to show,
+  // so render the sign-in gate instead of the app shell.
+  if (!authToken) {
+    return (
+      <SignInScreen
+        apiUrl={odooApiUrl}
+        onApiUrlChange={(v) => {
+          setOdooApiUrl(v);
+          try { localStorage.setItem("odooApiUrl", v); } catch { /* ignore */ }
+        }}
+        onSubmit={signIn}
+        busy={authBusy}
+        error={authError}
+      />
+    );
+  }
+
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-hidden login-aurora text-textPrimary`}>
       {/* Background ambient decorative glows */}
@@ -1883,6 +2553,33 @@ export default function App() {
                   </button>
                 </div>
               </div>
+              
+              <div className="space-y-4 pt-4 border-t border-borderTheme/50">
+                <div className="relative flex pb-2 items-center">
+                  <div className="flex-grow border-t border-borderTheme"></div>
+                  <span className="flex-shrink mx-4 text-textFaint text-xs font-semibold uppercase tracking-wider">Odoo Connection Settings</span>
+                  <div className="flex-grow border-t border-borderTheme"></div>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-textSecondary mb-2">Odoo Backend URL</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      value={odooApiUrl} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setOdooApiUrl(val);
+                        try { localStorage.setItem("odooApiUrl", val); } catch {}
+                      }} 
+                      placeholder="http://127.0.0.1:8019"
+                      className="flex-grow text-xs px-3 py-2 bg-secondary/30 border border-borderTheme rounded-lg text-textPrimary focus:outline-none focus:border-brand transition-all"
+                    />
+                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center border transition-all ${odooConnected ? 'bg-pos/15 border-pos/30 text-pos' : 'bg-neg/15 border-neg/30 text-neg'}`} title={odooConnected ? "Connected to Odoo" : "Odoo not reachable"}>
+                      <div className={`h-2.5 w-2.5 rounded-full ${odooConnected ? 'bg-pos animate-pulse' : 'bg-neg'}`} />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1933,12 +2630,21 @@ export default function App() {
                     onChange={(e) => handleSsoLogin(e.target.value)}
                     className="w-full bg-secondary border border-line2/60 rounded-lg px-2.5 py-1.5 text-xs text-primary font-semibold focus:outline-none"
                   >
-                    <option value="Employee">Employee (Requester)</option>
-                    <option value="Manager">Manager (Approver)</option>
-                    <option value="SCM Buyer">SCM Buyer (Sourcing)</option>
-                    <option value="Vendor">Vendor (External Portal)</option>
-                    <option value="CEO">CEO (Spend Intel)</option>
+                    {/* The roles this Odoo account holds. When the backend has
+                        not told us — an older session, or Odoo unreachable —
+                        every role stays available, as it was before. */}
+                    {availableRoles.map(role => (
+                      <option key={role} value={role}>{ROLE_LABELS[role] ?? role}</option>
+                    ))}
                   </select>
+                  {currentUser && (
+                    <p className="mt-1.5 px-0.5 text-[10px] text-textFaint leading-snug">
+                      {currentUser.name}
+                      {currentUser.is_manager ? ' · Procurement Manager in Odoo'
+                        : currentUser.is_buyer ? ' · SCM Buyer in Odoo'
+                        : ' · Requester in Odoo'}
+                    </p>
+                  )}
                 </div>
                 
                 {/* Navigation Items (Role-Adaptive) */}
@@ -1984,16 +2690,25 @@ export default function App() {
                 */}
 
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setActiveScene(1);
                     setPoApprovedByHead(false);
                     setPoAcknowledgedByVendor(false);
+                    await resetOdooDatabase();
                   }}
                   className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-lg border border-borderTheme bg-secondary hover:bg-secondary text-[11px] text-textSecondary hover:text-primary font-medium transition-all"
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
                   <span>Logout / Reset Demo</span>
                 </button>
+                
+                <div className="flex items-center justify-between text-[11px] text-textFaint px-2 py-1 bg-secondary/30 rounded-lg border border-borderTheme/50 mt-2">
+                  <span className="font-semibold uppercase tracking-wider">Odoo Server</span>
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-[10px] font-medium text-textSecondary">{odooConnected ? 'Connected' : 'Disconnected'}</span>
+                    <span className={`h-2 w-2 rounded-full ${odooConnected ? 'bg-pos animate-pulse' : 'bg-neg'}`} />
+                  </div>
+                </div>
               </div>
             </aside>
           )}
@@ -2065,6 +2780,29 @@ export default function App() {
                       </div>
                       <button onClick={() => { setSelectedRequestId(p.reqId); if (userRole === 'Manager') setActiveScene(10); else if (userRole === 'SCM Buyer') setActiveScene(6); }} className="text-[11px] font-semibold text-brand hover:underline flex-shrink-0 px-1">View</button>
                       <button onClick={() => setPokes(prev => prev.filter((_, idx) => idx !== i))} className="text-textFaint hover:text-textPrimary flex-shrink-0"><X className="h-4 w-4" /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Calls Odoo would not take. These sit until they are retried or
+                  dismissed: while one is up, what is on screen is not what the
+                  backend holds. */}
+              {syncErrors.length > 0 && (
+                <div className="mb-6 space-y-2 max-w-6xl mx-auto">
+                  {syncErrors.map(err => (
+                    <div key={err.key} className="flex items-start gap-3 p-3 rounded-xl border shadow-sm animate-fadeIn bg-neg/10 border-neg/30">
+                      <span className="h-8 w-8 rounded-full bg-neg/15 flex items-center justify-center flex-shrink-0"><AlertTriangle className="h-4 w-4 text-neg" /></span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-textPrimary">{err.id} — {err.what}</p>
+                        <p className="text-[11px] text-textSecondary">{err.message}</p>
+                      </div>
+                      <button
+                        onClick={() => err.retry()}
+                        className="text-[11px] font-semibold text-neg hover:underline flex-shrink-0 px-1 mt-0.5"
+                      >
+                        Retry
+                      </button>
+                      <button onClick={() => clearSyncError(err.key)} className="text-textFaint hover:text-textPrimary flex-shrink-0 mt-0.5"><X className="h-4 w-4" /></button>
                     </div>
                   ))}
                 </div>
@@ -2567,8 +3305,40 @@ export default function App() {
                               Record Again
                             </button>
                             <button 
-                              onClick={() => {
-                                parseSpeechText(speechText);
+                              onClick={async () => {
+                                setIsParsing(true);
+                                let parsedSuccessfully = false;
+                                try {
+                                  const res = await apiFetch(`/api/smartspend/parse`, {
+                                    method: 'POST',
+                                    body: JSON.stringify({ text: speechText }),
+                                  });
+                                  if (res.ok) {
+                                    const reqData = await res.json();
+                                    if (reqData && reqData.id) {
+                                      setEditProductName(reqData.productName || "");
+                                      setEditProductQty(reqData.productQty || 1);
+                                      setEditTargetPrice(reqData.targetPrice || 0);
+                                      setEditLocation(reqData.location || "Bangalore Office");
+                                      setEditExpenseCategory(reqData.expenseCategory || "IT Hardware & Laptops");
+                                      setEditDepartment(reqData.department || "IT & Infrastructure");
+                                      setExtraItems(reqData.lineItems?.slice(1).map((ln: any) => ({
+                                        productName: ln.productName,
+                                        productQty: ln.productQty,
+                                        targetPrice: ln.targetPrice,
+                                      })) || []);
+                                      setCurrentOdooRequestName(reqData.id);
+                                      parsedSuccessfully = true;
+                                    }
+                                  }
+                                } catch (e) {
+                                  console.warn(e);
+                                }
+                                if (!parsedSuccessfully) {
+                                  parseSpeechText(speechText);
+                                  setCurrentOdooRequestName("New");
+                                }
+                                setIsParsing(false);
                                 setActiveScene(4);
                               }}
                               className="px-5 py-2 bg-brand hover:bg-brand text-xs font-bold rounded-lg text-onbrand transition-all flex items-center space-x-1"
@@ -2641,18 +3411,21 @@ export default function App() {
                         <div>
                           <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Branch</label>
                           <select value={editLocation} onChange={(e) => setEditLocation(e.target.value)} className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand">
-                            {['Bangalore Office', 'Kochi Head Office', 'Mumbai Office', 'Delhi Office', 'Chennai Office', 'Hyderabad Office'].map(o => <option key={o} value={o}>{o}</option>)}
+                            {branchOptions.map(o => <option key={o} value={o}>{o}</option>)}
                           </select>
                         </div>
                         <div>
                           <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Department</label>
                           <select value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand">
-                            {['IT & Infrastructure', 'Operations', 'Facilities', 'Marketing', 'Finance', 'R&D'].map(o => <option key={o} value={o}>{o}</option>)}
+                            {departmentOptions.map(o => <option key={o} value={o}>{o}</option>)}
                           </select>
                         </div>
                         <div>
                           <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Category</label>
-                          <input type="text" value={editExpenseCategory} onChange={(e) => setEditExpenseCategory(e.target.value)} className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand" />
+                          <select value={editExpenseCategory} onChange={(e) => setEditExpenseCategory(e.target.value)} className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand">
+                            {(categoryOptions.includes(editExpenseCategory) ? categoryOptions : [editExpenseCategory, ...categoryOptions])
+                              .map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>
                         </div>
                         <div>
                           <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Expected Delivery Date</label>
@@ -2661,8 +3434,7 @@ export default function App() {
                         <div>
                           <label className="text-xs text-textFaint font-bold uppercase tracking-wider block mb-1">Expense Type</label>
                           <select value={editExpenseType} onChange={(e) => setEditExpenseType(e.target.value)} className="w-full bg-secondary border border-line2 rounded-lg p-2 text-sm text-primary focus:outline-none focus:border-brand">
-                            <option>Capital Expenditure (CapEx)</option>
-                            <option>Operating Expenditure (OpEx)</option>
+                            {expenseTypeOptions.map(o => <option key={o} value={o}>{o}</option>)}
                           </select>
                         </div>
                         <div>
@@ -2764,15 +3536,29 @@ export default function App() {
                           <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0 text-pos" />
                           <div>
                             <p className="font-bold">Budget Verification Passed</p>
-                            <p className="mt-1 text-textSecondary">Funds are available. Mapped to Cost Center. No pre-approvals required for budget allocation.</p>
+                            <p className="mt-1 text-textSecondary">
+                              {currentRequest.budgetName
+                                ? <>Checked against <strong>{currentRequest.budgetName}</strong> in Odoo — ₹{Math.round(currentRequest.budgetAvailable ?? 0).toLocaleString()} still available.</>
+                                : 'Funds are available. Mapped to Cost Center. No pre-approvals required for budget allocation.'}
+                            </p>
                           </div>
                         </div>
                       ) : (
                         <div className="p-4 bg-neg/20 border border-neg/40 rounded-xl flex items-start space-x-3 text-neg text-xs">
                           <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0 text-neg animate-pulse" />
                           <div>
-                            <p className="font-bold">Budget Limit Exceeded by ₹{(linesTotal(currentLines) + 1200000 - 3000000).toLocaleString()}</p>
-                            <p className="mt-1 text-textSecondary">This requisition exceeds the remaining allocated budget threshold.</p>
+                            <p className="font-bold">
+                              Budget Limit Exceeded by ₹{Math.round(
+                                currentRequest.budgetName
+                                  ? linesTotal(currentLines) - (currentRequest.budgetAvailable ?? 0)
+                                  : linesTotal(currentLines) + 1200000 - 3000000
+                              ).toLocaleString()}
+                            </p>
+                            <p className="mt-1 text-textSecondary">
+                              {currentRequest.budgetName
+                                ? <><strong>{currentRequest.budgetName}</strong> has ₹{Math.round(currentRequest.budgetAvailable ?? 0).toLocaleString()} left against a request of ₹{Math.round(linesTotal(currentLines)).toLocaleString()}.</>
+                                : 'This requisition exceeds the remaining allocated budget threshold.'}
+                            </p>
                           </div>
                         </div>
                       )}
@@ -2780,17 +3566,21 @@ export default function App() {
                       <div className="pt-2 flex justify-end space-x-3">
                         <button onClick={() => setActiveScene(4)} className="px-4 py-2 text-xs text-textSecondary font-semibold hover:text-primary">Modify Request</button>
                         {hasContract ? (
-                          <button onClick={() => {
-                            setRequests(prev => prev.map(r => {
-                              if (r.id === selectedRequestId) {
-                                return {
-                                  ...r,
-                                  status: "PO Confirmed",
-                                  history: [...r.history, { title: "Fast-Track Auto PO Created", date: "Now", desc: "Active Rate Contract bypassed manual sourcing." }]
-                                };
-                              }
-                              return r;
-                            }));
+                          <button onClick={async () => {
+                            // Raise it for real in Odoo; only simulate when that fails.
+                            const raised = await createPurchaseOrderInOdoo(selectedRequestId);
+                            if (!raised) {
+                              setRequests(prev => prev.map(r => {
+                                if (r.id === selectedRequestId) {
+                                  return {
+                                    ...r,
+                                    status: "PO Confirmed",
+                                    history: [...r.history, { title: "Fast-Track Auto PO Created", date: "Now", desc: "Active Rate Contract bypassed manual sourcing." }]
+                                  };
+                                }
+                                return r;
+                              }));
+                            }
                             setActiveScene(11);
                           }} className="px-5 py-2 bg-pos hover:bg-pos text-xs font-bold rounded-lg text-onbrand transition-all flex items-center space-x-1">
                             <span>Auto-Generate Purchase Order</span>
@@ -2855,11 +3645,14 @@ export default function App() {
                             <ShieldCheck className="h-6 w-6" />
                           </div>
                           <div className="space-y-1">
-                            <h3 className="font-outfit font-extrabold text-lg text-pos">Active Rate Contract Mapped</h3>
+                            <h3 className="font-outfit font-extrabold text-lg text-pos">
+                              {currentRequest.contract ? `Rate Contract ${currentRequest.contract} Mapped` : 'Active Rate Contract Mapped'}
+                            </h3>
                             <p className="text-sm text-textSecondary">
-                              Found active agreements registered in Odoo covering all {currentLines.length} requested product{currentLines.length > 1 ? 's' : ''}.
-                              Total Allocation:
-                              <strong> ₹{linesTotal(currentLines.map(l => ({ ...l, targetPrice: getContractPrice(l.productName) }))).toLocaleString()}</strong>.
+                              {currentRequest.contract
+                                ? <>Matched in Odoo with <strong>{currentRequest.contractVendor}</strong>, covering {currentLines.length} requested product{currentLines.length > 1 ? 's' : ''}. Total Allocation: </>
+                                : <>Found active agreements registered in Odoo covering all {currentLines.length} requested product{currentLines.length > 1 ? 's' : ''}. Total Allocation: </>}
+                              <strong>₹{linesTotal(currentLines.map(l => ({ ...l, targetPrice: getContractPrice(l.productName) }))).toLocaleString()}</strong>.
                             </p>
                           </div>
                         </div>
@@ -3627,7 +4420,7 @@ export default function App() {
                           <div className="flex flex-wrap justify-end gap-2 border-t border-borderTheme pt-4">
                             <button 
                               onClick={() => {
-                                setRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "Rejected", history: [...r.history, { title: "Rejected", date: "Now", desc: "Rejected by Manager" }] } : r));
+                                handleManagerReject(req.id);
                               }}
                               className="px-4 py-2 border border-borderTheme hover:bg-accent-alerts/10 hover:border-accent-alerts text-xs font-semibold rounded-lg text-textSecondary hover:text-accent-alerts transition-all"
                             >
@@ -3767,34 +4560,52 @@ export default function App() {
                   />
                   
                   <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-8 shadow-sm">
-                    {/* 5-Step Progress Tracker */}
+                    {/* Where this request actually stands, said plainly */}
+                    {(() => {
+                      const plain = plainStatus(currentRequest);
+                      return (
+                        <div className="flex items-start gap-3 p-4 rounded-xl bg-secondary border border-borderTheme">
+                          <div className="mt-0.5 p-1.5 rounded-lg" style={{ background: `rgb(${statusRgb(currentRequest.status)} / 0.14)` }}>
+                            {React.createElement(STATUS_META[currentRequest.status]?.icon ?? FileText, {
+                              className: 'h-4 w-4',
+                              style: { color: statusColor(currentRequest.status) },
+                            })}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-textPrimary font-outfit">{plain.line}</p>
+                            <p className="text-[11px] text-textSecondary mt-0.5">
+                              Currently with <strong>{plain.waitingOn}</strong> · {currentRequest.id}
+                              {currentRequest.budgetName ? ` · budget ${currentRequest.budgetName}` : ''}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* 5-Step Progress Tracker — the first three come from the
+                        request's real status, the last two from the ERP steps below */}
+                    {(() => {
+                      const approved = ['Approved', 'Sourcing', 'PO Confirmed', 'Paid'].includes(currentRequest.status);
+                      const sourced = ['Sourcing', 'Approved', 'PO Confirmed', 'Paid'].includes(currentRequest.status);
+                      const ordered = !!currentRequest.purchaseOrders?.length;
+                      const done = [true, sourced, approved, ordered && poApprovedByHead, ordered && poAcknowledgedByVendor];
+                      const reached = done.lastIndexOf(true);
+                      return (
                     <div className="relative flex justify-between items-center max-w-3xl mx-auto py-4">
                       <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-borderTheme z-0" />
                       <div 
                         className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-accent-savings z-0 transition-all duration-500" 
-                        style={{ width: poApprovedByHead ? (poAcknowledgedByVendor ? '100%' : '75%') : '50%' }} 
+                        style={{ width: `${(Math.max(reached, 0) / (done.length - 1)) * 100}%` }} 
                       />
                       
-                      <div className="flex flex-col items-center z-10 text-center space-y-2">
-                        <div className="h-8 w-8 rounded-full bg-accent-savings text-surface flex items-center justify-center font-bold text-xs">
-                          <Check className="h-4 w-4" />
+                      {['Submitted', 'Sourcing', 'PR Approved'].map((label, i) => (
+                        <div key={label} className="flex flex-col items-center z-10 text-center space-y-2">
+                          <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${done[i] ? 'bg-accent-savings text-surface' : 'bg-surface border border-borderTheme text-textSecondary'}`}>
+                            {done[i] ? <Check className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
+                          </div>
+                          <span className="text-[10px] font-bold text-textPrimary font-outfit">{label}</span>
                         </div>
-                        <span className="text-[10px] font-bold text-textPrimary font-outfit">Submitted</span>
-                      </div>
-                      
-                      <div className="flex flex-col items-center z-10 text-center space-y-2">
-                        <div className="h-8 w-8 rounded-full bg-accent-savings text-surface flex items-center justify-center font-bold text-xs">
-                          <Check className="h-4 w-4" />
-                        </div>
-                        <span className="text-[10px] font-bold text-textPrimary font-outfit">Sourcing</span>
-                      </div>
-                      
-                      <div className="flex flex-col items-center z-10 text-center space-y-2">
-                        <div className="h-8 w-8 rounded-full bg-accent-savings text-surface flex items-center justify-center font-bold text-xs">
-                          <Check className="h-4 w-4" />
-                        </div>
-                        <span className="text-[10px] font-bold text-textPrimary font-outfit">PR Approved</span>
-                      </div>
+                      ))}
                       
                       <div className="flex flex-col items-center z-10 text-center space-y-2">
                         <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${poApprovedByHead ? 'bg-accent-savings text-surface' : 'bg-surface border border-borderTheme text-textSecondary'}`}>
@@ -3810,6 +4621,8 @@ export default function App() {
                         <span className="text-[10px] font-bold text-textPrimary font-outfit">Acknowledged</span>
                       </div>
                     </div>
+                      );
+                    })()}
 
                     {/* Interactive workflow cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-borderTheme font-outfit">
@@ -3835,7 +4648,11 @@ export default function App() {
                         <div className="space-y-2 text-xs">
                           <div className="flex justify-between">
                             <span className="text-textSecondary">PO Reference:</span>
-                            <span className="font-semibold text-textPrimary font-mono">PO-2026-003</span>
+                            <span className="font-semibold text-textPrimary font-mono">
+                              {currentRequest.purchaseOrders?.length
+                                ? currentRequest.purchaseOrders.join(', ')
+                                : 'Not raised yet'}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-textSecondary">Vendor:</span>
@@ -3859,13 +4676,44 @@ export default function App() {
                         <span className="text-xs font-bold text-textSecondary uppercase tracking-wider block">ERP Action Control Room</span>
                         
                         <div className="space-y-4">
-                          {/* Step 1: Head Approval */}
+                          {/* Step 1: Raise the order in Odoo */}
                           <div className="flex items-start space-x-3 text-xs">
+                            <div className={`mt-0.5 p-1 rounded-full ${currentRequest.purchaseOrders?.length ? 'bg-accent-savings/10 text-accent-savings' : 'bg-accent-approvals/10 text-accent-approvals'}`}>
+                              <Package className="h-4.5 w-4.5" />
+                            </div>
+                            <div className="flex-grow space-y-1">
+                              <p className="font-bold text-textPrimary">1. Generate Purchase Order</p>
+                              <p className="text-[11px] text-textSecondary leading-relaxed">Creates the purchase order in Odoo from the approved request — contracted lines are priced at their rate-card value.</p>
+                              {!currentRequest.purchaseOrders?.length ? (
+                                <>
+                                  <button
+                                    onClick={async () => {
+                                      setPoBusy(true);
+                                      setPoError("");
+                                      const raised = await createPurchaseOrderInOdoo(currentRequest.id);
+                                      if (!raised) setPoError("Could not raise the purchase order — check that the request is approved and has a vendor.");
+                                      setPoBusy(false);
+                                    }}
+                                    disabled={poBusy}
+                                    className="mt-2 px-3 py-1.5 bg-brand hover:opacity-90 disabled:opacity-50 text-[10px] font-bold text-onbrand rounded shadow-sm transition-all"
+                                  >
+                                    {poBusy ? 'Generating…' : 'Generate Purchase Order'}
+                                  </button>
+                                  {poError && <p className="text-[10px] text-neg font-semibold mt-1">{poError}</p>}
+                                </>
+                              ) : (
+                                <p className="text-[10px] text-accent-savings font-semibold mt-1 font-mono">✓ {currentRequest.purchaseOrders.join(', ')} created in Odoo</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Step 2: Head Approval */}
+                          <div className="flex items-start space-x-3 text-xs border-t border-borderTheme/50 pt-3">
                             <div className={`mt-0.5 p-1 rounded-full ${poApprovedByHead ? 'bg-accent-savings/10 text-accent-savings' : 'bg-accent-approvals/10 text-accent-approvals'}`}>
                               <CheckCircle2 className="h-4.5 w-4.5" />
                             </div>
                             <div className="flex-grow space-y-1">
-                              <p className="font-bold text-textPrimary">1. Purchase Head / User Approval</p>
+                              <p className="font-bold text-textPrimary">2. Purchase Head / User Approval</p>
                               <p className="text-[11px] text-textSecondary leading-relaxed">Required to approve standard financial release terms before sending the PO document to the vendor.</p>
                               {!poApprovedByHead ? (
                                 <button 
@@ -3873,7 +4721,7 @@ export default function App() {
                                     setPoApprovedByHead(true);
                                     setRequests(prev => prev.map(r => r.id === selectedRequestId ? {
                                       ...r,
-                                      history: [...r.history, { title: "Approved by Purchase Head", date: "Now", desc: "PO-2026-003 approved and released to vendor." }]
+                                      history: [...r.history, { title: "Approved by Purchase Head", date: "Now", desc: `${r.purchaseOrders?.join(', ') || 'The purchase order'} approved and released to vendor.` }]
                                     } : r));
                                   }}
                                   className="mt-2 px-3 py-1.5 bg-accent-budget hover:opacity-90 text-[10px] font-bold text-surface rounded shadow-sm transition-all"
@@ -3892,7 +4740,7 @@ export default function App() {
                               <CheckCircle2 className="h-4.5 w-4.5" />
                             </div>
                             <div className="flex-grow space-y-1">
-                              <p className="font-bold text-textPrimary">2. Vendor Acknowledgment</p>
+                              <p className="font-bold text-textPrimary">3. Vendor Acknowledgment</p>
                               <p className="text-[11px] text-textSecondary leading-relaxed">Simulate receipt confirmation, delivery date commit, and agreement signature from the vendor portal.</p>
                               {poApprovedByHead && !poAcknowledgedByVendor && (
                                 <button 
