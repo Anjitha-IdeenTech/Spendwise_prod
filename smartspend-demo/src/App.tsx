@@ -209,7 +209,7 @@ interface RequestItem {
   history: Array<{ title: string; date: string; desc?: string }>;
   clarificationComments: Array<{ role: 'manager' | 'employee'; text: string; date: string }>;
   vendorBids: Array<{ vendorName: string; price: number; leadTime: string; warranty: string; status: string }>;
-  selectedSourcingMethod: 'Direct' | 'RFQ' | 'Auction';
+  selectedSourcingMethod: 'Negotiation' | 'Multi RFQ' | 'Bidding';
   attachments: string[];
   lineItems?: LineItem[];
   /** References of the Odoo purchase orders raised for this request. */
@@ -1342,7 +1342,7 @@ export default function App() {
         { vendorName: "Primus Technologies", price: 68000, leadTime: "5 Days", warranty: "3 Years On-Site", status: "Recommended" },
         { vendorName: "Apex Systems", price: 71000, leadTime: "10 Days", warranty: "1 Year Carry-In", status: "Qualified" }
       ],
-      selectedSourcingMethod: "RFQ",
+      selectedSourcingMethod: "Multi RFQ",
       attachments: ["hardware_specifications.pdf"]
     },
     {
@@ -1370,7 +1370,7 @@ export default function App() {
       vendorBids: [
         { vendorName: "Apex Systems", price: 8000, leadTime: "3 Days", warranty: "2 Years", status: "Selected" }
       ],
-      selectedSourcingMethod: "Direct",
+      selectedSourcingMethod: "Negotiation",
       attachments: []
     },
     {
@@ -1398,7 +1398,7 @@ export default function App() {
       vendorBids: [
         { vendorName: "Primus Technologies", price: 125000, leadTime: "7 Days", warranty: "3 Years", status: "Submitted" }
       ],
-      selectedSourcingMethod: "RFQ",
+      selectedSourcingMethod: "Multi RFQ",
       attachments: []
     },
     {
@@ -1408,7 +1408,7 @@ export default function App() {
       buyer: "SCM-SW-08", vendor: "Adobe India", savings: 12000,
       history: [{ title: "Request Submitted", date: "Jul 10, 10:05" }, { title: "Approved by Manager", date: "Jul 10, 13:20", desc: "Approved by Marketing Head" }],
       clarificationComments: [], vendorBids: [{ vendorName: "Adobe India", price: 4200, leadTime: "Instant", warranty: "1 Year", status: "Selected" }],
-      selectedSourcingMethod: "Direct", attachments: ["license_quote.pdf"]
+      selectedSourcingMethod: "Negotiation", attachments: ["license_quote.pdf"]
     },
     {
       id: "PR-2026-101", productName: "Industrial UPS Units", productQty: 4, targetPrice: 85000,
@@ -1417,7 +1417,7 @@ export default function App() {
       buyer: "SCM-IT-14", vendor: "PowerGrid Solutions", savings: 22000,
       history: [{ title: "Request Submitted", date: "Jul 11, 09:40" }, { title: "Budget Checked", date: "Jul 11, 09:42", desc: "Verified against Ops capex" }],
       clarificationComments: [], vendorBids: [{ vendorName: "PowerGrid Solutions", price: 83000, leadTime: "8 Days", warranty: "3 Years", status: "Recommended" }, { vendorName: "VoltEdge", price: 88000, leadTime: "6 Days", warranty: "2 Years", status: "Qualified" }],
-      selectedSourcingMethod: "RFQ", attachments: ["ups_specs.pdf", "site_layout.pdf"]
+      selectedSourcingMethod: "Multi RFQ", attachments: ["ups_specs.pdf", "site_layout.pdf"]
     },
     {
       id: "PR-2026-104", productName: "Marketing Event Booth Setup", productQty: 1, targetPrice: 180000,
@@ -1426,7 +1426,7 @@ export default function App() {
       buyer: "SCM-MKT-02", vendor: "Pending Sourcing", savings: 0,
       history: [{ title: "Request Submitted", date: "Jul 12, 14:20" }, { title: "Sourcing Triggered", date: "Jul 12, 14:25", desc: "Routed to SCM buyer for RFQ" }],
       clarificationComments: [], vendorBids: [{ vendorName: "EventCraft", price: 178000, leadTime: "15 Days", warranty: "NA", status: "Submitted" }],
-      selectedSourcingMethod: "RFQ", attachments: ["booth_brief.pdf"]
+      selectedSourcingMethod: "Multi RFQ", attachments: ["booth_brief.pdf"]
     },
     {
       id: "PR-2026-108", productName: "Pantry & Housekeeping Supplies (Q3)", productQty: 1, targetPrice: 65000,
@@ -1435,7 +1435,7 @@ export default function App() {
       buyer: "SCM-FUR-03", vendor: "CleanServe", savings: 4000,
       history: [{ title: "Request Submitted", date: "Jul 06, 16:10" }, { title: "PO Created: PO-2026-011", date: "Jul 06, 17:30", desc: "Sent to CleanServe" }],
       clarificationComments: [], vendorBids: [{ vendorName: "CleanServe", price: 65000, leadTime: "4 Days", warranty: "NA", status: "Selected" }],
-      selectedSourcingMethod: "Direct", attachments: []
+      selectedSourcingMethod: "Negotiation", attachments: []
     },
     {
       id: "PR-2026-112", productName: "Standing Desks (Ergonomic)", productQty: 15, targetPrice: 22000,
@@ -1444,7 +1444,7 @@ export default function App() {
       buyer: "SCM-FUR-03", vendor: "ErgoWorks", savings: 18000,
       history: [{ title: "Request Submitted", date: "Jul 13, 11:00" }, { title: "Budget Checked", date: "Jul 13, 11:03", desc: "Verified against Facilities budget" }],
       clarificationComments: [], vendorBids: [{ vendorName: "ErgoWorks", price: 21500, leadTime: "12 Days", warranty: "5 Years", status: "Recommended" }, { vendorName: "DeskPro", price: 23000, leadTime: "9 Days", warranty: "3 Years", status: "Qualified" }],
-      selectedSourcingMethod: "RFQ", attachments: ["ergo_catalog.pdf"]
+      selectedSourcingMethod: "Multi RFQ", attachments: ["ergo_catalog.pdf"]
     },
     {
       id: "PR-2026-115", productName: "Next-Gen Firewall Appliances", productQty: 3, targetPrice: 145000,
@@ -1454,7 +1454,7 @@ export default function App() {
       history: [{ title: "Request Submitted", date: "Jul 14, 08:50" }, { title: "Info Requested", date: "Jul 14, 10:15", desc: "Manager asked for clarification" }],
       clarificationComments: [{ role: "manager", text: "Do these replace the existing units or are they additions to capacity?", date: "Jul 14, 10:15" }],
       vendorBids: [{ vendorName: "SecureNet", price: 143000, leadTime: "10 Days", warranty: "3 Years", status: "Submitted" }],
-      selectedSourcingMethod: "RFQ", attachments: ["network_diagram.pdf"]
+      selectedSourcingMethod: "Multi RFQ", attachments: ["network_diagram.pdf"]
     }
   ]);
 
@@ -2201,7 +2201,7 @@ export default function App() {
       ],
       clarificationComments: [],
       vendorBids: [],
-      selectedSourcingMethod: "RFQ",
+      selectedSourcingMethod: "Multi RFQ",
       attachments: attachedFiles
     };
 
@@ -3803,14 +3803,14 @@ export default function App() {
                               <select 
                                 value={req.selectedSourcingMethod}
                                 onChange={(e) => {
-                                  const method = e.target.value as 'Direct' | 'RFQ' | 'Auction';
+                                  const method = e.target.value as 'Negotiation' | 'Multi RFQ' | 'Bidding';
                                   setRequests(prev => prev.map(r => r.id === req.id ? { ...r, selectedSourcingMethod: method } : r));
                                 }}
                                 className="bg-secondary border border-line2/80 rounded-lg p-2 text-xs text-primary focus:outline-none"
                               >
-                                <option value="RFQ">Invite Preferred (Multi-RFQ)</option>
-                                <option value="Direct">Direct Price Negotiator</option>
-                                <option value="Auction">Live Reverse Auction</option>
+                                <option value="Multi RFQ">Invite Preferred (Multi-RFQ)</option>
+                                <option value="Negotiation">Direct Price Negotiator</option>
+                                <option value="Bidding">Live Reverse Auction</option>
                               </select>
 
                               <button 
