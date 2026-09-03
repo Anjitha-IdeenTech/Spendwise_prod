@@ -1998,6 +1998,8 @@ export default function App() {
   // Manager Clarification Prompt State
   const [managerQueryText, setManagerQueryText] = useState<string>("");
   const [showManagerQueryBox, setShowManagerQueryBox] = useState<boolean>(false);
+  const [managerApprovalNote, setManagerApprovalNote] = useState<string>("");
+  const [showManagerApproveBox, setShowManagerApproveBox] = useState<boolean>(false);
 
   // Employee Clarification Reply State
   const [employeeReplyText, setEmployeeReplyText] = useState<string>("");
@@ -2255,20 +2257,30 @@ export default function App() {
   };
 
   // Manager Approval Action
-  const handleManagerApprove = async (id: string) => {
-    const decided = await decideInOdoo(id, 'approve');
+  const handleManagerApprove = async (id: string, note?: string) => {
+    const approvalNote = (note ?? "").trim();
+    const decided = await decideInOdoo(id, 'approve', approvalNote || undefined);
     if (!decided) {
       setRequests(prev => prev.map(r => {
         if (r.id === id) {
           return {
             ...r,
             status: "Approved",
-            history: [...r.history, { title: "Approved by Manager", date: "Now", desc: "Approved by Operational Manager" }]
+            // The note belongs on the same thread the requester already reads.
+            clarificationComments: approvalNote
+              ? [...(r.clarificationComments || []), { role: 'manager' as const, text: approvalNote, date: "Now" }]
+              : r.clarificationComments,
+            history: [...r.history, {
+              title: "Approved by Manager", date: "Now",
+              desc: approvalNote ? `Approved by Operational Manager — ${approvalNote}` : "Approved by Operational Manager",
+            }]
           };
         }
         return r;
       }));
     }
+    setManagerApprovalNote("");
+    setShowManagerApproveBox(false);
     setActiveScene(11); // Route to order tracking
   };
 
@@ -4446,13 +4458,45 @@ export default function App() {
                             </button>
 
                             <button 
-                              onClick={() => handleManagerApprove(req.id)}
+                              onClick={() => {
+                                setSelectedRequestId(req.id);
+                                setShowManagerQueryBox(false);
+                                setShowManagerApproveBox(true);
+                              }}
                               className="px-5 py-2.5 bg-accent-savings hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
                             >
                               <Check className="h-4.5 w-4.5" />
                               <span>Approve Request</span>
                             </button>
                           </div>
+
+                          {/* Approval note — optional, so the button below approves either way */}
+                          {showManagerApproveBox && selectedRequestId === req.id && (
+                            <div className="p-4 bg-secondary rounded-xl border border-accent-savings/20 space-y-3 text-xs animate-fadeIn">
+                              <label className="font-bold text-textPrimary block">Approval note (optional):</label>
+                              <input 
+                                type="text"
+                                value={managerApprovalNote}
+                                onChange={(e) => setManagerApprovalNote(e.target.value)}
+                                placeholder="e.g. Approved against the Q3 budget — order against the Primus rate card."
+                                className="w-full bg-surface border border-borderTheme rounded-lg p-2.5 text-textPrimary focus:outline-none focus:border-textPrimary"
+                              />
+                              <div className="flex justify-end space-x-2">
+                                <button
+                                  onClick={() => { setShowManagerApproveBox(false); setManagerApprovalNote(""); }}
+                                  className="px-3 py-1.5 text-textSecondary hover:text-textPrimary transition-all"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={() => handleManagerApprove(req.id, managerApprovalNote)}
+                                  className="px-4 py-1.5 bg-accent-savings text-surface font-bold rounded-lg hover:opacity-90 transition-all"
+                                >
+                                  Confirm Approval
+                                </button>
+                              </div>
+                            </div>
+                          )}
 
                           {/* Request Info Dialogue Card */}
                           {showManagerQueryBox && selectedRequestId === req.id && (
