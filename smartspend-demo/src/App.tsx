@@ -89,6 +89,13 @@ const FALLBACK_DEPARTMENTS = ['IT & Infrastructure', 'Operations', 'Facilities',
 const FALLBACK_CATEGORIES = ['IT Hardware & Laptops', 'Datacenter Equipment', 'Software Licenses', 'Office Furniture', 'Professional Services', 'MRO Supplies'];
 const FALLBACK_EXPENSE_TYPES = ['Capital Expenditure (CapEx)', 'Operating Expenditure (OpEx)'];
 
+/**
+ * The operating company's GST registration. Read by the company master, the
+ * purchase order and the goods receipt, so a change here moves all three
+ * rather than leaving them disagreeing.
+ */
+const COMPANY_GSTIN = '29AASCS1234F1Z7';
+
 /** Every role the demo can show, with the label the switcher renders. */
 const ROLE_LABELS: Record<string, string> = {
   'Employee': 'Employee (Requester)',
@@ -389,17 +396,14 @@ const filterRequests = (list: RequestItem[], statusKey: string, search: string) 
 /**
  * Why a step is not offered here, and what to do about it.
  *
- * Naming the role is not enough on its own: an account that already holds it
- * only has to move the sidebar switch, and "sign in as…" sent people hunting
- * for a second login they did not need.
+ * The role comes from the signed-in account alone, so the answer is always
+ * which account to use — naming the role by itself left people with nothing
+ * to act on.
  */
-function StepLock({ what, canSwitch }: { what: string; canSwitch: boolean }) {
+function StepLock({ what }: { what: string }) {
   return (
     <p className="text-xs text-textSecondary/70 font-semibold italic">
-      Locked: {what}.{' '}
-      {canSwitch
-        ? 'Switch the sidebar role to Manager (Approver).'
-        : 'Sign out and sign back in as manager@smartspend.demo.'}
+      Locked: {what}. Sign in as manager@smartspend.demo.
     </p>
   );
 }
@@ -1904,16 +1908,6 @@ export default function App() {
   const [loginEmail, setLoginEmail] = useState<string>("");
   const [loginPassword, setLoginPassword] = useState<string>("");
 
-  // Every role the demo can show. Odoo narrows this only when it has actually
-  // answered with the account's roles — a cached sign-in from before that
-  // existed must never cost somebody their screens.
-  const ALL_ROLES = ['Employee', 'Manager', 'SCM Buyer', 'CEO', 'Vendor'];
-  // De-duplicated: a vendor account already answers with 'Vendor', and listing
-  // it twice in the switcher renders two identical options.
-  const availableRoles = currentUser?.roles?.length
-    ? Array.from(new Set([...currentUser.roles, 'Vendor']))
-    : ALL_ROLES;
-
   const clearSession = () => {
     setAuthToken(null);
     setCurrentUser(null);
@@ -2349,13 +2343,13 @@ export default function App() {
   // Drag-to-reorder role nav; first item = landing screen on login (#5).
   // Role-keyed so Employee, SCM Buyer, Manager and CEO each persist their own order.
   const DEFAULT_NAV_ORDER: Record<string, string[]> = {
-    Employee: ['chat', 'list', 'tracking', 'clarify', 'masters'],
+    Employee: ['chat', 'list', 'tracking', 'clarify'],
     Manager: ['queue', 'tracking', 'masters'],
     // 'tracking' is here because raising the PO moves the request to "PO
     // Confirmed", which drops it straight out of the To Source queue — and the
     // buyer had no other route to the tracking screen, so the vendor
     // acknowledgment step it owns became unreachable the moment it was due.
-    'SCM Buyer': ['requests', 'discovery', 'tracking', 'masters'],
+    'SCM Buyer': ['requests', 'discovery', 'tracking'],
     CEO: ['analytics', 'tracking', 'masters'],
   };
   const [navOrder, setNavOrder] = useState<Record<string, string[]>>(() => {
@@ -3366,37 +3360,6 @@ export default function App() {
                 </button>
               </form>
 
-              <div className="space-y-4 pt-4 border-t border-borderTheme/50">
-                <div className="relative flex pb-2 items-center">
-                  <div className="flex-grow border-t border-borderTheme"></div>
-                  <span className="flex-shrink mx-4 text-textFaint text-xs font-semibold uppercase tracking-wider">Odoo Connection Settings</span>
-                  <div className="flex-grow border-t border-borderTheme"></div>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-textSecondary mb-2">Odoo Backend URL</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="text" 
-                      value={odooApiUrl} 
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setOdooApiUrl(val);
-                        try { localStorage.setItem("odooApiUrl", val); } catch {}
-                      }} 
-                      placeholder="http://127.0.0.1:8019"
-                      className="flex-grow text-xs px-3 py-2 bg-secondary/30 border border-borderTheme rounded-lg text-textPrimary focus:outline-none focus:border-brand transition-all"
-                    />
-                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center border transition-all ${
-                      offlineDemo ? 'bg-gold/15 border-gold/30 text-gold'
-                        : odooConnected ? 'bg-pos/15 border-pos/30 text-pos'
-                          : 'bg-neg/15 border-neg/30 text-neg'}`}
-                      title={offlineDemo ? "Demo mode — sample data, nothing is saved"
-                        : odooConnected ? "Connected to Odoo" : "Odoo not reachable"}>
-                      <div className={`h-2.5 w-2.5 rounded-full ${odooConnected ? 'bg-pos animate-pulse' : 'bg-neg'}`} />
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -3437,32 +3400,6 @@ export default function App() {
                   >
                     <PanelLeftClose className="h-4 w-4" />
                   </button>
-                </div>
-                
-                {/* Switch Role Quick Dropdown */}
-                <div className="p-4 border-b border-borderTheme">
-                  <label className="text-[10px] text-textFaint font-bold uppercase tracking-wider block mb-1.5">Switch Interactive Role</label>
-                  <select 
-                    value={userRole}
-                    onChange={(e) => handleSsoLogin(e.target.value)}
-                    className="w-full bg-secondary border border-line2/60 rounded-lg px-2.5 py-1.5 text-xs text-primary font-semibold focus:outline-none"
-                  >
-                    {/* The roles this Odoo account holds. When the backend has
-                        not told us — an older session, or Odoo unreachable —
-                        every role stays available, as it was before. */}
-                    {availableRoles.map(role => (
-                      <option key={role} value={role}>{ROLE_LABELS[role] ?? role}</option>
-                    ))}
-                  </select>
-                  {currentUser && (
-                    <p className="mt-1.5 px-0.5 text-[10px] text-textFaint leading-snug">
-                      {currentUser.name}
-                      {currentUser.is_manager ? ' · Procurement Manager in Odoo'
-                        : currentUser.is_buyer ? ' · SCM Buyer in Odoo'
-                        : currentUser.is_vendor ? ' · External Vendor in Odoo'
-                        : ' · Requester in Odoo'}
-                    </p>
-                  )}
                 </div>
                 
                 {/* Navigation Items (Role-Adaptive) */}
@@ -5785,6 +5722,10 @@ export default function App() {
                             <span className="font-semibold text-textPrimary">{currentRequest.vendor || "Apex Systems"}</span>
                           </div>
                           <div className="flex justify-between">
+                            <span className="text-textSecondary">Company GSTIN:</span>
+                            <span className="font-semibold text-textPrimary font-mono">{COMPANY_GSTIN}</span>
+                          </div>
+                          <div className="flex justify-between">
                             <span className="text-textSecondary">Total value:</span>
                             <span className="font-bold text-textPrimary">₹{currentRequest.totalCost.toLocaleString()}</span>
                           </div>
@@ -5833,9 +5774,7 @@ export default function App() {
                                   </>
                                 ) : (
                                   <p className="text-[10px] text-textSecondary/60 font-semibold mt-1 italic">
-                                    {availableRoles.includes('SCM Buyer')
-                                      ? 'Locked: only the SCM Buyer raises the purchase order. Switch the sidebar role to SCM Buyer (Sourcing), then open Track Request to come back here.'
-                                      : 'Locked: only the SCM Buyer raises the purchase order. Sign out and sign back in as buyer@smartspend.demo.'}
+                                    Locked: only the SCM Buyer raises the purchase order. Sign in as buyer@smartspend.demo.
                                   </p>
                                 )
                               ) : (
@@ -5887,9 +5826,7 @@ export default function App() {
                                    sidebar role switch — which left the demo
                                    stalled here with nothing to click. */
                                 <p className="text-[10px] text-textSecondary/60 font-semibold mt-1 italic">
-                                  {availableRoles.includes('Manager')
-                                    ? 'Locked: only the Purchase Head releases a PO. Switch the sidebar role to Manager (Approver), then open Track Request to come back here.'
-                                    : 'Locked: only the Purchase Head releases a PO. Sign out and sign back in as manager@smartspend.demo.'}
+                                  Locked: only the Purchase Head releases a PO. Sign in as manager@smartspend.demo, then open Track Request.
                                 </p>
                               )}
                             </div>
@@ -5918,9 +5855,7 @@ export default function App() {
                                   </button>
                                 ) : (
                                   <p className="text-[10px] text-textSecondary/60 font-semibold mt-1 italic">
-                                    {availableRoles.includes('SCM Buyer')
-                                      ? 'Waiting on the vendor to confirm. Switch the sidebar role to SCM Buyer (Sourcing) or Vendor (External Portal), then open Track Request to come back here.'
-                                      : 'Waiting on the vendor to confirm. Sign out and sign back in as buyer@smartspend.demo or vendor@smartspend.demo.'}
+                                    Waiting on the vendor to confirm. Sign in as buyer@smartspend.demo or vendor@smartspend.demo, then open Track Request.
                                   </p>
                                 )
                               )}
@@ -5994,6 +5929,10 @@ export default function App() {
                           <div>
                             <span className="text-xs text-textSecondary font-bold uppercase tracking-wider block mb-1">Vendor</span>
                             <span className="text-sm font-semibold text-textPrimary bg-secondary border border-borderTheme rounded-lg p-2 block">{currentRequest.vendor || "Primus Technologies"}</span>
+                          </div>
+                          <div>
+                            <span className="text-xs text-textSecondary font-bold uppercase tracking-wider block mb-1">Company GSTIN</span>
+                            <span className="text-sm font-semibold text-textPrimary bg-secondary border border-borderTheme rounded-lg p-2 block font-mono">{COMPANY_GSTIN}</span>
                           </div>
                         </div>
 
@@ -6113,8 +6052,7 @@ export default function App() {
                               <Check className="h-4 w-4" />
                             </button>
                           ) : (
-                            <StepLock what="only the purchase manager records goods receipt"
-                                      canSwitch={availableRoles.includes('Manager')} />
+                            <StepLock what="only the purchase manager records goods receipt" />
                           )}
                         </div>
                       )}
@@ -6319,8 +6257,7 @@ export default function App() {
                             <ArrowRight className="h-4 w-4" />
                           </button>
                         ) : (
-                          <StepLock what="only the purchase manager posts the vendor bill"
-                                    canSwitch={availableRoles.includes('Manager')} />
+                          <StepLock what="only the purchase manager posts the vendor bill" />
                         )}
                       </div>
                     )}
@@ -6431,8 +6368,7 @@ export default function App() {
                               <ArrowRight className="h-4 w-4" />
                             </button>
                           ) : (
-                            <StepLock what="only the purchase manager authorises payment"
-                                      canSwitch={availableRoles.includes('Manager')} />
+                            <StepLock what="only the purchase manager authorises payment" />
                           )}
                         </div>
                       )}
@@ -7077,7 +7013,7 @@ export default function App() {
                             { label: 'Financial year', value: '1 April – 31 March' },
                             { label: 'Registered branches', value: `${branchRows.length} locations` },
                             { label: 'Departments', value: `${departmentRows.length} cost centres` },
-                            { label: 'GSTIN', value: 'Sample value — set in Odoo' },
+                            { label: 'GSTIN', value: COMPANY_GSTIN },
                             { label: 'CIN', value: 'Sample value — set in Odoo' },
                           ].map(f => (
                             <div key={f.label}>
