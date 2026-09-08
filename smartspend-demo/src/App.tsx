@@ -83,6 +83,15 @@ interface ConfiguredWorkflow {
   approvers: { order: number; designation: string; branch: string; department: string }[];
 }
 
+/**
+ * The designations a workflow level can be assigned to — the same five the Odoo
+ * module seeds, so a workflow built here names holders that actually exist.
+ */
+const DESIGNATIONS = [
+  'Reporting Manager', 'Department Head', 'Finance OpEx Head',
+  'Finance CapEx Head', 'Chief Financial Officer',
+];
+
 /** The lists the portal falls back to when Odoo cannot be reached. */
 const FALLBACK_BRANCHES = ['Bangalore Office', 'Kochi Head Office', 'Mumbai Office', 'Delhi Office', 'Chennai Office', 'Hyderabad Office'];
 const FALLBACK_DEPARTMENTS = ['IT & Infrastructure', 'Operations', 'Facilities', 'Marketing', 'Finance', 'R&D'];
@@ -90,11 +99,48 @@ const FALLBACK_CATEGORIES = ['IT Hardware & Laptops', 'Datacenter Equipment', 'S
 const FALLBACK_EXPENSE_TYPES = ['Capital Expenditure (CapEx)', 'Operating Expenditure (OpEx)'];
 
 /**
- * The operating company's GST registration. Read by the company master, the
- * purchase order and the goods receipt, so a change here moves all three
- * rather than leaving them disagreeing.
+ * The group's operating companies.
+ *
+ * A branch belongs to exactly one of them, so a request's company follows the
+ * branch it was raised for — the requester never has to pick one, and the
+ * GSTIN on its purchase order and goods receipt is the registration that
+ * actually applies to that spend.
+ *
+ * `branches` names the branches each company owns; anything unlisted falls to
+ * the first company, which is the group's registered head entity.
  */
-const COMPANY_GSTIN = '29AASCS1234F1Z7';
+interface Company {
+  name: string;
+  short: string;
+  gstin: string;
+  cin: string;
+  state: string;
+  branches: string[];
+}
+
+const COMPANIES: Company[] = [
+  {
+    name: 'SmartSpend Technologies Pvt Ltd', short: 'SmartSpend Technologies',
+    gstin: '29AASCS1234F1Z7', cin: 'U72200KA2019PTC121845', state: 'Karnataka',
+    branches: ['Bangalore Office', 'Bangalore Warehouse', 'Hyderabad Office'],
+  },
+  {
+    name: 'SmartSpend Infra Pvt Ltd', short: 'SmartSpend Infra',
+    gstin: '32AASCS5678G1Z3', cin: 'U45200KL2020PTC063114', state: 'Kerala',
+    branches: ['Kochi Head Office'],
+  },
+  {
+    name: 'SmartSpend Retail Pvt Ltd', short: 'SmartSpend Retail',
+    gstin: '27AASCS9012H1Z8', cin: 'U52100MH2021PTC358902', state: 'Maharashtra',
+    branches: ['Mumbai Office', 'Delhi Office', 'Chennai Office'],
+  },
+];
+
+/** The company a branch belongs to. Unknown branches roll up to the head entity. */
+const companyForBranch = (branch?: string): Company => {
+  const wanted = (branch || '').trim().toLowerCase();
+  return COMPANIES.find(c => c.branches.some(b => b.toLowerCase() === wanted)) ?? COMPANIES[0];
+};
 
 /** Every role the demo can show, with the label the switcher renders. */
 const ROLE_LABELS: Record<string, string> = {
@@ -2593,6 +2639,34 @@ export default function App() {
   // workflow master or is unreachable — the tab then describes the standard
   // process instead of showing nothing.
   const configuredWorkflows: ConfiguredWorkflow[] = masterData?.workflows ?? [];
+  // Workflows created or edited in this console. The demo shows the approval
+  // matrix being configured; there is no portal endpoint that writes to Odoo's
+  // workflow master, so these live in the browser and the screen says so.
+  const [workflowOverrides, setWorkflowOverrides] = useState<ConfiguredWorkflow[]>([]);
+  // null when the editor is closed; otherwise the workflow being written.
+  const [workflowForm, setWorkflowForm] = useState<ConfiguredWorkflow | null>(null);
+  // An edit replaces the row it came from; a new one is listed first.
+  const workflowRows: ConfiguredWorkflow[] = [
+    ...workflowOverrides.filter(o => !configuredWorkflows.some(w => w.id === o.id)),
+    ...configuredWorkflows.map(w => workflowOverrides.find(o => o.id === w.id) ?? w),
+  ];
+  const blankWorkflow = (): ConfiguredWorkflow => ({
+    id: -Date.now(), name: '', document: 'Purchase Request', workflowType: 'procurement',
+    branch: 'Any', department: 'Any', category: 'Any',
+    expenseType: 'Operating Expenditure (OpEx)', amountFrom: 0, amountTo: 2000000,
+    approvers: [{ order: 1, designation: 'Reporting Manager', branch: 'Any', department: 'Any' }],
+  });
+  /** Store the workflow being edited, renumbering its levels from the order shown. */
+  const saveWorkflow = () => {
+    if (!workflowForm) return;
+    const clean: ConfiguredWorkflow = {
+      ...workflowForm,
+      name: workflowForm.name.trim() || 'Untitled workflow',
+      approvers: workflowForm.approvers.map((a, i) => ({ ...a, order: i + 1 })),
+    };
+    setWorkflowOverrides(prev => [...prev.filter(o => o.id !== clean.id), clean]);
+    setWorkflowForm(null);
+  };
   const categoryRows: MasterCategory[] = masterData?.categories.length
     ? masterData.categories.map(c => {
         const detail = MASTER_CATEGORIES.find(m => m.name === c.name || c.name.includes(m.name));
@@ -5722,8 +5796,12 @@ export default function App() {
                             <span className="font-semibold text-textPrimary">{currentRequest.vendor || "Apex Systems"}</span>
                           </div>
                           <div className="flex justify-between">
+                            <span className="text-textSecondary">Buying company:</span>
+                            <span className="font-semibold text-textPrimary">{companyForBranch(currentRequest.location).short}</span>
+                          </div>
+                          <div className="flex justify-between">
                             <span className="text-textSecondary">Company GSTIN:</span>
-                            <span className="font-semibold text-textPrimary font-mono">{COMPANY_GSTIN}</span>
+                            <span className="font-semibold text-textPrimary font-mono">{companyForBranch(currentRequest.location).gstin}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-textSecondary">Total value:</span>
@@ -5931,8 +6009,12 @@ export default function App() {
                             <span className="text-sm font-semibold text-textPrimary bg-secondary border border-borderTheme rounded-lg p-2 block">{currentRequest.vendor || "Primus Technologies"}</span>
                           </div>
                           <div>
+                            <span className="text-xs text-textSecondary font-bold uppercase tracking-wider block mb-1">Receiving company</span>
+                            <span className="text-sm font-semibold text-textPrimary bg-secondary border border-borderTheme rounded-lg p-2 block">{companyForBranch(currentRequest.location).short}</span>
+                          </div>
+                          <div>
                             <span className="text-xs text-textSecondary font-bold uppercase tracking-wider block mb-1">Company GSTIN</span>
-                            <span className="text-sm font-semibold text-textPrimary bg-secondary border border-borderTheme rounded-lg p-2 block font-mono">{COMPANY_GSTIN}</span>
+                            <span className="text-sm font-semibold text-textPrimary bg-secondary border border-borderTheme rounded-lg p-2 block font-mono">{companyForBranch(currentRequest.location).gstin}</span>
                           </div>
                         </div>
 
@@ -6756,7 +6838,7 @@ export default function App() {
                         { key: 'products', label: 'Products', icon: Package, count: MASTER_PRODUCTS.length },
                         { key: 'categories', label: 'Expense Categories', icon: Layers, count: categoryRows.length },
                         { key: 'workflow', label: 'Workflow', icon: Activity, count: configuredWorkflows.length || MASTER_WORKFLOW.length },
-                        { key: 'company', label: 'Company', icon: Landmark, count: 1 },
+                        { key: 'company', label: 'Companies', icon: Landmark, count: COMPANIES.length },
                         { key: 'branches', label: 'Branches', icon: Building2, count: branchRows.length },
                         { key: 'vendors', label: 'Vendors', icon: Handshake, count: vendorRows.length },
                       ] as const).map(t => {
@@ -6783,8 +6865,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Search — hidden on the single-record company master */}
-                  {mastersTab !== 'company' && (
+                  {(
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="relative w-72">
                         <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-textFaint" />
@@ -6891,17 +6972,28 @@ export default function App() {
                           <div>
                             <p className="text-sm font-bold text-textPrimary">Approval Workflows</p>
                             <p className="text-[11px] text-textFaint">
-                              {configuredWorkflows.length} rule{configuredWorkflows.length === 1 ? '' : 's'} ·
+                              {workflowRows.length} rule{workflowRows.length === 1 ? '' : 's'} ·
                               who signs depends on department, expense type and value
                             </p>
                           </div>
                         </div>
-                        <span className="ml-auto text-[11px] text-textFaint">
-                          {masterData?.workflows ? 'Configured in Odoo · Configuration ▸ Approval Workflows' : 'Reference process — Odoo not reachable'}
-                        </span>
+                        <div className="ml-auto flex items-center gap-3">
+                          <span className="text-[11px] text-textFaint">
+                            {workflowOverrides.length
+                              ? `${workflowOverrides.length} edited here — kept in this browser`
+                              : masterData?.workflows ? 'Configured in Odoo · Configuration ▸ Approval Workflows'
+                                : 'Reference process — Odoo not reachable'}
+                          </span>
+                          <button
+                            onClick={() => setWorkflowForm(blankWorkflow())}
+                            className="px-3 py-1.5 rounded-lg bg-brand text-onbrand text-[11px] font-bold hover:brightness-110 transition-all"
+                          >
+                            New workflow
+                          </button>
+                        </div>
                       </div>
 
-                      {configuredWorkflows.length === 0 ? (
+                      {workflowRows.length === 0 ? (
                         /* No matrix reachable: fall back to describing the standard
                            process rather than showing an empty screen. */
                         <div className="rounded-2xl bg-surface border border-borderTheme shadow-sm p-6">
@@ -6930,7 +7022,7 @@ export default function App() {
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          {configuredWorkflows
+                          {workflowRows
                             .filter(w => `${w.name} ${w.department} ${w.category} ${w.expenseType} ${w.branch} ${w.approvers.map(a => a.designation).join(' ')}`
                               .toLowerCase().includes(masterSearch.toLowerCase()))
                             .map(w => {
@@ -6950,6 +7042,12 @@ export default function App() {
                                     <span className="ml-auto text-xs font-bold text-textPrimary tabular-nums">
                                       ₹{w.amountFrom.toLocaleString('en-IN')} – ₹{w.amountTo.toLocaleString('en-IN')}
                                     </span>
+                                    <button
+                                      onClick={() => setWorkflowForm({ ...w, approvers: w.approvers.map(a => ({ ...a })) })}
+                                      className="text-[11px] font-bold text-brand hover:underline px-1"
+                                    >
+                                      Edit
+                                    </button>
                                   </div>
 
                                   <div className="px-5 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-secondary/40 border-b border-borderTheme">
@@ -6994,51 +7092,204 @@ export default function App() {
 
                   {/* ---------- COMPANY ---------- */}
                   {mastersTab === 'company' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                      <div className="lg:col-span-2 p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
-                        <div className="flex items-center gap-4 pb-5 border-b border-borderTheme">
-                          <span className="grid h-14 w-14 place-items-center rounded-2xl bg-brand/10 text-brand border border-borderTheme">
-                            <Landmark className="h-7 w-7" />
-                          </span>
-                          <div>
-                            <h3 className="font-outfit font-extrabold text-xl text-textPrimary">
-                              {currentUser?.company || 'SmartSpend Demo Company Pvt Ltd'}
-                            </h3>
-                            <p className="text-xs text-textSecondary mt-0.5">Operating company · all branches roll up here</p>
+                    <div className="space-y-4">
+                      {COMPANIES
+                        .filter(c => `${c.name} ${c.gstin} ${c.cin} ${c.state}`
+                          .toLowerCase().includes(masterSearch.toLowerCase()))
+                        .map((c, i) => (
+                        <div key={c.gstin} className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                          <div className="flex items-center gap-4 pb-5 border-b border-borderTheme">
+                            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-brand/10 text-brand border border-borderTheme">
+                              <Landmark className="h-7 w-7" />
+                            </span>
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <h3 className="font-outfit font-extrabold text-xl text-textPrimary">{c.name}</h3>
+                                {i === 0 && (
+                                  <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30">
+                                    Head entity
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-textSecondary mt-0.5">
+                                Registered in {c.state} · {c.branches.length} branch{c.branches.length === 1 ? '' : 'es'} roll up here
+                              </p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 pt-5">
+                            {[
+                              { label: 'GSTIN', value: c.gstin, mono: true },
+                              { label: 'CIN', value: c.cin, mono: true },
+                              { label: 'Base currency', value: 'INR — Indian Rupee' },
+                              { label: 'Financial year', value: '1 April – 31 March' },
+                              { label: 'Registered state', value: c.state },
+                              { label: 'Departments', value: `${departmentRows.length} cost centres` },
+                            ].map(f => (
+                              <div key={f.label}>
+                                <p className="text-[10px] uppercase tracking-wider text-textFaint font-bold">{f.label}</p>
+                                <p className={`text-sm font-semibold text-textPrimary mt-1 ${f.mono ? 'font-mono' : ''}`}>{f.value}</p>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="pt-5 mt-5 border-t border-borderTheme">
+                            <p className="text-[10px] uppercase tracking-wider text-textFaint font-bold mb-2">Branches</p>
+                            <div className="flex flex-wrap gap-2">
+                              {c.branches.map(b => (
+                                <span key={b} className="text-[11px] px-2.5 py-1 rounded-lg bg-secondary border border-borderTheme text-textSecondary">
+                                  {b}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 pt-5">
-                          {[
-                            { label: 'Base currency', value: 'INR — Indian Rupee' },
-                            { label: 'Financial year', value: '1 April – 31 March' },
-                            { label: 'Registered branches', value: `${branchRows.length} locations` },
-                            { label: 'Departments', value: `${departmentRows.length} cost centres` },
-                            { label: 'GSTIN', value: COMPANY_GSTIN },
-                            { label: 'CIN', value: 'Sample value — set in Odoo' },
-                          ].map(f => (
-                            <div key={f.label}>
-                              <p className="text-[10px] uppercase tracking-wider text-textFaint font-bold">{f.label}</p>
-                              <p className="text-sm font-semibold text-textPrimary mt-1">{f.value}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                      ))}
+                      <p className="text-[11px] text-textFaint px-1">
+                        A request is raised for a branch, so its company — and the GSTIN on its
+                        purchase order and goods receipt — follows from that branch.
+                      </p>
+                    </div>
+                  )}
 
-                      <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
-                        <h4 className="text-sm font-bold text-textPrimary flex items-center gap-2">
-                          <Users className="h-4 w-4 text-brand" /> Departments
-                        </h4>
-                        <p className="text-[11px] text-textFaint mt-0.5">Each one carries its own budget and approver.</p>
-                        <div className="mt-4 space-y-2">
-                          {departmentRows.map(d => (
-                            <div key={d.name} className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-secondary border border-borderTheme">
-                              <div className="min-w-0">
-                                <p className="text-xs font-bold text-textPrimary truncate">{d.name}</p>
-                                <p className="text-[10px] text-textFaint font-mono">{d.code}</p>
-                              </div>
-                              <span className="text-[10px] text-textSecondary shrink-0 truncate max-w-[45%] text-right">{d.approver}</span>
+                  {/* Workflow editor. Create or change a rule and see it in the
+                      matrix immediately; it is held in the browser, which the
+                      panel says outright rather than implying an Odoo save. */}
+                  {workflowForm && (
+                    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 backdrop-blur-sm p-4 sm:p-8">
+                      <div className="w-full max-w-2xl rounded-2xl bg-surface border border-borderTheme shadow-xl my-auto">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-borderTheme">
+                          <div>
+                            <h3 className="font-outfit font-extrabold text-lg text-textPrimary">
+                              {workflowRows.some(w => w.id === workflowForm.id) ? 'Edit workflow' : 'New workflow'}
+                            </h3>
+                            <p className="text-[11px] text-textFaint mt-0.5">
+                              Which requests this rule catches, and who signs them.
+                            </p>
+                          </div>
+                          <button onClick={() => setWorkflowForm(null)}
+                                  className="p-1.5 rounded-lg text-textFaint hover:text-textPrimary hover:bg-secondary transition-all">
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        <div className="px-6 py-5 space-y-5">
+                          <div>
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-textFaint block mb-1.5">Reference</label>
+                            <input
+                              value={workflowForm.name}
+                              onChange={e => setWorkflowForm({ ...workflowForm, name: e.target.value })}
+                              placeholder="OPEX-LOW"
+                              className="w-full text-sm px-3 py-2 bg-secondary border border-borderTheme rounded-lg text-textPrimary focus:outline-none focus:border-brand"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-textFaint block mb-1.5">Expense type</label>
+                              <select
+                                value={workflowForm.expenseType}
+                                onChange={e => setWorkflowForm({ ...workflowForm, expenseType: e.target.value })}
+                                className="w-full text-sm px-3 py-2 bg-secondary border border-borderTheme rounded-lg text-textPrimary focus:outline-none focus:border-brand"
+                              >
+                                {['Operating Expenditure (OpEx)', 'Capital Expenditure (CapEx)', 'Any'].map(t => (
+                                  <option key={t} value={t}>{t}</option>
+                                ))}
+                              </select>
                             </div>
-                          ))}
+                            <div>
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-textFaint block mb-1.5">Department</label>
+                              <select
+                                value={workflowForm.department}
+                                onChange={e => setWorkflowForm({ ...workflowForm, department: e.target.value })}
+                                className="w-full text-sm px-3 py-2 bg-secondary border border-borderTheme rounded-lg text-textPrimary focus:outline-none focus:border-brand"
+                              >
+                                <option value="Any">Any department</option>
+                                {departmentRows.map(d => <option key={d.name} value={d.name}>{d.name}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-textFaint block mb-1.5">Value from (₹)</label>
+                              <input
+                                type="number" min={0} value={workflowForm.amountFrom}
+                                onChange={e => setWorkflowForm({ ...workflowForm, amountFrom: Number(e.target.value) || 0 })}
+                                className="w-full text-sm px-3 py-2 bg-secondary border border-borderTheme rounded-lg text-textPrimary focus:outline-none focus:border-brand"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-textFaint block mb-1.5">Value to (₹)</label>
+                              <input
+                                type="number" min={0} value={workflowForm.amountTo}
+                                onChange={e => setWorkflowForm({ ...workflowForm, amountTo: Number(e.target.value) || 0 })}
+                                className="w-full text-sm px-3 py-2 bg-secondary border border-borderTheme rounded-lg text-textPrimary focus:outline-none focus:border-brand"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-textFaint">
+                                Signs in this order
+                              </label>
+                              <button
+                                onClick={() => setWorkflowForm({
+                                  ...workflowForm,
+                                  approvers: [...workflowForm.approvers, {
+                                    order: workflowForm.approvers.length + 1,
+                                    designation: DESIGNATIONS[0], branch: 'Any', department: 'Any',
+                                  }],
+                                })}
+                                className="text-[11px] font-bold text-brand hover:underline"
+                              >
+                                Add level
+                              </button>
+                            </div>
+                            <div className="space-y-2">
+                              {workflowForm.approvers.map((a, i) => (
+                                <div key={i} className="flex items-center gap-2">
+                                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand text-onbrand text-[10px] font-extrabold">
+                                    {i + 1}
+                                  </span>
+                                  <select
+                                    value={a.designation}
+                                    onChange={e => setWorkflowForm({
+                                      ...workflowForm,
+                                      approvers: workflowForm.approvers.map((x, xi) =>
+                                        xi === i ? { ...x, designation: e.target.value } : x),
+                                    })}
+                                    className="flex-grow text-sm px-3 py-2 bg-secondary border border-borderTheme rounded-lg text-textPrimary focus:outline-none focus:border-brand"
+                                  >
+                                    {DESIGNATIONS.map(d => <option key={d} value={d}>{d}</option>)}
+                                  </select>
+                                  <button
+                                    onClick={() => setWorkflowForm({
+                                      ...workflowForm,
+                                      approvers: workflowForm.approvers.filter((_, xi) => xi !== i),
+                                    })}
+                                    disabled={workflowForm.approvers.length === 1}
+                                    title={workflowForm.approvers.length === 1 ? 'A workflow needs at least one signature' : 'Remove this level'}
+                                    className="p-1.5 rounded-lg text-textFaint hover:text-neg disabled:opacity-30 disabled:hover:text-textFaint transition-all"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <p className="text-[11px] text-textFaint bg-secondary/60 border border-borderTheme rounded-lg px-3 py-2">
+                            Saved in this browser for the demo. Odoo's workflow master is
+                            unchanged — set it there under Configuration ▸ Approval Workflows.
+                          </p>
+                        </div>
+
+                        <div className="flex justify-end gap-2 px-6 py-4 border-t border-borderTheme">
+                          <button onClick={() => setWorkflowForm(null)}
+                                  className="px-4 py-2 rounded-lg border border-borderTheme bg-secondary text-xs font-bold text-textSecondary hover:text-textPrimary transition-all">
+                            Cancel
+                          </button>
+                          <button onClick={saveWorkflow}
+                                  className="px-4 py-2 rounded-lg bg-brand text-onbrand text-xs font-bold hover:brightness-110 transition-all">
+                            Save workflow
+                          </button>
                         </div>
                       </div>
                     </div>
