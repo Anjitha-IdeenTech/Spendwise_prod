@@ -12,6 +12,9 @@ import {
   Building2, Timer, Zap, Star, Activity, Boxes, Handshake, ScanLine
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import {
+  DEFAULT_API_URL, OFFLINE_TOKEN, resolveApiUrl, resolveDemoUser,
+} from './demoMode';
 
 // Define the Scene IDs and names
 const SCENES = [
@@ -29,7 +32,8 @@ const SCENES = [
   { id: 12, name: "Scene 12: Product Receiving & Inspection (GRN)" },
   { id: 13, name: "Scene 13: Vendor Bill 3-Way Matching" },
   { id: 14, name: "Scene 14: Payment Processing & Reconciliation" },
-  { id: 15, name: "Scene 15: Spend Intelligence Analytics" }
+  { id: 15, name: "Scene 15: Spend Intelligence Analytics" },
+  { id: 16, name: "Scene 16: Master Data Console" }
 ];
 
 /** The signed-in Odoo user, as returned by /api/smartspend/login. */
@@ -40,6 +44,8 @@ interface OdooUser {
   email?: string;
   is_manager?: boolean;
   is_buyer?: boolean;
+  /** An external supplier account — quotes on RFQs, holds no staff role. */
+  is_vendor?: boolean;
   /** Roles this account may act as — from its Odoo groups, not a free choice. */
   roles?: string[];
   defaultRole?: string;
@@ -54,6 +60,27 @@ interface MasterData {
   urgencies: string[];
   sourcingMethods: string[];
   statuses: string[];
+  /** The configured approval matrix. Absent when talking to an older backend. */
+  workflows?: ConfiguredWorkflow[];
+}
+
+/**
+ * One row of the approval matrix an administrator maintains in Odoo: the
+ * criteria a request must meet, and the designations that then have to sign it
+ * in order.
+ */
+interface ConfiguredWorkflow {
+  id: number;
+  name: string;
+  document: string;
+  workflowType: string;
+  branch: string;
+  department: string;
+  category: string;
+  expenseType: string;
+  amountFrom: number;
+  amountTo: number;
+  approvers: { order: number; designation: string; branch: string; department: string }[];
 }
 
 /** The lists the portal falls back to when Odoo cannot be reached. */
@@ -71,112 +98,9 @@ const ROLE_LABELS: Record<string, string> = {
   'CEO': 'CEO (Spend Intel)',
 };
 
-/**
- * Sign-in gate. The SmartSpend API is bearer-authenticated, so nothing can be
- * loaded until the user exchanges their Odoo credentials for a token.
- */
-function SignInScreen({
-  apiUrl, onApiUrlChange, onSubmit, busy, error,
-}: {
-  apiUrl: string;
-  onApiUrlChange: (v: string) => void;
-  onSubmit: (login: string, password: string) => Promise<boolean>;
-  busy: boolean;
-  error: string;
-}) {
-  const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
-  const [showServer, setShowServer] = useState(false);
-
-  const handle = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!busy && login && password) void onSubmit(login, password);
-  };
-
-  const field =
-    "w-full rounded-xl border border-borderTheme bg-surface px-3.5 py-2.5 text-sm text-textPrimary " +
-    "placeholder:text-textFaint outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/25";
-
-  return (
-    <div className="min-h-screen flex items-center justify-center font-sans login-aurora px-4 relative overflow-hidden">
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full ambient-glow-1 filter blur-[120px] pointer-events-none opacity-60 z-0" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full ambient-glow-2 filter blur-[120px] pointer-events-none opacity-60 z-0" />
-
-      <form
-        onSubmit={handle}
-        className="relative z-10 w-full max-w-sm rounded-2xl border border-borderTheme bg-surface/95 backdrop-blur p-7 shadow-2xl"
-      >
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-brand flex items-center justify-center shadow-lg ring-1 ring-white/25">
-            <Sparkles className="h-5 w-5 text-onbrand" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-textPrimary leading-tight">SmartSpend</h1>
-            <p className="text-xs text-textSecondary">Sign in with your Odoo account</p>
-          </div>
-        </div>
-
-        <div className="mt-6 space-y-3">
-          <div>
-            <label htmlFor="ss-login" className="block text-xs font-semibold text-textSecondary mb-1.5">
-              Email or username
-            </label>
-            <input
-              id="ss-login" className={field} value={login} autoComplete="username" autoFocus
-              onChange={(e) => setLogin(e.target.value)} placeholder="you@company.com"
-            />
-          </div>
-          <div>
-            <label htmlFor="ss-pass" className="block text-xs font-semibold text-textSecondary mb-1.5">
-              Password
-            </label>
-            <input
-              id="ss-pass" type="password" className={field} value={password} autoComplete="current-password"
-              onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
-            />
-          </div>
-        </div>
-
-        {error && (
-          <div
-            role="alert"
-            className="mt-4 flex items-start gap-2 rounded-xl border border-neg/30 bg-neg/10 px-3 py-2.5 text-xs text-neg"
-          >
-            <AlertCircle className="h-4 w-4 shrink-0 mt-px" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={busy || !login || !password}
-          className="mt-5 w-full rounded-xl bg-brand py-2.5 text-sm font-semibold text-onbrand shadow-lg
-                     transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed
-                     focus:outline-none focus:ring-2 focus:ring-brand/40"
-        >
-          {busy ? "Signing in…" : "Sign in"}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setShowServer((v) => !v)}
-          className="mt-4 text-[11px] text-textFaint hover:text-textSecondary transition"
-        >
-          {showServer ? "Hide server settings" : "Server settings"}
-        </button>
-        {showServer && (
-          <div className="mt-2">
-            <label htmlFor="ss-url" className="block text-[11px] text-textFaint mb-1">Odoo URL</label>
-            <input
-              id="ss-url" className={field} value={apiUrl}
-              onChange={(e) => onApiUrlChange(e.target.value)} placeholder="http://127.0.0.1:8019"
-            />
-          </div>
-        )}
-      </form>
-    </div>
-  );
-}
+// The sign-in gate lives on the landing screen (scene 1) itself now: one
+// branded screen that takes an email and password, instead of a separate
+// plain form followed by a role-portal picker.
 
 interface ChatMessage {
   sender: 'ai' | 'vendor';
@@ -188,6 +112,18 @@ interface LineItem {
   productName: string;
   productQty: number;
   targetPrice: number;
+}
+
+/** One signature the configured workflow demands, and whether it has been given. */
+interface ApprovalStep {
+  order: number;
+  designation: string;
+  state: 'pending' | 'approved' | 'rejected';
+  decidedBy: string;
+  decidedOn: string;
+  note: string;
+  /** Who holds this designation — the account to sign in as to clear the step. */
+  holders?: { name: string; login: string }[];
 }
 
 interface RequestItem {
@@ -202,6 +138,16 @@ interface RequestItem {
   status: 'Draft' | 'Pending Approval' | 'Needs Clarification' | 'Sourcing' | 'Approved' | 'PO Confirmed' | 'Rejected' | 'Paid';
   urgency: 'High' | 'Medium' | 'Low';
   createdDate: string;
+  /** ISO timestamp behind `createdDate`, used to order queues newest-first. */
+  submittedAt?: string;
+  /** Reference of the approval workflow matched when this was submitted. */
+  workflow?: string;
+  /** Order number of the step it is waiting on; 0 once the chain is finished. */
+  approvalLevel?: number;
+  approvalDone?: number;
+  approvalTotal?: number;
+  /** The chain itself, in signing order. Absent on an older backend. */
+  approvalChain?: ApprovalStep[];
   deliveryDate?: string;
   buyer: string;
   vendor: string;
@@ -214,6 +160,10 @@ interface RequestItem {
   lineItems?: LineItem[];
   /** References of the Odoo purchase orders raised for this request. */
   purchaseOrders?: string[];
+  /** The purchase head has released the order to the vendor. */
+  poReleased?: boolean;
+  /** The vendor has confirmed the released order. */
+  poAcknowledged?: boolean;
   /** Rate contract Odoo matched to this request, and its vendor. */
   contract?: string;
   contractVendor?: string;
@@ -331,6 +281,22 @@ const plainStatus = (r: RequestItem): { line: string; waitingOn: string } => {
 };
 
 // Compact request lifecycle stages (for inline mini-trackers on tiles).
+/**
+ * What happens to a request after it is submitted, and who owns each step.
+ *
+ * Mirrors the screens the demo actually walks through — manager approval (#10),
+ * budget verification (#9), sourcing and the purchase order (#6, #7, #8),
+ * goods receipt (#12), then the bill match and payment (#13, #14) — so the
+ * requester is told the same sequence the app then performs.
+ */
+const NEXT_STEPS: Array<{ stage: string; owner: string; note: string }> = [
+  { stage: 'Manager approval', owner: 'Manager', note: 'Approves it, asks you a question, or declines.' },
+  { stage: 'Budget & rate contract check', owner: 'Automatic', note: 'Checked against your department budget and the running agreements.' },
+  { stage: 'Sourcing & purchase order', owner: 'SCM Buyer', note: 'Applies the contract rate or takes it to market, then raises the PO.' },
+  { stage: 'Delivery & goods receipt', owner: 'Stores', note: 'Records what actually arrives against the order.' },
+  { stage: 'Bill match & payment', owner: 'Finance', note: 'Three-way match against the PO, then the vendor is paid.' },
+];
+
 const STAGE_LABELS = ['Submitted', 'Approved', 'Sourcing', 'PO', 'Received', 'Paid'];
 const STATUS_STAGE: Record<string, number> = {
   'Draft': 0, 'Pending Approval': 0, 'Needs Clarification': 0, 'Rejected': 0,
@@ -351,15 +317,93 @@ const groupOf = (s: string): 'action' | 'progress' | 'done' => STATUS_GROUPS.fin
 // department / status / vendor. Used by the home grid, the list tab and the
 // buyer / manager queues so search behaves identically everywhere.
 const requestHaystack = (r: RequestItem) => `${r.id} ${reqSummary(r)} ${r.productName} ${r.department} ${r.location} ${r.status} ${r.vendor}`.toLowerCase();
+/**
+ * Newest first — the request somebody just submitted is the first thing the
+ * next person to act on it should see.
+ *
+ * Ordered on `submittedAt`, the ISO timestamp the API sends alongside the
+ * display date. Requests still waiting to reach Odoo carry one set locally, so
+ * an optimistic insert sorts correctly too. Anything without a timestamp keeps
+ * its position behind the ones that have it, rather than jumping to the top.
+ */
+const newestFirst = (list: RequestItem[]) =>
+  [...list].sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || ''));
+
+/**
+ * What a manager is expected to act on.
+ *
+ * Odoo lets a manager approve from "Needs Clarification" as well as "Pending
+ * Approval" — the same Approve button is offered in both states. A queue that
+ * looked only at Pending Approval therefore hid requests the manager could and
+ * should act on, and they read as simply missing.
+ */
+const MANAGER_QUEUE_STATUSES = ['Pending Approval', 'Needs Clarification'];
+
+/**
+ * What lands in the SCM buyer's queue.
+ *
+ * A request the manager has just approved is the buyer's to source, but it sits
+ * in "Approved" until sourcing actually begins — so a queue that looks only for
+ * "Sourcing" never shows it. That gap is why an approved request appeared to
+ * stall and the manager ended up doing the buyer's job: the work was assigned
+ * to a queue nobody was looking at.
+ */
+const BUYER_QUEUE_STATUSES = ['Approved', 'Sourcing'];
+
+/**
+ * The statuses a role is expected to act on — the inverse of the reminder
+ * routing. Read from the request data itself, so the inbox a role is shown on
+ * sign-in survives a refresh and does not depend on somebody having submitted
+ * in this same browser session.
+ */
+const queueStatusesForRole = (role: string): string[] =>
+  role === 'Manager' ? MANAGER_QUEUE_STATUSES
+    : role === 'SCM Buyer' ? BUYER_QUEUE_STATUSES
+      : role === 'Vendor' ? ['PO Confirmed']
+        : role === 'Employee' ? ['Needs Clarification']
+          : [];
+
+/**
+ * Whether every signature the configured workflow demands has been given.
+ *
+ * Used to *show* the outstanding approvals, not to stop anyone: the walkthrough
+ * is deliberately allowed to run ahead of them so a demo never stalls waiting
+ * for a signature. Odoo still enforces the chain — a request only reaches
+ * Approved there once every step has signed.
+ *
+ * Requests with no chain (raised before the workflow master, or an offline
+ * backend) count as clear.
+ */
+const chainSigned = (r: RequestItem) =>
+  !r.approvalChain?.length || (r.approvalDone ?? 0) >= (r.approvalTotal ?? 0);
+
 const filterRequests = (list: RequestItem[], statusKey: string, search: string) => {
   const q = search.trim().toLowerCase();
-  return list.filter(r => {
+  return newestFirst(list.filter(r => {
     if (statusKey !== 'all' && groupOf(r.status) !== statusKey) return false;
     return !q || requestHaystack(r).includes(q);
-  });
+  }));
 };
 
 // The three coloured status filter dots (+ an "All" reset), shared across tabs.
+/**
+ * Why a step is not offered here, and what to do about it.
+ *
+ * Naming the role is not enough on its own: an account that already holds it
+ * only has to move the sidebar switch, and "sign in as…" sent people hunting
+ * for a second login they did not need.
+ */
+function StepLock({ what, canSwitch }: { what: string; canSwitch: boolean }) {
+  return (
+    <p className="text-xs text-textSecondary/70 font-semibold italic">
+      Locked: {what}.{' '}
+      {canSwitch
+        ? 'Switch the sidebar role to Manager (Approver).'
+        : 'Sign out and sign back in as manager@smartspend.demo.'}
+    </p>
+  );
+}
+
 function StatusDots({ value, onChange, requests }: {
   value: 'all' | 'action' | 'progress' | 'done';
   onChange: (v: 'all' | 'action' | 'progress' | 'done') => void;
@@ -602,6 +646,142 @@ function StatTile({ icon: Icon, tint, value, label, caption, meter, delay = 0, s
 
 // Read-only requisition line table — reused by every downstream scene so multi-product
 // requests keep their full detail from sourcing through payment.
+/**
+ * The approval chain a request is running, as the configured workflow set it.
+ *
+ * Signing is sequential, so the chain reads as a track: what has been signed,
+ * the one step it is waiting on, and what is still to come. Rendered wherever
+ * somebody needs to know why a request has not moved — an approver looking at
+ * their queue, and a requester tracking their own.
+ *
+ * Absent on requests raised before the workflow master existed, and on a
+ * backend that does not send the chain, so the caller renders nothing then
+ * rather than an empty box.
+ */
+function ApprovalChain({ request, compact = false }: { request: RequestItem; compact?: boolean }) {
+  const chain = request.approvalChain ?? [];
+  if (!chain.length) return null;
+
+  const done = request.approvalDone ?? chain.filter(s => s.state === 'approved').length;
+  const total = request.approvalTotal ?? chain.length;
+  const waiting = chain.find(s => s.state === 'pending');
+  const rejected = chain.find(s => s.state === 'rejected');
+
+  return (
+    <div className={`rounded-xl border border-borderTheme bg-secondary/40 ${compact ? 'p-3.5' : 'p-4'}`}>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <div className="flex items-center gap-2">
+          <Activity className="h-3.5 w-3.5 text-brand" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-textFaint">
+            Approval chain
+          </span>
+          {request.workflow && (
+            <span className="font-mono text-[10px] text-textFaint">{request.workflow}</span>
+          )}
+        </div>
+        <span className="text-[11px] font-bold text-textPrimary tabular-nums">
+          {done} of {total} signed
+        </span>
+      </div>
+
+      {/* Progress across the whole chain, so "stuck at step 2 of 3" reads at a glance */}
+      <div className="mt-2 h-1.5 rounded-full bg-raised overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${rejected ? 'bg-neg' : 'bg-pos'}`}
+          style={{ width: `${total ? (done / total) * 100 : 0}%` }}
+        />
+      </div>
+
+      <ol className={`mt-3 ${compact ? 'space-y-1.5' : 'space-y-2'}`}>
+        {chain.map(step => {
+          const isWaiting = step.state === 'pending' && step === waiting;
+          const tone = step.state === 'approved' ? 'pos'
+            : step.state === 'rejected' ? 'neg'
+            : isWaiting ? 'gold' : 'faint';
+          return (
+            <li key={step.order} className="flex items-start gap-2.5">
+              <span
+                className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-extrabold border ${
+                  tone === 'pos' ? 'bg-pos/12 text-pos border-pos/35'
+                  : tone === 'neg' ? 'bg-neg/12 text-neg border-neg/35'
+                  : tone === 'gold' ? 'bg-gold/15 text-gold border-gold/40 animate-pulse'
+                  : 'bg-surface text-textFaint border-borderTheme'}`}
+              >
+                {step.state === 'approved' ? <Check className="h-3 w-3" />
+                  : step.state === 'rejected' ? <X className="h-3 w-3" />
+                  : step.order}
+              </span>
+              <div className="min-w-0 flex-grow">
+                <div className="flex flex-wrap items-baseline gap-x-2">
+                  <span className={`text-[11px] font-bold ${
+                    tone === 'faint' ? 'text-textFaint' : 'text-textPrimary'}`}>
+                    {step.designation}
+                  </span>
+                  {isWaiting && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
+                      Waiting
+                    </span>
+                  )}
+                  {/* Name the account, not just the role. "Finance CapEx Head"
+                      is not something anyone can log in as. */}
+                  {step.state === 'pending' && !!step.holders?.length && (
+                    <span className="text-[10px] text-textSecondary truncate">
+                      {step.holders.map(h => h.login).join(' / ')}
+                    </span>
+                  )}
+                  {step.state === 'pending' && !step.holders?.length && (
+                    <span className="text-[10px] font-bold text-gold">no holder assigned</span>
+                  )}
+                  {step.state === 'approved' && step.decidedBy && (
+                    <span className="text-[10px] text-textSecondary truncate">
+                      {step.decidedBy}{step.decidedOn ? ` · ${step.decidedOn}` : ''}
+                    </span>
+                  )}
+                  {step.state === 'rejected' && (
+                    <span className="text-[10px] font-bold text-neg">Declined</span>
+                  )}
+                </div>
+                {!compact && step.note && (
+                  <p className="text-[11px] text-textSecondary mt-0.5 italic">“{step.note}”</p>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+
+      {waiting && !rejected && (
+        <div className="mt-3 pt-2.5 border-t border-borderTheme text-[11px] text-textSecondary">
+          <p>
+            Waiting on the <strong className="text-textPrimary">{waiting.designation}</strong>.
+            {total - done > 1
+              ? ` ${total - done} signatures still to come.`
+              : ' This is the last signature.'}
+          </p>
+          {waiting.holders?.length ? (
+            <p className="mt-1">
+              Sign in as{' '}
+              {waiting.holders.map((h, i) => (
+                <React.Fragment key={h.login}>
+                  {i > 0 && ' or '}
+                  <strong className="text-brand font-mono">{h.login}</strong>
+                  <span className="text-textFaint"> ({h.name})</span>
+                </React.Fragment>
+              ))}
+              {' '}to approve it.
+            </p>
+          ) : (
+            <p className="mt-1 text-gold font-semibold">
+              Nobody holds this designation yet — assign a user to it in Odoo
+              (Configuration ▸ Designations), or any SmartSpend manager can sign it.
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LineItemsTable({ lines, title = 'Line Items', totalLabel = 'Total' }: { lines: LineItem[]; title?: string; totalLabel?: string }) {
   return (
     <div className="rounded-xl border border-borderTheme overflow-hidden">
@@ -861,6 +1041,195 @@ const VENDOR_RATING: Record<string, number> = {
 const BRANCH_YOY: Record<string, number> = { Bangalore: 0.17, Mumbai: 0.16, Kochi: 0.21, Delhi: -0.06, Chennai: 0.48 };
 const DEPT_YOY: Record<string, number> = { 'IT & Infrastructure': 0.28, Operations: 0.06, Facilities: 0.13, Marketing: -0.06, Finance: 0.39 };
 const CAT_YOY: Record<string, number> = { 'IT Hardware': 0.30, 'Datacenter Equipment': 0.35, 'Software Licenses': 0.04, 'Office Furniture': -0.10, 'Professional Services': 0.13, 'MRO Supplies': 0.05 };
+
+// ============================================================================
+// MASTER DATA CONSOLE (Scene 16)
+// The reference records everything else is built on. Products, categories and
+// branches are derived from the very same sources the request flow already
+// uses — SUB_CATALOG, PRICE_BOOK, CAT_VENDORS and the Odoo /master-data feed —
+// so this screen can never drift from what a requester sees in the dropdowns.
+// ============================================================================
+
+interface MasterProduct {
+  code: string; name: string; category: string; uom: string;
+  contract: number; vendor: string; onContract: boolean;
+}
+
+/** Catalogue products, priced from the same book the requisition form quotes. */
+const MASTER_PRODUCTS: MasterProduct[] = (() => {
+  const vendorFor: Record<string, string> = {
+    'IT Hardware': 'Dell Technologies',
+    'Office Furniture': 'Featherlite Office',
+    'Datacenter Equipment': 'Cisco Systems',
+  };
+  const uomFor = (name: string) =>
+    /licen[cs]e/i.test(name) ? 'Seat / Year' : /cabling|patch/i.test(name) ? 'Kit' : 'Nos';
+  let n = 0;
+  return SUB_CATALOG.flatMap(group =>
+    group.items.map(item => {
+      n += 1;
+      return {
+        code: `PRD-${String(n).padStart(4, '0')}`,
+        name: item,
+        category: group.category,
+        uom: uomFor(item),
+        contract: getContractPrice(item),
+        vendor: vendorFor[group.category] ?? 'Multiple',
+        onContract: !!priceEntry(item),
+      };
+    }),
+  );
+})();
+
+interface MasterCategory {
+  name: string; expenseType: string; glCode: string; limit: number; owner: string;
+}
+
+/** Expense categories — the fallback set, used when Odoo's /master-data feed
+ *  is unreachable. When it answers, its categories take over the name and
+ *  expense type and these rows supply the accounting detail. */
+const MASTER_CATEGORIES: MasterCategory[] = [
+  { name: 'IT Hardware', expenseType: 'CapEx', glCode: '1520-IT-HW', limit: 500000, owner: 'IT & Infrastructure' },
+  { name: 'Datacenter Equipment', expenseType: 'CapEx', glCode: '1530-DC-EQ', limit: 2000000, owner: 'IT & Infrastructure' },
+  { name: 'Software Licenses', expenseType: 'OpEx', glCode: '6410-SW-LIC', limit: 300000, owner: 'IT & Infrastructure' },
+  { name: 'Office Furniture', expenseType: 'CapEx', glCode: '1540-FF-OF', limit: 250000, owner: 'Facilities' },
+  { name: 'Professional Services', expenseType: 'OpEx', glCode: '6620-PROF-SV', limit: 750000, owner: 'Finance' },
+  { name: 'MRO Supplies', expenseType: 'OpEx', glCode: '6310-MRO-SP', limit: 100000, owner: 'Operations' },
+];
+
+interface WorkflowStage {
+  seq: number; stage: string; role: string; rule: string; sla: string; auto: boolean;
+}
+
+/** The approval ladder every request climbs. Stages 3, 4 and 8 run without a
+ *  human — that is the whole pitch, so the console marks them. */
+const MASTER_WORKFLOW: WorkflowStage[] = [
+  { seq: 1, stage: 'Request Raised', role: 'Employee', rule: 'Any value', sla: 'Same day', auto: false },
+  { seq: 2, stage: 'Manager Approval', role: 'Reporting Manager', rule: 'Up to ₹2,00,000', sla: '24 hours', auto: false },
+  { seq: 3, stage: 'Budget Check', role: 'System', rule: 'Against the department budget', sla: 'Instant', auto: true },
+  { seq: 4, stage: 'Rate Contract Match', role: 'System', rule: 'Running agreements only', sla: 'Instant', auto: true },
+  { seq: 5, stage: 'Sourcing / Negotiation', role: 'SCM Buyer', rule: 'When no contract covers it', sla: '3 days', auto: false },
+  { seq: 6, stage: 'Finance Approval', role: 'Finance Head', rule: 'Above ₹5,00,000', sla: '48 hours', auto: false },
+  { seq: 7, stage: 'PO Release', role: 'SCM Buyer', rule: 'After every approval clears', sla: 'Same day', auto: false },
+  { seq: 8, stage: 'GRN & 3-Way Match', role: 'Stores + System', rule: 'PO = GRN = Invoice', sla: 'On delivery', auto: true },
+  { seq: 9, stage: 'Payment Release', role: 'Finance', rule: 'Per vendor payment terms', sla: 'Net 30', auto: false },
+];
+
+interface MasterVendor {
+  name: string; category: string; rating: number; code: string;
+  terms: string; since: string; status: 'Active' | 'On Hold';
+  origin: 'Onboarded' | 'AI Discovered';
+}
+
+/** The approved vendor master, assembled from the categories and ratings the
+ *  analytics ledger already scores vendors on. */
+const MASTER_VENDORS: MasterVendor[] = (() => {
+  const terms = ['Net 30', 'Net 45', 'Net 15', 'Advance 20% / Net 30'];
+  let n = 0;
+  return Object.entries(CAT_VENDORS).flatMap(([category, vendors]) =>
+    vendors.map(v => {
+      n += 1;
+      return {
+        name: v.name,
+        category,
+        rating: VENDOR_RATING[v.name] ?? 4.0,
+        code: `VEN-${String(n).padStart(4, '0')}`,
+        terms: terms[n % terms.length],
+        since: `20${18 + (n % 6)}`,
+        status: (n % 9 === 0 ? 'On Hold' : 'Active') as 'Active' | 'On Hold',
+        origin: 'Onboarded' as const,
+      };
+    }),
+  );
+})();
+
+// ---- AI-discovered vendors, held as drafts until a human signs them off ----
+
+interface DraftField {
+  label: string; value: string; source: string; confidence: number;
+}
+interface DraftSignal { label: string; tone: 'good' | 'warn' | 'bad'; }
+interface DraftVendor {
+  id: string; name: string; category: string; city: string;
+  aiScore: number; trust: number; foundFor: string; foundAt: string;
+  fields: DraftField[];
+  missing: string[];
+  signals: DraftSignal[];
+}
+
+/** Sample discovery results. Each draft carries the provenance of every field
+ *  the agent filled, so an approver can see exactly what was inferred and from
+ *  where before it is promoted into the vendor master. */
+const AI_DRAFT_VENDORS: DraftVendor[] = [
+  {
+    id: 'DRAFT-0091',
+    name: 'Global Hardware Integrators',
+    category: 'Datacenter Equipment',
+    city: 'Bengaluru, KA',
+    aiScore: 95, trust: 92,
+    foundFor: 'REQ-2041 · 19-Inch Data Server Rack',
+    foundAt: '2 minutes ago',
+    fields: [
+      { label: 'Legal name', value: 'Global Hardware Integrators Pvt Ltd', source: 'MCA registry', confidence: 98 },
+      { label: 'GSTIN', value: '29AAFCGptr4K1ZV (sample)', source: 'GST portal', confidence: 96 },
+      { label: 'Registered office', value: 'Whitefield, Bengaluru 560066', source: 'MCA registry', confidence: 94 },
+      { label: 'Category fit', value: 'Servers, racks & IT networking', source: 'Catalogue match', confidence: 91 },
+      { label: 'Annual turnover', value: '₹84 Cr (FY24)', source: 'Filed accounts', confidence: 88 },
+      { label: 'Payment terms offered', value: 'Net 30', source: 'Public rate card', confidence: 72 },
+    ],
+    missing: ['Bank account details', 'MSME certificate'],
+    signals: [
+      { label: 'GST active · filings current', tone: 'good' },
+      { label: 'Supplies 3 of our peer companies', tone: 'good' },
+      { label: 'No prior transaction history with us', tone: 'warn' },
+    ],
+  },
+  {
+    id: 'DRAFT-0092',
+    name: 'Apex Sourcing Solutions',
+    category: 'Office Furniture',
+    city: 'Chennai, TN',
+    aiScore: 88, trust: 85,
+    foundFor: 'REQ-2038 · Height-Adjustable Desk',
+    foundAt: '11 minutes ago',
+    fields: [
+      { label: 'Legal name', value: 'Apex Sourcing Solutions LLP', source: 'MCA registry', confidence: 97 },
+      { label: 'GSTIN', value: '33AAGFA ptr9M1Z8 (sample)', source: 'GST portal', confidence: 95 },
+      { label: 'Registered office', value: 'Guindy, Chennai 600032', source: 'MCA registry', confidence: 93 },
+      { label: 'Category fit', value: 'Office furniture & fit-out', source: 'Catalogue match', confidence: 86 },
+      { label: 'Annual turnover', value: '₹22 Cr (FY24)', source: 'Filed accounts', confidence: 79 },
+    ],
+    missing: ['Bank account details', 'Quality certification', 'Signed NDA'],
+    signals: [
+      { label: 'GST active · filings current', tone: 'good' },
+      { label: 'Quotes 8% under our current furniture rate', tone: 'good' },
+      { label: 'One late-delivery complaint on a public forum', tone: 'warn' },
+    ],
+  },
+  {
+    id: 'DRAFT-0093',
+    name: 'Zenith Business Networks',
+    category: 'Datacenter Equipment',
+    city: 'Pune, MH',
+    aiScore: 91, trust: 88,
+    foundFor: 'REQ-2041 · 48-Port Network Switch',
+    foundAt: '11 minutes ago',
+    fields: [
+      { label: 'Legal name', value: 'Zenith Business Networks Pvt Ltd', source: 'MCA registry', confidence: 96 },
+      { label: 'GSTIN', value: '27AACCZ ptr2H1ZK (sample)', source: 'GST portal', confidence: 94 },
+      { label: 'Registered office', value: 'Hinjewadi, Pune 411057', source: 'MCA registry', confidence: 92 },
+      { label: 'Category fit', value: 'Network switching & structured cabling', source: 'Catalogue match', confidence: 90 },
+      { label: 'Annual turnover', value: '₹41 Cr (FY24)', source: 'Filed accounts', confidence: 84 },
+      { label: 'Payment terms offered', value: 'Net 45', source: 'Public rate card', confidence: 70 },
+    ],
+    missing: ['Bank account details'],
+    signals: [
+      { label: 'GST active · filings current', tone: 'good' },
+      { label: 'Authorised Cisco reseller', tone: 'good' },
+      { label: 'Director shares an address with an existing vendor', tone: 'bad' },
+    ],
+  },
+];
 
 interface Txn {
   month: number; branch: string; department: string; category: string; vendor: string;
@@ -1274,7 +1643,7 @@ export default function App() {
   const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
   const [activeScene, setActiveScene] = useState<number>(() => {
     const sc = Number(params?.get('scene'));
-    return sc >= 1 && sc <= 15 ? sc : 1;
+    return sc >= 1 && sc <= 16 ? sc : 1;
   });
   // --- Dark theme disabled — light (Aurora) theme only for now. ---
   // To re-enable: restore the stateful darkMode block (see git history) and
@@ -1458,11 +1827,13 @@ export default function App() {
     }
   ]);
 
+  // ?api=https://… wins over the stored value, so one hosted build can be
+  // pointed at a tunnelled Odoo for a live demo without being rebuilt.
   const [odooApiUrl, setOdooApiUrl] = useState<string>(() => {
     try {
-      return localStorage.getItem("odooApiUrl") || "http://127.0.0.1:8019";
+      return resolveApiUrl(window.location.search, localStorage.getItem("odooApiUrl"));
     } catch {
-      return "http://127.0.0.1:8019";
+      return DEFAULT_API_URL;
     }
   });
   const [odooConnected, setOdooConnected] = useState<boolean>(false);
@@ -1517,13 +1888,30 @@ export default function App() {
   });
   const [authError, setAuthError] = useState<string>("");
   const [authBusy, setAuthBusy] = useState<boolean>(false);
+  // A session with no Odoo behind it: sign-in could not connect, so the portal
+  // signed in locally and runs on its seeded data. Every call below returns
+  // without touching the network, and the local fallbacks the callers already
+  // carry run the walkthrough — which is what they were written for.
+  const offlineDemo = authToken === OFFLINE_TOKEN;
+  // Whether the first load of requests for the current session has finished.
+  // Until it has, `requests` still holds the built-in walkthrough set, and an
+  // inbox built from that would miss the request the approver actually came
+  // for — the whole complaint about not finding the latest one.
+  const [requestsSynced, setRequestsSynced] = useState<boolean>(false);
+  // What the sign-in form on the landing screen holds. The portal used to let
+  // anyone pick a role from four buttons; now you sign in as the Odoo user for
+  // that role and the role comes from the groups that account actually holds.
+  const [loginEmail, setLoginEmail] = useState<string>("");
+  const [loginPassword, setLoginPassword] = useState<string>("");
 
   // Every role the demo can show. Odoo narrows this only when it has actually
   // answered with the account's roles — a cached sign-in from before that
   // existed must never cost somebody their screens.
   const ALL_ROLES = ['Employee', 'Manager', 'SCM Buyer', 'CEO', 'Vendor'];
+  // De-duplicated: a vendor account already answers with 'Vendor', and listing
+  // it twice in the switcher renders two identical options.
   const availableRoles = currentUser?.roles?.length
-    ? [...currentUser.roles, 'Vendor']
+    ? Array.from(new Set([...currentUser.roles, 'Vendor']))
     : ALL_ROLES;
 
   const clearSession = () => {
@@ -1586,7 +1974,21 @@ export default function App() {
       loadMasterData(odooApiUrl, data.token);
       return true;
     } catch {
-      setAuthError(`Could not reach ${odooApiUrl}. Is Odoo running?`);
+      // Odoo is not there at all. On a hosted build that is the normal case —
+      // there is no backend to reach — so rather than holding the visitor at a
+      // gate they cannot pass, sign them in locally and run the walkthrough on
+      // the seeded data. The screen says plainly that nothing is being saved.
+      const demoUser = resolveDemoUser(loginName, password);
+      if (demoUser) {
+        setAuthToken(OFFLINE_TOKEN);
+        setCurrentUser(demoUser);
+        setAuthError("");
+        if (demoUser.defaultRole) handleSsoLogin(demoUser.defaultRole);
+        return true;
+      }
+      setAuthError(
+        `Could not reach ${odooApiUrl}. Is Odoo running? ` +
+        `Without it you can still explore the demo — sign in as manager@smartspend.demo / manager.`);
       return false;
     } finally {
       setAuthBusy(false);
@@ -1594,6 +1996,8 @@ export default function App() {
   };
 
   const signOut = async () => {
+    // Nothing was ever opened on the backend, so there is nothing to close.
+    if (offlineDemo) { clearSession(); return; }
     try {
       if (authToken) {
         // Revokes the API key server-side so a copied token can't be reused.
@@ -1612,6 +2016,7 @@ export default function App() {
   // Re-read who the held token belongs to. A session stored before the backend
   // returned roles has none cached, and Odoo may have changed them since.
   const refreshCurrentUser = async (url: string = odooApiUrl, token: string | null = authToken) => {
+    if (offlineDemo) return;
     if (!token) return;
     try {
       const res = await fetch(`${url}/api/smartspend/me`, {
@@ -1628,6 +2033,8 @@ export default function App() {
 
   // Branches, departments and categories, straight from Odoo.
   const loadMasterData = async (url: string = odooApiUrl, token: string | null = authToken) => {
+    // The fallback lists below are what the dropdowns use when this never runs.
+    if (offlineDemo) return;
     if (!token) return;
     try {
       const res = await fetch(`${url}/api/smartspend/master-data`, {
@@ -1641,17 +2048,26 @@ export default function App() {
 
   // Helper to fetch requests from Odoo backend
   const fetchRequestsFromOdoo = async (url: string = odooApiUrl) => {
+    // Keep the seeded walkthrough set — there is nothing to replace it with.
+    if (offlineDemo) return;
     if (!authToken) return null;
     try {
       const res = await apiFetch(`/api/smartspend/requests`, { method: 'GET' }, url);
       if (res.ok) {
         const data = await res.json();
+        // The call succeeded, so the server is up — say so even when it answers
+        // with nothing. A requester or vendor account legitimately sees an empty
+        // list (the record rule shows them only their own requests), and marking
+        // that "Disconnected" reported a healthy Odoo as down.
+        setOdooConnected(true);
         if (Array.isArray(data) && data.length > 0) {
           lastOdooSyncRef.current = JSON.stringify(data);
           setRequests(data);
-          setOdooConnected(true);
           return data;
         }
+        // Nothing of their own yet — keep the seeded walkthrough requests so the
+        // portal still has something to show.
+        return null;
       }
       setOdooConnected(false);
     } catch (e) {
@@ -1664,6 +2080,8 @@ export default function App() {
   // Helper to save/submit a request to Odoo backend
   const submitRequestToOdoo = async (reqItem: RequestItem, url: string = odooApiUrl) => {
     if (!authToken) return null;
+    // The edit already stands in local state; there is nowhere to send it.
+    if (offlineDemo) return null;
     // Retrying re-posts this very version. Any later edit re-runs the sync
     // effect, which replaces this row with one carrying the newer copy.
     const fail = (message: string) => noteSyncError({
@@ -1704,6 +2122,30 @@ export default function App() {
   // offline simulation so the walkthrough still runs without Odoo.
   const createPurchaseOrderInOdoo = async (reqId: string, url: string = odooApiUrl) => {
     if (!authToken) return null;
+    // Nowhere to raise it, so the walkthrough raises its own — the same shape
+    // the backend answers with, in the browser only. Unlike the calls above
+    // this one has no local fallback in its caller: without this the demo
+    // stops dead at "Generate Purchase Order".
+    if (offlineDemo) {
+      const current = requests.find(r => r.id === reqId);
+      if (!current) return null;
+      const raised = current.purchaseOrders?.length
+        ? current.purchaseOrders
+        : [`P${String(
+            requests.reduce((n, r) => n + (r.purchaseOrders?.length ?? 0), 0) + 1,
+          ).padStart(5, '0')}`];
+      const updated: RequestItem = {
+        ...current,
+        status: 'PO Confirmed',
+        purchaseOrders: raised,
+        history: [...current.history, {
+          title: `PO Created: ${raised.join(', ')}`, date: 'Now',
+          desc: `Sent to ${current.vendor || 'the vendor'}.`,
+        }],
+      };
+      setRequests(prev => prev.map(r => (r.id === reqId ? updated : r)));
+      return updated;
+    }
     const fail = (message: string) => noteSyncError({
       key: `po:${reqId}`, id: reqId, what: 'purchase order was not raised in Odoo',
       message: message + SIMULATED, retry: () => createPurchaseOrderInOdoo(reqId, url),
@@ -1733,9 +2175,78 @@ export default function App() {
     return null;
   };
 
+  /**
+   * Record the purchase head's release, or the vendor's acknowledgment, in Odoo.
+   *
+   * Both steps are gated on the backend too — the group check there is what
+   * actually decides, the portal only hides a button nobody may press.
+   */
+  const recordPurchaseOrderStep = async (
+    reqId: string, step: 'release' | 'acknowledge', url: string = odooApiUrl,
+  ) => {
+    if (!authToken) return null;
+    // Same again, and the same guards the backend applies — the steps run in
+    // order whether or not there is an Odoo to enforce it.
+    if (offlineDemo) {
+      const current = requests.find(r => r.id === reqId);
+      if (!current) return null;
+      if (step === 'release' && !current.purchaseOrders?.length) return null;
+      if (step === 'acknowledge' && !current.poReleased) return null;
+      const updated: RequestItem = step === 'release'
+        ? {
+            ...current, poReleased: true,
+            history: [...current.history, {
+              title: 'Approved by Purchase Head', date: 'Now',
+              desc: `${current.purchaseOrders?.join(', ') || 'The purchase order'} approved and released to vendor.`,
+            }],
+          }
+        : {
+            ...current, poAcknowledged: true,
+            history: [...current.history, {
+              title: 'Vendor Acknowledged PO', date: 'Now',
+              desc: 'Vendor confirmed delivery commit date & pricing.',
+            }],
+          };
+      setRequests(prev => prev.map(r => (r.id === reqId ? updated : r)));
+      return updated;
+    }
+    const fail = (message: string) => noteSyncError({
+      key: `po-step:${step}:${reqId}`, id: reqId,
+      what: step === 'release'
+        ? 'purchase order release was not recorded in Odoo'
+        : 'vendor acknowledgment was not recorded in Odoo',
+      message: message + SIMULATED,
+      retry: () => recordPurchaseOrderStep(reqId, step, url),
+    });
+    try {
+      const res = await apiFetch(`/api/smartspend/purchase-order/step`, {
+        method: 'POST',
+        body: JSON.stringify({ id: reqId, step }),
+      }, url);
+      if (res.ok) {
+        const updated = await res.json();
+        setRequests(prev => {
+          const newState = prev.map(r => (r.id === reqId || r.id === updated.id ? updated : r));
+          lastOdooSyncRef.current = JSON.stringify(newState);
+          return newState;
+        });
+        clearSyncError(`po-step:${step}:${reqId}`);
+        return updated as RequestItem;
+      }
+      const message = await refusalMessage(res);
+      console.warn("Odoo refused the purchase order step:", message);
+      fail(message);
+    } catch (e) {
+      console.warn("Failed to record the purchase order step:", e);
+      fail(unreachableMessage(e, url));
+    }
+    return null;
+  };
+
   // Helper to reset Odoo backend database
   const resetOdooDatabase = async (url: string = odooApiUrl) => {
     if (!authToken) return false;
+    if (offlineDemo) return false;
     try {
       const res = await apiFetch(`/api/smartspend/reset`, { method: 'POST' }, url);
       if (res.ok) {
@@ -1750,10 +2261,20 @@ export default function App() {
 
   useEffect(() => {
     if (!authToken) return;
-    fetchRequestsFromOdoo();
+    let cancelled = false;
+    setRequestsSynced(false);
+    // Await the first load so the "waiting on you" inbox below is built from
+    // what Odoo actually holds, not from the seeded walkthrough list that is on
+    // screen until the fetch lands.
+    void (async () => {
+      await fetchRequestsFromOdoo();
+      if (!cancelled) setRequestsSynced(true);
+    })();
     loadMasterData();
     refreshCurrentUser();
+    return () => { cancelled = true; };
   }, [odooApiUrl, authToken]);
+
 
 
   useEffect(() => {
@@ -1828,14 +2349,18 @@ export default function App() {
   // Drag-to-reorder role nav; first item = landing screen on login (#5).
   // Role-keyed so Employee, SCM Buyer, Manager and CEO each persist their own order.
   const DEFAULT_NAV_ORDER: Record<string, string[]> = {
-    Employee: ['chat', 'list', 'tracking', 'clarify'],
-    Manager: ['queue', 'tracking'],
-    'SCM Buyer': ['requests', 'discovery'],
-    CEO: ['analytics', 'tracking'],
+    Employee: ['chat', 'list', 'tracking', 'clarify', 'masters'],
+    Manager: ['queue', 'tracking', 'masters'],
+    // 'tracking' is here because raising the PO moves the request to "PO
+    // Confirmed", which drops it straight out of the To Source queue — and the
+    // buyer had no other route to the tracking screen, so the vendor
+    // acknowledgment step it owns became unreachable the moment it was due.
+    'SCM Buyer': ['requests', 'discovery', 'tracking', 'masters'],
+    CEO: ['analytics', 'tracking', 'masters'],
   };
   const [navOrder, setNavOrder] = useState<Record<string, string[]>>(() => {
     try {
-      const saved = localStorage.getItem('smartspend-nav-order-v1');
+      const saved = localStorage.getItem('smartspend-nav-order-v2');
       if (saved) {
         const parsed = JSON.parse(saved) as Record<string, string[]>;
         const merged: Record<string, string[]> = {};
@@ -1851,7 +2376,7 @@ export default function App() {
   });
   const [dragKey, setDragKey] = useState<string | null>(null);
   useEffect(() => {
-    try { localStorage.setItem('smartspend-nav-order-v1', JSON.stringify(navOrder)); } catch { /* ignore */ }
+    try { localStorage.setItem('smartspend-nav-order-v2', JSON.stringify(navOrder)); } catch { /* ignore */ }
   }, [navOrder]);
   const reorderNav = (role: string, from: string, to: string) => {
     if (from === to) return;
@@ -1867,16 +2392,38 @@ export default function App() {
   // Navigate to a nav item's screen (shared by click + login landing).
   const applyNav = (role: string, key: string | undefined) => {
     if (!key) return;
-    if (role === 'Employee') { setActiveScene(2); setEmployeeTab(key as 'chat' | 'list' | 'tracking' | 'clarify'); }
-    else if (role === 'Manager') { setActiveScene(key === 'tracking' ? 11 : 10); }
-    else if (role === 'SCM Buyer') { setActiveScene(6); setScmTab(key === 'discovery' ? 'discovery' : 'requests'); }
-    else if (role === 'CEO') { setActiveScene(key === 'tracking' ? 11 : 15); }
+    if (role === 'Employee') {
+      if (key === 'masters') { setActiveScene(16); }
+      else { setActiveScene(2); setEmployeeTab(key as 'chat' | 'list' | 'tracking' | 'clarify'); }
+    }
+    else if (role === 'Manager') { setActiveScene(key === 'masters' ? 16 : key === 'tracking' ? 11 : 10); }
+    else if (role === 'SCM Buyer') {
+      if (key === 'masters') { setActiveScene(16); }
+      else if (key === 'tracking') {
+        // Tracking has no request picker: it shows the selected request, or
+        // falls back to the first in the list. Arriving cold — a fresh sign-in,
+        // or straight off the sourcing queue — that fallback is an arbitrary
+        // request rather than the order waiting to be acknowledged, which is
+        // the whole reason the buyer comes here.
+        const awaiting = newestFirst(requests.filter(r => r.status === 'PO Confirmed'));
+        if (awaiting.length && !awaiting.some(r => r.id === selectedRequestId)) {
+          setSelectedRequestId(awaiting[0].id);
+        }
+        setActiveScene(11);
+      }
+      else { setActiveScene(6); setScmTab(key === 'discovery' ? 'discovery' : 'requests'); }
+    }
+    else if (role === 'CEO') { setActiveScene(key === 'masters' ? 16 : key === 'tracking' ? 11 : 15); }
   };
   const navActive = (role: string, key: string): boolean => {
-    if (role === 'Employee') return activeScene === 2 && employeeTab === key;
-    if (role === 'Manager') return key === 'tracking' ? activeScene === 11 : activeScene === 10;
-    if (role === 'SCM Buyer') return activeScene === 6 && scmTab === (key === 'discovery' ? 'discovery' : 'requests');
-    if (role === 'CEO') return key === 'tracking' ? activeScene === 11 : activeScene === 15;
+    if (role === 'Employee') return key === 'masters' ? activeScene === 16 : activeScene === 2 && employeeTab === key;
+    if (role === 'Manager') return key === 'masters' ? activeScene === 16 : key === 'tracking' ? activeScene === 11 : activeScene === 10;
+    if (role === 'SCM Buyer') {
+      if (key === 'masters') return activeScene === 16;
+      if (key === 'tracking') return activeScene === 11;
+      return activeScene === 6 && scmTab === (key === 'discovery' ? 'discovery' : 'requests');
+    }
+    if (role === 'CEO') return key === 'masters' ? activeScene === 16 : key === 'tracking' ? activeScene === 11 : activeScene === 15;
     return false;
   };
   const navMeta = (role: string, key: string): { icon: React.ReactNode; label: string; badge?: React.ReactNode } => {
@@ -1887,12 +2434,17 @@ export default function App() {
       'Employee/list': { icon: <FileText className="h-4 w-4" />, label: 'My Requests', badge: <span className="ml-auto bg-secondary text-textSecondary text-[10px] px-2 py-0.5 rounded-full font-bold">{requests.length}</span> },
       'Employee/tracking': { icon: <History className="h-4 w-4" />, label: 'Track Request' },
       'Employee/clarify': { icon: <AlertTriangle className="h-4 w-4" />, label: 'Questions', badge: pill(requests.filter(r => r.status === 'Needs Clarification').length, 'bg-gold/20 text-gold border border-gold/30', true) },
-      'Manager/queue': { icon: <CheckCircle2 className="h-4 w-4" />, label: 'To Approve', badge: pill(requests.filter(r => r.status === 'Pending Approval').length, 'bg-gold/20 text-gold border border-gold/30') },
+      'Employee/masters': { icon: <Boxes className="h-4 w-4" />, label: 'Master Data' },
+      'Manager/queue': { icon: <CheckCircle2 className="h-4 w-4" />, label: 'To Approve', badge: pill(requests.filter(r => MANAGER_QUEUE_STATUSES.includes(r.status)).length, 'bg-gold/20 text-gold border border-gold/30') },
       'Manager/tracking': { icon: <History className="h-4 w-4" />, label: 'Track Request' },
-      'SCM Buyer/requests': { icon: <Briefcase className="h-4 w-4" />, label: 'To Source', badge: pill(requests.filter(r => r.status === 'Sourcing').length, 'bg-brand/20 text-brand border border-brand/30') },
+      'Manager/masters': { icon: <Boxes className="h-4 w-4" />, label: 'Master Data', badge: pill(pendingDrafts.length, 'bg-brand/20 text-brand border border-brand/30', true) },
+      'SCM Buyer/requests': { icon: <Briefcase className="h-4 w-4" />, label: 'To Source', badge: pill(requests.filter(r => BUYER_QUEUE_STATUSES.includes(r.status)).length, 'bg-brand/20 text-brand border border-brand/30') },
+      'SCM Buyer/tracking': { icon: <History className="h-4 w-4" />, label: 'Track Request', badge: pill(requests.filter(r => r.status === 'PO Confirmed').length, 'bg-brand/20 text-brand border border-brand/30') },
       'SCM Buyer/discovery': { icon: <Search className="h-4 w-4" />, label: 'Find Vendors' },
+      'SCM Buyer/masters': { icon: <Boxes className="h-4 w-4" />, label: 'Master Data', badge: pill(pendingDrafts.length, 'bg-brand/20 text-brand border border-brand/30', true) },
       'CEO/analytics': { icon: <TrendingUp className="h-4 w-4" />, label: 'Spend Dashboard' },
       'CEO/tracking': { icon: <History className="h-4 w-4" />, label: 'Track Request' },
+      'CEO/masters': { icon: <Boxes className="h-4 w-4" />, label: 'Master Data' },
     };
     return m[`${role}/${key}`] ?? { icon: <FileText className="h-4 w-4" />, label: key };
   };
@@ -1954,6 +2506,63 @@ export default function App() {
     { to: 'Manager', from: 'Anjitha V', message: 'PR-2026-089 · Dell Latitude Laptops is awaiting your approval.', reqId: 'PR-2026-089' },
   ]);
   const [pokeToast, setPokeToast] = useState<string>('');
+  // The "what happens next" confirmation shown to the requester on submit, and
+  // the reference of the request it was raised for, so the approver's queue can
+  // flag the same one as new.
+  const [submittedInfo, setSubmittedInfo] = useState<{
+    id: string; product: string; lines: number; total: number; owner: string;
+    breach: boolean; signIn?: string;
+  } | null>(null);
+  const [lastSubmittedId, setLastSubmittedId] = useState<string>('');
+  // The inbox a role is greeted with when it signs in and something is already
+  // waiting on it, plus the request the user picked out of it — highlighted and
+  // scrolled to on the screen where it can actually be acted on.
+  const [inboxAlert, setInboxAlert] = useState<RequestItem[] | null>(null);
+  const [focusRequestId, setFocusRequestId] = useState<string>('');
+  const inboxShownRef = useRef<string>('');
+
+  /**
+   * Greet a role with what is already waiting on it.
+   *
+   * Runs once per sign-in per role — keyed on the token and the role, so
+   * switching roles in the switcher raises the new role's inbox but simply
+   * moving between screens does not. Driven off the requests themselves rather
+   * than the in-session reminders, so an approver who signs in fresh (or
+   * refreshes the page) is still shown the queue they came to work.
+   */
+  useEffect(() => {
+    if (!authToken || !requestsSynced || !requests.length) return;
+    const key = `${authToken.slice(0, 12)}:${userRole}`;
+    if (inboxShownRef.current === key) return;
+    const statuses = queueStatusesForRole(userRole);
+    if (!statuses.length) { inboxShownRef.current = key; return; }
+    const waiting = newestFirst(requests.filter(r => statuses.includes(r.status)));
+    inboxShownRef.current = key;
+    if (waiting.length) setInboxAlert(waiting);
+  }, [authToken, userRole, requests, requestsSynced]);
+
+  /** Scroll the picked request into view once its screen has rendered. */
+  useEffect(() => {
+    if (!focusRequestId) return;
+    const timer = setTimeout(() => {
+      document.getElementById(`req-${focusRequestId}`)
+        ?.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'center' });
+    }, 120);
+    return () => clearTimeout(timer);
+  }, [focusRequestId, activeScene]);
+
+  /** Open a request on the screen where the current role can act on it. */
+  const openForAction = (r: RequestItem) => {
+    setSelectedRequestId(r.id);
+    setFocusRequestId(r.id);
+    setInboxAlert(null);
+    // Clear the reminder for this request — it has been answered by opening it.
+    setPokes(prev => prev.filter(p => !(p.to === userRole && p.reqId === r.id)));
+    if (userRole === 'Manager') setActiveScene(10);
+    else if (userRole === 'SCM Buyer') { setActiveScene(6); setScmTab('requests'); }
+    else if (userRole === 'Vendor') { setActiveScene(6); setScmTab('bidding'); }
+    else { setActiveScene(2); setEmployeeTab('clarify'); }
+  };
 
   // Budget validation States
   const [budgetBreach, setBudgetBreach] = useState<boolean>(false);
@@ -1974,6 +2583,32 @@ export default function App() {
   const expenseTypeOptions = masterData?.categories.length
     ? Array.from(new Set(masterData.categories.map(c => c.expenseType))) : FALLBACK_EXPENSE_TYPES;
 
+  // Master Data Console rows (#16). Odoo's feed when it answers, the same
+  // fallback lists the dropdowns use otherwise — so the console and the request
+  // form can never show different records.
+  const branchRows = masterData?.branches.length
+    ? masterData.branches.map(b => ({ name: b.name, code: b.code || '—', city: b.city || '—' }))
+    : FALLBACK_BRANCHES.map((n, i) => ({
+        name: n, code: `BR-${String(i + 1).padStart(3, '0')}`,
+        city: n.replace(/\s+(Head\s+)?Office$/i, ''),
+      }));
+  const departmentRows = masterData?.departments.length
+    ? masterData.departments.map(d => ({ name: d.name, code: d.code || '—', approver: d.approver || 'Not set' }))
+    : FALLBACK_DEPARTMENTS.map((n, i) => ({ name: n, code: `DEP-${String(i + 1).padStart(3, '0')}`, approver: 'Reporting Manager' }));
+  // The approval matrix as Odoo holds it. Empty when the backend predates the
+  // workflow master or is unreachable — the tab then describes the standard
+  // process instead of showing nothing.
+  const configuredWorkflows: ConfiguredWorkflow[] = masterData?.workflows ?? [];
+  const categoryRows: MasterCategory[] = masterData?.categories.length
+    ? masterData.categories.map(c => {
+        const detail = MASTER_CATEGORIES.find(m => m.name === c.name || c.name.includes(m.name));
+        return {
+          name: c.name, expenseType: c.expenseType,
+          glCode: detail?.glCode ?? '—', limit: detail?.limit ?? 0, owner: detail?.owner ?? '—',
+        };
+      })
+    : MASTER_CATEGORIES;
+
 
   // SCM Buyer Portal Local States
   const [scmTab, setScmTab] = useState<'requests' | 'bidding' | 'discovery'>('requests');
@@ -1983,17 +2618,84 @@ export default function App() {
   const [showDraftOnboardSuccess, setShowDraftOnboardSuccess] = useState<boolean>(false);
   const [lastOnboardedVendor, setLastOnboardedVendor] = useState<string>("");
 
+  // Master Data Console (#16) — which master is open, its search box, and the
+  // AI draft-vendor queue. A draft only becomes a vendor when someone approves
+  // it here, so the decision is held in state rather than written on discovery.
+  const [mastersTab, setMastersTab] = useState<'products' | 'categories' | 'workflow' | 'company' | 'branches' | 'vendors'>('products');
+  const [masterSearch, setMasterSearch] = useState<string>("");
+  const [vendorView, setVendorView] = useState<'master' | 'ai'>('master');
+  const [openDraft, setOpenDraft] = useState<string | null>(AI_DRAFT_VENDORS[0]?.id ?? null);
+  const [draftDecisions, setDraftDecisions] = useState<Record<string, 'approved' | 'rejected'>>({});
+  const [promotedVendors, setPromotedVendors] = useState<MasterVendor[]>([]);
+  const [draftToast, setDraftToast] = useState<string>("");
+  // Two-step guard on the destructive reset, so it can never be a stray click.
+  const [resetArmed, setResetArmed] = useState<boolean>(false);
+  const vendorRows: MasterVendor[] = [...promotedVendors, ...MASTER_VENDORS];
+  const pendingDrafts = AI_DRAFT_VENDORS.filter(d => !draftDecisions[d.id]);
+
+  /** Promote an AI-discovered draft into the approved vendor master. */
+  const approveDraftVendor = (d: DraftVendor) => {
+    setDraftDecisions(prev => ({ ...prev, [d.id]: 'approved' }));
+    setPromotedVendors(prev => prev.some(v => v.name === d.name) ? prev : [{
+      name: d.name,
+      category: d.category,
+      rating: Math.round((d.trust / 20) * 10) / 10,
+      code: `VEN-${d.id.replace(/\D/g, '').slice(-4)}`,
+      terms: d.fields.find(f => /payment terms/i.test(f.label))?.value ?? 'Net 30',
+      since: String(new Date().getFullYear()),
+      status: 'Active',
+      origin: 'AI Discovered',
+    }, ...prev]);
+    setDraftToast(`${d.name} approved — now in the vendor master and quotable on any request.`);
+    setTimeout(() => setDraftToast(""), 5000);
+  };
+  /** Turn a draft down. It stays in the discovery log, it just never becomes a vendor. */
+  const rejectDraftVendor = (d: DraftVendor) => {
+    setDraftDecisions(prev => ({ ...prev, [d.id]: 'rejected' }));
+    setDraftToast(`${d.name} rejected — kept in the discovery log, not created in Odoo.`);
+    setTimeout(() => setDraftToast(""), 5000);
+  };
+
   // Vendor Portal Local States
   const [vendorBidPrice, setVendorBidPrice] = useState<string>("118000");
   const [vendorLeadTime, setVendorLeadTime] = useState<string>("5 Days");
   const [vendorBidSubmitted, setVendorBidSubmitted] = useState<boolean>(false);
 
   // PO Approval & Vendor Acknowledgment States
-  const [poApprovedByHead, setPoApprovedByHead] = useState<boolean>(false);
+  // Who may act on a purchase order from the tracking screen. These controls
+  // used to render for whoever happened to be looking, so a requester could
+  // release their own PO and then sign for the vendor as well — the two
+  // approvals the release is supposed to be separated by.
+  //   • Releasing the PO is the purchase head's call: the approver, never the
+  //     requester and never the buyer who raised it.
+  //   • The vendor acknowledgment is an explicit simulation of the supplier's
+  //     reply, so it belongs to the staff who own the order.
+  const isPurchaseHead = userRole === 'Manager';
+  // Raising the order is the buyer's job and only the buyer's. Odoo would let a
+  // manager through (the manager group implies the buyer group), but allowing
+  // it here let the manager approve, order and close a request single-handed —
+  // the buyer never appeared in the flow at all.
+  const canRaisePurchaseOrder = userRole === 'SCM Buyer';
+  // Recording the supplier's reply belongs to the two parties to it.
+  const canRecordVendorReply = userRole === 'SCM Buyer' || userRole === 'Vendor';
+  // Receiving the goods, matching the bill and paying it are the purchase
+  // manager's to run. These three had no role check at all, so whoever happened
+  // to be on screen when the vendor acknowledged carried the request the rest of
+  // the way to Paid — the requester who raised it included.
+  const canRunFulfilment = userRole === 'Manager';
+
+  // Both steps are read off the request Odoo answered with, not held here. As
+  // component state they were forgotten on every reload and on every sign-out,
+  // and one pair of booleans stood for the whole list — approving the release
+  // on one request showed it as released on all of them.
+  const poApprovedByHead = !!currentRequest?.poReleased;
+  const poAcknowledgedByVendor = !!currentRequest?.poAcknowledged;
   // Raising the Odoo purchase order from the tracking screen.
   const [poBusy, setPoBusy] = useState<boolean>(false);
   const [poError, setPoError] = useState<string>("");
-  const [poAcknowledgedByVendor, setPoAcknowledgedByVendor] = useState<boolean>(false);
+  // The two release steps, which go the same way: Odoo decides, and the answer
+  // it echoes back replaces the request in the list.
+  const [poStepBusy, setPoStepBusy] = useState<string>("");
 
   // Manager Clarification Prompt State
   const [managerQueryText, setManagerQueryText] = useState<string>("");
@@ -2012,8 +2714,8 @@ export default function App() {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   // Quick navigation helpers
-  const nextScene = () => activeScene < 15 && setActiveScene(activeScene + 1);
-  const prevScene = () => activeScene > 1 && setActiveScene(activeScene - 1);
+  // nextScene / prevScene removed along with the DEMO STEP header controls —
+  // every screen is reached from the sidebar or an in-screen button now.
 
   // Simulation timer for voice recording
   useEffect(() => {
@@ -2191,10 +2893,20 @@ export default function App() {
       department: editDepartment,
       expenseCategory: editExpenseCategory,
       lineItems: allItems,
-      status: budgetBreach ? "Needs Clarification" : "Pending Approval",
+      // Always Pending Approval. `budgetBreach` is shared state carried from
+      // whichever request was last open (and from the demo toggle on the budget
+      // screen), so reading it here stamped a brand-new request with the last
+      // one's budget verdict — which is how a freshly raised PR was born as
+      // "Needs Clarification" and vanished from the approver's queue. A new
+      // request has not been budget-checked yet; that happens at the budget
+      // verification step.
+      status: "Pending Approval",
       urgency: "High",
       deliveryDate: editDeliveryDate || undefined,
       createdDate: new Date().toLocaleDateString([], { month: 'short', day: '2-digit' }) + ", " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      // Sortable companion to createdDate, so this lands at the top of the
+      // approver's queue straight away rather than waiting for Odoo's copy.
+      submittedAt: new Date().toISOString(),
       buyer: "SCM-IT-14",
       vendor: "Pending Sourcing",
       savings: 0,
@@ -2211,6 +2923,45 @@ export default function App() {
     setSelectedRequestId(reqId);
     setAttachedFiles([]);
     setExtraItems([]);
+    // Start the new request's budget check clean rather than inheriting the
+    // previous request's verdict.
+    setBudgetBreach(false);
+
+    // Tell whoever owns the next step that it is waiting on them. This used to
+    // happen only when somebody pressed "Remind" on a request card, so a
+    // submitted request sat in the approver's queue with nothing announcing it.
+    const nextOwner = pokeTargetRole(newReq.status);
+    setPokes(prev => [...prev, {
+      to: nextOwner,
+      from: currentUser?.name || userRole,
+      message: `${reqId} · ${newReq.productName} · ₹${newReq.totalCost.toLocaleString('en-IN')} is waiting for your approval.`,
+      reqId,
+    }]);
+    // Mark it as the newest so the approver's queue can point straight at it.
+    setLastSubmittedId(reqId);
+    // And tell the requester what just happened and who has it now — the step
+    // that was missing, which left them on the next screen with no idea what
+    // to do or wait for.
+    // Odoo answers with the matched chain, so the login to approve with is only
+    // known once the save lands. Filled in by the sync below when it does.
+    setSubmittedInfo({
+      id: reqId,
+      product: editProductName,
+      lines: allItems.length,
+      total: linesTotal(allItems),
+      owner: nextOwner,
+      breach: false,
+    });
+    void (async () => {
+      const saved = (await submitRequestToOdoo(newReq)) as RequestItem | null;
+      const waiting = saved?.approvalChain?.find((step: ApprovalStep) => step.state === 'pending');
+      if (!waiting) return;
+      setSubmittedInfo(prev => prev && prev.id === reqId ? {
+        ...prev,
+        owner: waiting.designation,
+        signIn: waiting.holders?.map((h: { login: string }) => h.login).join(' or ') || undefined,
+      } : prev);
+    })();
 
     // Go to next step in demo
     setActiveScene(5);
@@ -2224,6 +2975,10 @@ export default function App() {
    */
   const decideInOdoo = async (id: string, decision: 'approve' | 'reject' | 'clarify', comment?: string) => {
     if (!authToken) return null;
+    // Returning null is the signal the caller already understands: apply the
+    // decision locally. No sync-error row — nothing is out of step with Odoo
+    // when there is no Odoo.
+    if (offlineDemo) return null;
     const what = decision === 'approve' ? 'approval was not recorded in Odoo'
       : decision === 'reject' ? 'rejection was not recorded in Odoo'
         : 'clarification request was not recorded in Odoo';
@@ -2281,6 +3036,35 @@ export default function App() {
     }
     setManagerApprovalNote("");
     setShowManagerApproveBox(false);
+
+    // One signature is not necessarily approval. A configured workflow can
+    // demand several, and Odoo answers with the request still Pending Approval
+    // until the last of them signs — so read the answer rather than assuming
+    // this click released it, or the buyer is called in two levels early.
+    const label = decided?.productName || requests.find(r => r.id === id)?.productName || '';
+    const stillWaiting = decided ? decided.status === 'Pending Approval' : false;
+    const nextStep = decided?.approvalChain?.find(step => step.state === 'pending');
+
+    if (stillWaiting && nextStep) {
+      // Passed to the next level of the same chain, not out of approval.
+      setPokes(prev => [...prev, {
+        to: 'Manager',
+        from: currentUser?.name || userRole,
+        message: `${id}${label ? ` · ${label}` : ''} needs the ${nextStep.designation} to sign (level ${nextStep.order} of ${decided?.approvalTotal ?? '?'}).`,
+        reqId: id,
+      }]);
+      setPokeToast(`Level signed · now with the ${nextStep.designation}`);
+      setTimeout(() => setPokeToast(''), 3200);
+    } else {
+      // Fully approved: it is the SCM buyer's to source now.
+      setPokes(prev => [...prev, {
+        to: 'SCM Buyer',
+        from: currentUser?.name || userRole,
+        message: `${id}${label ? ` · ${label}` : ''} is approved and ready to source.`,
+        reqId: id,
+      }]);
+    }
+    setLastSubmittedId(id);
     setActiveScene(11); // Route to order tracking
   };
 
@@ -2467,22 +3251,10 @@ export default function App() {
     setNegotiationComplete(false);
   };
 
-  // The API is bearer-authenticated: without a token there is nothing to show,
-  // so render the sign-in gate instead of the app shell.
-  if (!authToken) {
-    return (
-      <SignInScreen
-        apiUrl={odooApiUrl}
-        onApiUrlChange={(v) => {
-          setOdooApiUrl(v);
-          try { localStorage.setItem("odooApiUrl", v); } catch { /* ignore */ }
-        }}
-        onSubmit={signIn}
-        busy={authBusy}
-        error={authError}
-      />
-    );
-  }
+  // The API is bearer-authenticated: without a token there is nothing to show.
+  // The landing screen below (scene 1) *is* the sign-in gate now, so an
+  // unauthenticated visitor is held there rather than sent to a second form.
+  const signedOut = !authToken;
 
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-hidden login-aurora text-textPrimary`}>
@@ -2492,8 +3264,8 @@ export default function App() {
       {/* Rotating prismatic holographic sweep (same as the login) */}
       <div className="login-sweep absolute inset-[-50%] z-0 pointer-events-none opacity-70" />
 
-      {/* --- SCENE 1: Microsoft SSO & Role Portal Login --- */}
-      {activeScene === 1 && (
+      {/* --- SCENE 1: Sign in with an Odoo account --- */}
+      {(signedOut || activeScene === 1) && (
         <div className="flex-grow flex flex-col lg:flex-row min-h-screen login-aurora relative overflow-hidden">
           {/* Holographic decorative layers span the whole login page */}
           <div className="login-sweep absolute inset-[-50%] z-0 pointer-events-none" />
@@ -2535,45 +3307,65 @@ export default function App() {
               <div>
                 <h2 className="font-outfit text-3xl font-extrabold text-textPrimary tracking-tight">Sign In</h2>
                 <p className="mt-3 text-sm text-textSecondary">
-                  Select a role portal below to test each interactive role.
+                  Use your SmartSpend account. Your portal is decided by the role your Odoo account holds.
                 </p>
               </div>
-              
-              <div className="space-y-4">
-                <div className="relative flex pb-2 items-center">
-                  <div className="flex-grow border-t border-borderTheme"></div>
-                  <span className="flex-shrink mx-4 text-textFaint text-xs font-semibold uppercase tracking-wider">Select Demo Role Portal</span>
-                  <div className="flex-grow border-t border-borderTheme"></div>
+
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!authBusy && loginEmail && loginPassword) void signIn(loginEmail, loginPassword);
+                }}
+              >
+                <div>
+                  <label htmlFor="ss1-email" className="block text-[11px] font-bold uppercase tracking-wider text-textSecondary mb-2">
+                    Email
+                  </label>
+                  <input
+                    id="ss1-email"
+                    type="email"
+                    value={loginEmail}
+                    autoComplete="username"
+                    autoFocus
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    placeholder="you@company.com"
+                    className="w-full rounded-xl border border-borderTheme bg-white/70 px-3.5 py-2.5 text-sm text-textPrimary placeholder:text-textFaint outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/25"
+                  />
                 </div>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={() => handleSsoLogin("Employee")}
-                    className="p-3 bg-secondary/50 hover:bg-brand/20 border border-borderTheme hover:border-brand/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
-                  >
-                    Employee Portal
-                  </button>
-                  <button 
-                    onClick={() => handleSsoLogin("Manager")}
-                    className="p-3 bg-secondary/50 hover:bg-gold/20 border border-borderTheme hover:border-gold/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
-                  >
-                    Manager Inbox
-                  </button>
-                  <button 
-                    onClick={() => handleSsoLogin("SCM Buyer")}
-                    className="p-3 bg-secondary/50 hover:bg-brand/20 border border-borderTheme hover:border-brand/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
-                  >
-                    SCM Buyer Portal
-                  </button>
-                  <button 
-                    onClick={() => handleSsoLogin("Vendor")}
-                    className="p-3 bg-secondary/50 hover:bg-pos/20 border border-borderTheme hover:border-pos/30 rounded-xl text-center text-xs text-textSecondary font-medium transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand/10"
-                  >
-                    Vendor Portal
-                  </button>
+
+                <div>
+                  <label htmlFor="ss1-pass" className="block text-[11px] font-bold uppercase tracking-wider text-textSecondary mb-2">
+                    Password
+                  </label>
+                  <input
+                    id="ss1-pass"
+                    type="password"
+                    value={loginPassword}
+                    autoComplete="current-password"
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full rounded-xl border border-borderTheme bg-white/70 px-3.5 py-2.5 text-sm text-textPrimary placeholder:text-textFaint outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/25"
+                  />
                 </div>
-              </div>
-              
+
+                {authError && (
+                  <div role="alert" className="flex items-start gap-2 rounded-xl border border-neg/30 bg-neg/10 px-3 py-2.5 text-xs text-neg">
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-px" />
+                    <span>{authError}</span>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={authBusy || !loginEmail || !loginPassword}
+                  className="w-full rounded-xl bg-brand py-2.5 text-sm font-bold text-onbrand shadow-lg transition hover:brightness-110
+                             disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand/40"
+                >
+                  {authBusy ? "Signing in…" : "Sign in"}
+                </button>
+              </form>
+
               <div className="space-y-4 pt-4 border-t border-borderTheme/50">
                 <div className="relative flex pb-2 items-center">
                   <div className="flex-grow border-t border-borderTheme"></div>
@@ -2594,7 +3386,12 @@ export default function App() {
                       placeholder="http://127.0.0.1:8019"
                       className="flex-grow text-xs px-3 py-2 bg-secondary/30 border border-borderTheme rounded-lg text-textPrimary focus:outline-none focus:border-brand transition-all"
                     />
-                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center border transition-all ${odooConnected ? 'bg-pos/15 border-pos/30 text-pos' : 'bg-neg/15 border-neg/30 text-neg'}`} title={odooConnected ? "Connected to Odoo" : "Odoo not reachable"}>
+                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center border transition-all ${
+                      offlineDemo ? 'bg-gold/15 border-gold/30 text-gold'
+                        : odooConnected ? 'bg-pos/15 border-pos/30 text-pos'
+                          : 'bg-neg/15 border-neg/30 text-neg'}`}
+                      title={offlineDemo ? "Demo mode — sample data, nothing is saved"
+                        : odooConnected ? "Connected to Odoo" : "Odoo not reachable"}>
                       <div className={`h-2.5 w-2.5 rounded-full ${odooConnected ? 'bg-pos animate-pulse' : 'bg-neg'}`} />
                     </div>
                   </div>
@@ -2606,7 +3403,7 @@ export default function App() {
       )}
       
       {/* --- SCENES 2 - 12: INTEGRATED DEMO DASHBOARD LAYOUT --- */}
-      {activeScene > 1 && (
+      {!signedOut && activeScene > 1 && (
         <div className="flex-grow flex overflow-hidden h-screen relative z-10">
 
           {/* Collapsed rail — keeps the re-open toggle reachable now the header is hidden */}
@@ -2662,6 +3459,7 @@ export default function App() {
                       {currentUser.name}
                       {currentUser.is_manager ? ' · Procurement Manager in Odoo'
                         : currentUser.is_buyer ? ' · SCM Buyer in Odoo'
+                        : currentUser.is_vendor ? ' · External Vendor in Odoo'
                         : ' · Requester in Odoo'}
                     </p>
                   )}
@@ -2709,26 +3507,83 @@ export default function App() {
                 </div>
                 */}
 
+                {/* Sign out ONLY. This used to also wipe and re-seed every
+                    request in Odoo, and because it is the way you switch users,
+                    every switch destroyed the work in progress. Resetting the
+                    demo data is a separate, deliberate button below. */}
                 <button
                   onClick={async () => {
                     setActiveScene(1);
-                    setPoApprovedByHead(false);
-                    setPoAcknowledgedByVendor(false);
-                    await resetOdooDatabase();
+                    // The two release steps used to be cleared here, because
+                    // they were component state and the next user would have
+                    // inherited them. They are on the request now, so signing
+                    // out leaves them where they belong.
+                    await signOut();
+                    setLoginEmail("");
+                    setLoginPassword("");
+                    setAuthError("");
                   }}
                   className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-lg border border-borderTheme bg-secondary hover:bg-secondary text-[11px] text-textSecondary hover:text-primary font-medium transition-all"
                 >
-                  <RefreshCw className="h-3.5 w-3.5" />
-                  <span>Logout / Reset Demo</span>
+                  <PanelLeftClose className="h-3.5 w-3.5" />
+                  <span>Sign out</span>
                 </button>
+
+                {/* Destructive and rare: deletes every request and re-seeds the
+                    walkthrough set. Two clicks, and only for accounts Odoo would
+                    actually let do it. */}
+                {(currentUser?.is_manager || userRole === 'Manager' || userRole === 'CEO') && (
+                  resetArmed ? (
+                    <div className="space-y-1.5 rounded-lg border border-neg/40 bg-neg/5 p-2">
+                      <p className="text-[10px] text-neg font-semibold leading-snug">
+                        Delete all {requests.length} requests and re-seed the demo set? This cannot be undone.
+                      </p>
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={async () => { setResetArmed(false); await resetOdooDatabase(); }}
+                          className="flex-1 py-1.5 rounded-md bg-neg text-onbrand text-[10px] font-bold"
+                        >
+                          Delete &amp; re-seed
+                        </button>
+                        <button
+                          onClick={() => setResetArmed(false)}
+                          className="flex-1 py-1.5 rounded-md bg-secondary border border-borderTheme text-[10px] font-bold text-textSecondary"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setResetArmed(true)}
+                      className="w-full flex items-center justify-center space-x-2 py-1.5 px-3 rounded-lg border border-borderTheme bg-transparent text-[10px] text-textFaint hover:text-neg hover:border-neg/40 font-medium transition-all"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                      <span>Reset demo data</span>
+                    </button>
+                  )
+                )}
                 
                 <div className="flex items-center justify-between text-[11px] text-textFaint px-2 py-1 bg-secondary/30 rounded-lg border border-borderTheme/50 mt-2">
                   <span className="font-semibold uppercase tracking-wider">Odoo Server</span>
                   <div className="flex items-center space-x-1.5">
-                    <span className="text-[10px] font-medium text-textSecondary">{odooConnected ? 'Connected' : 'Disconnected'}</span>
-                    <span className={`h-2 w-2 rounded-full ${odooConnected ? 'bg-pos animate-pulse' : 'bg-neg'}`} />
+                    <span className="text-[10px] font-medium text-textSecondary">
+                      {offlineDemo ? 'Demo data' : odooConnected ? 'Connected' : 'Disconnected'}
+                    </span>
+                    <span className={`h-2 w-2 rounded-full ${
+                      offlineDemo ? 'bg-gold' : odooConnected ? 'bg-pos animate-pulse' : 'bg-neg'}`} />
                   </div>
                 </div>
+                {/* Said outright, not left to a status dot. A demo that passes
+                    sample data off as saved records is worse than one that
+                    admits what it is. */}
+                {offlineDemo && (
+                  <p className="mt-2 px-2 py-1.5 rounded-lg bg-gold/10 border border-gold/25 text-[10px] leading-snug text-textSecondary">
+                    <span className="font-bold text-textPrimary">Sample data.</span>{' '}
+                    No Odoo is connected, so nothing here is saved — every change
+                    lives in this browser until you reload.
+                  </p>
+                )}
               </div>
             </aside>
           )}
@@ -2736,10 +3591,10 @@ export default function App() {
           {/* MAIN WORKSPACE CONTENT */}
           <main className="flex-grow flex flex-col min-w-0 overflow-y-auto">
             
-            {/* TOP NAVIGATION HEADER — sidebar toggle, DEMO STEP picker and
-                Back / Next Step. This is the guided walkthrough: it lets you jump
-                straight to any scene instead of reaching it through the chain of
-                in-screen buttons. */}
+            {/* TOP NAVIGATION HEADER — sidebar toggle and the current screen.
+                The DEMO STEP picker and its Back / Next Step buttons were removed:
+                the app is navigated through the sidebar and the in-screen buttons,
+                the way the real product is. */}
             <header className={`h-16 px-6 border-b flex items-center justify-between flex-shrink-0 bg-surface/80 backdrop-blur-md border-borderTheme`}>
               <div className="flex items-center space-x-4">
                 <button
@@ -2751,36 +3606,9 @@ export default function App() {
 
                 <div className="h-4 w-[1px] bg-raised" />
 
-                <div className="flex items-center space-x-2 text-xs">
-                  <span className="font-semibold text-brand">DEMO STEP:</span>
-                  <select
-                    value={activeScene}
-                    onChange={(e) => setActiveScene(Number(e.target.value))}
-                    className="bg-secondary border border-line2 rounded-lg px-2.5 py-1 text-primary font-bold"
-                  >
-                    {SCENES.map(s => (
-                      <option key={s.id} value={s.id}>{s.name.replace(/^Scene \d+:\s+/, '')}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={prevScene}
-                  disabled={activeScene === 2}
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-secondary hover:bg-raised text-primary disabled:opacity-30 transition-all border border-borderTheme"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={nextScene}
-                  disabled={activeScene === 15}
-                  className="px-4 py-1.5 rounded-lg text-xs font-bold bg-brand hover:bg-brand text-onbrand disabled:opacity-30 transition-all flex items-center space-x-1"
-                >
-                  <span>Next Step</span>
-                  <ChevronRight className="h-3 w-3" />
-                </button>
+                <span className="text-sm font-bold text-textPrimary">
+                  {SCENES.find(s => s.id === activeScene)?.name.replace(/^Scene \d+:\s+/, '')}
+                </span>
               </div>
             </header>
 
@@ -2831,7 +3659,207 @@ export default function App() {
                   {pokeToast}
                 </div>
               )}
-              
+
+              {/* Waiting on you: raised on sign-in when this role already has
+                  work queued. Built from the requests themselves, so it does
+                  not matter who submitted them or whether the page was
+                  refreshed since. Picking one opens it where it can be acted
+                  on, selected and scrolled to. */}
+              {inboxAlert && inboxAlert.length > 0 && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-textPrimary/40 backdrop-blur-sm animate-fadeIn"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="inbox-title"
+                  onClick={() => setInboxAlert(null)}
+                >
+                  <div
+                    className="w-full max-w-xl rounded-2xl bg-surface border border-borderTheme shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="p-6 pb-4 border-b border-borderTheme flex items-start gap-4">
+                      <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gold/15 text-gold shrink-0">
+                        <Bell className="h-6 w-6" />
+                      </span>
+                      <div className="min-w-0">
+                        <h3 id="inbox-title" className="font-outfit text-xl font-extrabold text-textPrimary leading-tight">
+                          {inboxAlert.length} request{inboxAlert.length > 1 ? 's' : ''} waiting on you
+                        </h3>
+                        <p className="text-xs text-textSecondary mt-1">
+                          {userRole === 'Manager' ? 'These need your approval. The newest is first.'
+                            : userRole === 'SCM Buyer' ? 'These are approved and waiting to be sourced. The newest is first.'
+                            : userRole === 'Vendor' ? 'These purchase orders are waiting for your acknowledgment.'
+                            : 'Your approver has asked you a question on these.'}
+                          {' '}Pick one to open it.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="overflow-y-auto divide-y divide-borderTheme">
+                      {inboxAlert.map((r, i) => (
+                        <button
+                          key={r.id}
+                          onClick={() => openForAction(r)}
+                          className="w-full text-left px-6 py-4 hover:bg-secondary/70 transition-colors flex items-center gap-4 group"
+                        >
+                          <div className="min-w-0 flex-grow">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono text-[11px] font-bold text-textFaint">{r.id}</span>
+                              {i === 0 && (
+                                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-gold/20 text-gold border border-gold/30">
+                                  Latest
+                                </span>
+                              )}
+                              <span
+                                className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
+                                style={{ background: `rgb(${statusRgb(r.status)} / 0.12)`, color: statusColor(r.status) }}
+                              >
+                                {r.status}
+                              </span>
+                            </div>
+                            <p className="text-sm font-bold text-textPrimary mt-1 truncate">
+                              {r.productQty}× {reqSummary(r)}
+                            </p>
+                            <p className="text-[11px] text-textSecondary mt-0.5 truncate">
+                              {r.department} · {r.location} · {r.createdDate}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-sm font-extrabold text-textPrimary tabular-nums">
+                              ₹{r.totalCost.toLocaleString('en-IN')}
+                            </p>
+                            <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-brand">
+                              {userRole === 'Manager' ? 'Review' : 'Open'}
+                              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 px-6 py-4 bg-secondary/50 border-t border-borderTheme">
+                      <span className="text-[11px] text-textFaint">
+                        Total ₹{inboxAlert.reduce((s, r) => s + r.totalCost, 0).toLocaleString('en-IN')}
+                      </span>
+                      <button
+                        onClick={() => setInboxAlert(null)}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-surface text-textSecondary border border-borderTheme hover:text-textPrimary transition-all"
+                      >
+                        Later
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Submitted: what happens next, and who has it now. Raised the
+                  moment a requisition becomes a request, because until now the
+                  requester was dropped on the next screen with no confirmation
+                  that anything had been sent or who was expected to act. */}
+              {submittedInfo && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-textPrimary/40 backdrop-blur-sm animate-fadeIn"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="submitted-title"
+                  onClick={() => setSubmittedInfo(null)}
+                >
+                  <div
+                    className="w-full max-w-lg rounded-2xl bg-surface border border-borderTheme shadow-2xl overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="p-6 pb-5 border-b border-borderTheme">
+                      <div className="flex items-start gap-4">
+                        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-pos/10 text-pos shrink-0">
+                          <CheckCircle2 className="h-6 w-6" />
+                        </span>
+                        <div className="min-w-0">
+                          <h3 id="submitted-title" className="font-outfit text-xl font-extrabold text-textPrimary leading-tight">
+                            Request sent for approval
+                          </h3>
+                          <p className="text-xs text-textSecondary mt-1">
+                            <span className="font-mono font-bold text-textPrimary">{submittedInfo.id}</span>
+                            {' · '}{submittedInfo.product}
+                            {submittedInfo.lines > 1 ? ` +${submittedInfo.lines - 1} more` : ''}
+                            {' · '}₹{submittedInfo.total.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-brand/5 border border-brand/20 px-3.5 py-3">
+                        <Bell className="h-4 w-4 text-brand shrink-0 mt-0.5" />
+                        <p className="text-xs text-textSecondary">
+                          {submittedInfo.breach ? (
+                            <>This request is over its department budget, so it has gone back for
+                            clarification. Your <strong className="text-textPrimary">{submittedInfo.owner}</strong> has
+                            been notified and will come back to you with a question.</>
+                          ) : (
+                            <>Your <strong className="text-textPrimary">{submittedInfo.owner}</strong> has been
+                            notified and it is waiting on them now. You do not need to do anything
+                            unless they ask you a question.</>
+                          )}
+                          {/* Name the account. The chain routes by designation,
+                              and "Finance CapEx Head" is not something anyone
+                              can sign in as. */}
+                          {submittedInfo.signIn && (
+                            <span className="block mt-1.5 text-textFaint">
+                              To approve it, sign in as{' '}
+                              <strong className="text-brand font-mono">{submittedInfo.signIn}</strong>.
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="px-6 py-5">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-textFaint mb-3">What happens next</p>
+                      <ol className="space-y-3">
+                        {NEXT_STEPS.map((s, i) => (
+                          <li key={s.stage} className="flex items-start gap-3">
+                            <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-[10px] font-extrabold border ${
+                              i === 0 ? 'bg-brand text-onbrand border-transparent' : 'bg-secondary text-textFaint border-borderTheme'}`}>
+                              {i + 1}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-textPrimary">
+                                {s.stage}
+                                <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-textFaint">{s.owner}</span>
+                                {i === 0 && (
+                                  <span className="ml-2 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
+                                    Now
+                                  </span>
+                                )}
+                              </p>
+                              <p className="text-[11px] text-textSecondary mt-0.5">{s.note}</p>
+                            </div>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2.5 px-6 py-4 bg-secondary/50 border-t border-borderTheme">
+                      <button
+                        onClick={() => setSubmittedInfo(null)}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-surface text-textSecondary border border-borderTheme hover:text-textPrimary transition-all"
+                      >
+                        Got it
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedRequestId(submittedInfo.id);
+                          setSubmittedInfo(null);
+                          setActiveScene(11);
+                        }}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-brand text-onbrand hover:brightness-110 transition-all flex items-center gap-1.5"
+                      >
+                        Track this request
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* --- SCENE 2: EMPLOYEE PORTAL (CONSOLIDATED INPUT & TABS) --- */}
               {activeScene === 2 && (
                 <div className="space-y-6 animate-fadeIn">
@@ -3682,6 +4710,10 @@ export default function App() {
                           totalLabel="Contract Value"
                         />
 
+                        {/* Where the approvals have got to. Informational only —
+                            the walkthrough is allowed to run ahead of them, so
+                            the demo never gets stuck waiting for a signature. */}
+                        {!chainSigned(currentRequest) && <ApprovalChain request={currentRequest} compact />}
                         <div className="flex justify-end space-x-3 pt-2">
                           <button onClick={() => {
                             setRequests(prev => prev.map(r => {
@@ -3718,6 +4750,10 @@ export default function App() {
 
                         <LineItemsTable lines={currentLines} title="Lines to be sourced" totalLabel="Estimated Value" />
 
+                        {/* Where the approvals have got to. Informational only —
+                            the walkthrough is allowed to run ahead of them, so
+                            the demo never gets stuck waiting for a signature. */}
+                        {!chainSigned(currentRequest) && <ApprovalChain request={currentRequest} compact />}
                         <div className="flex justify-end space-x-3 pt-2">
                           <button onClick={() => {
                             setRequests(prev => prev.map(r => {
@@ -3751,8 +4787,8 @@ export default function App() {
                     title="Sourcing Desk"
                     subtitle="All your sourcing work, live quotes and vendor finds in one place."
                     stats={[
-                      { label: 'To source', value: String(requests.filter(r => r.status === 'Sourcing').length) },
-                      { label: 'Pipeline', value: `₹${Math.round(requests.filter(r => r.status === 'Sourcing').reduce((s, r) => s + r.totalCost, 0) / 1000)}K` },
+                      { label: 'To source', value: String(requests.filter(r => BUYER_QUEUE_STATUSES.includes(r.status)).length) },
+                      { label: 'Pipeline', value: `₹${Math.round(requests.filter(r => BUYER_QUEUE_STATUSES.includes(r.status)).reduce((s, r) => s + r.totalCost, 0) / 1000)}K` },
                     ]}
                   />
 
@@ -3780,7 +4816,7 @@ export default function App() {
 
                   {/* SCM Tab 1: Contract Requests Queue */}
                   {scmTab === 'requests' && (() => {
-                    const scmList = requests.filter(r => r.status === 'Sourcing' && requestHaystack(r).includes(scmSearch.trim().toLowerCase()));
+                    const scmList = newestFirst(requests.filter(r => BUYER_QUEUE_STATUSES.includes(r.status) && requestHaystack(r).includes(scmSearch.trim().toLowerCase())));
                     return (
                     <div className="space-y-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -4287,7 +5323,7 @@ export default function App() {
                   {/* Consolidated snapshot (#4) */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     {(() => {
-                      const pending = requests.filter(r => r.status === 'Pending Approval');
+                      const pending = requests.filter(r => MANAGER_QUEUE_STATUSES.includes(r.status));
                       const value = pending.reduce((s, r) => s + r.totalCost, 0);
                       const saved = pending.reduce((s, r) => s + r.savings, 0);
                       const largest = pending.reduce((m, r) => Math.max(m, r.totalCost), 0);
@@ -4334,7 +5370,9 @@ export default function App() {
                   </div>
                   
                   {(() => {
-                    const pendingAll = requests.filter(r => r.status === 'Pending Approval');
+                    // Newest first: the request that was just submitted is the
+                    // one the approver came here to find.
+                    const pendingAll = newestFirst(requests.filter(r => MANAGER_QUEUE_STATUSES.includes(r.status)));
                     const mgrList = pendingAll.filter(r => requestHaystack(r).includes(mgrSearch.trim().toLowerCase()));
                     if (pendingAll.length === 0) return (
                       <div className="p-8 text-center bg-surface border border-borderTheme rounded-2xl text-textSecondary shadow-sm">
@@ -4358,7 +5396,15 @@ export default function App() {
                       ) : (
                       <div className="space-y-6">
                       {mgrList.map(req => (
-                        <div key={req.id} className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm space-y-6">
+                        <div
+                          key={req.id}
+                          id={`req-${req.id}`}
+                          className={`p-6 rounded-2xl bg-surface shadow-sm space-y-6 transition-all ${
+                            req.id === focusRequestId
+                              ? 'border-2 border-brand ring-4 ring-brand/15'
+                              : 'border border-borderTheme'
+                          }`}
+                        >
                           <div className="flex items-center justify-between border-b border-borderTheme pb-4">
                             <div className="flex items-center space-x-3">
                               <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-textSecondary font-bold text-sm">AV</div>
@@ -4367,13 +5413,29 @@ export default function App() {
                                 <p className="text-sm font-bold text-textPrimary">Anjitha V (IT Ops Specialist)</p>
                               </div>
                             </div>
-                            <span className="text-xs text-textSecondary font-bold">{req.id}</span>
+                            <div className="flex items-center gap-2">
+                              {/* Flags the one that was just submitted, so an
+                                  approver arriving from the reminder knows which
+                                  of the pending requests they came for. */}
+                              {req.id === lastSubmittedId && (
+                                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-gold/20 text-gold border border-gold/30 animate-pulse">
+                                  Just submitted
+                                </span>
+                              )}
+                              <span className="text-xs text-textSecondary font-bold">{req.id}</span>
+                            </div>
                           </div>
                           
                           <div className="space-y-4">
                             <h3 className="font-outfit font-extrabold text-textPrimary text-lg">{req.productQty}x {reqSummary(req)}</h3>
 
                             <LineItemsTable lines={reqLines(req)} title="Products requested" totalLabel="Total cost" />
+
+                            {/* Who else has to sign, and who it is waiting on.
+                                Without this an approver cannot tell whether
+                                their signature releases the request or merely
+                                passes it to the next level. */}
+                            <ApprovalChain request={req} />
 
                             <div className="grid grid-cols-2 gap-4 text-xs font-outfit">
                               <div>
@@ -4466,7 +5528,15 @@ export default function App() {
                               className="px-5 py-2.5 bg-accent-savings hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
                             >
                               <Check className="h-4.5 w-4.5" />
-                              <span>Approve Request</span>
+                              {/* Name the level being signed. On a multi-step
+                                  chain "Approve Request" overstates what the
+                                  click does — it passes the request on, it does
+                                  not release it. */}
+                              <span>
+                                {(req.approvalTotal ?? 0) > 1
+                                  ? `Approve · Level ${(req.approvalDone ?? 0) + 1} of ${req.approvalTotal}`
+                                  : 'Approve Request'}
+                              </span>
                             </button>
                           </div>
 
@@ -4633,6 +5703,11 @@ export default function App() {
                       );
                     })()}
 
+                    {/* The signatures this request needs, and where it has got
+                        to. Shown to the requester too: "waiting on the Finance
+                        CapEx Head" is the answer to why nothing has moved. */}
+                    <ApprovalChain request={currentRequest} />
+
                     {/* 5-Step Progress Tracker — the first three come from the
                         request's real status, the last two from the ERP steps below */}
                     {(() => {
@@ -4736,22 +5811,33 @@ export default function App() {
                               <p className="font-bold text-textPrimary">1. Generate Purchase Order</p>
                               <p className="text-[11px] text-textSecondary leading-relaxed">Creates the purchase order in Odoo from the approved request — contracted lines are priced at their rate-card value.</p>
                               {!currentRequest.purchaseOrders?.length ? (
-                                <>
-                                  <button
-                                    onClick={async () => {
-                                      setPoBusy(true);
-                                      setPoError("");
-                                      const raised = await createPurchaseOrderInOdoo(currentRequest.id);
-                                      if (!raised) setPoError("Could not raise the purchase order — check that the request is approved and has a vendor.");
-                                      setPoBusy(false);
-                                    }}
-                                    disabled={poBusy}
-                                    className="mt-2 px-3 py-1.5 bg-brand hover:opacity-90 disabled:opacity-50 text-[10px] font-bold text-onbrand rounded shadow-sm transition-all"
-                                  >
-                                    {poBusy ? 'Generating…' : 'Generate Purchase Order'}
-                                  </button>
-                                  {poError && <p className="text-[10px] text-neg font-semibold mt-1">{poError}</p>}
-                                </>
+                                // Odoo refuses this to anyone outside the buyer
+                                // group (403), so offering the button to a
+                                // requester only produced a misleading error.
+                                canRaisePurchaseOrder ? (
+                                  <>
+                                    <button
+                                      onClick={async () => {
+                                        setPoBusy(true);
+                                        setPoError("");
+                                        const raised = await createPurchaseOrderInOdoo(currentRequest.id);
+                                        if (!raised) setPoError("Could not raise the purchase order — check that the request is approved and has a vendor.");
+                                        setPoBusy(false);
+                                      }}
+                                      disabled={poBusy}
+                                      className="mt-2 px-3 py-1.5 bg-brand hover:opacity-90 disabled:opacity-50 text-[10px] font-bold text-onbrand rounded shadow-sm transition-all"
+                                    >
+                                      {poBusy ? 'Generating…' : 'Generate Purchase Order'}
+                                    </button>
+                                    {poError && <p className="text-[10px] text-neg font-semibold mt-1">{poError}</p>}
+                                  </>
+                                ) : (
+                                  <p className="text-[10px] text-textSecondary/60 font-semibold mt-1 italic">
+                                    {availableRoles.includes('SCM Buyer')
+                                      ? 'Locked: only the SCM Buyer raises the purchase order. Switch the sidebar role to SCM Buyer (Sourcing), then open Track Request to come back here.'
+                                      : 'Locked: only the SCM Buyer raises the purchase order. Sign out and sign back in as buyer@smartspend.demo.'}
+                                  </p>
+                                )
                               ) : (
                                 <p className="text-[10px] text-accent-savings font-semibold mt-1 font-mono">✓ {currentRequest.purchaseOrders.join(', ')} created in Odoo</p>
                               )}
@@ -4766,21 +5852,45 @@ export default function App() {
                             <div className="flex-grow space-y-1">
                               <p className="font-bold text-textPrimary">2. Purchase Head / User Approval</p>
                               <p className="text-[11px] text-textSecondary leading-relaxed">Required to approve standard financial release terms before sending the PO document to the vendor.</p>
-                              {!poApprovedByHead ? (
-                                <button 
-                                  onClick={() => {
-                                    setPoApprovedByHead(true);
-                                    setRequests(prev => prev.map(r => r.id === selectedRequestId ? {
-                                      ...r,
-                                      history: [...r.history, { title: "Approved by Purchase Head", date: "Now", desc: `${r.purchaseOrders?.join(', ') || 'The purchase order'} approved and released to vendor.` }]
-                                    } : r));
+                              {poApprovedByHead ? (
+                                <p className="text-[10px] text-accent-savings font-semibold mt-1">✓ Approved and released to vendor</p>
+                              ) : !currentRequest.purchaseOrders?.length ? (
+                                /* There is nothing to release yet. Offering this
+                                   before step 1 let a manager "approve" a PO that
+                                   did not exist, and the flow then had nowhere to
+                                   go. The steps run in order. */
+                                <p className="text-[10px] text-textSecondary/60 font-semibold mt-1 italic">
+                                  Locked: the SCM Buyer has to raise the purchase order first.
+                                </p>
+                              ) : isPurchaseHead ? (
+                                /* Odoo writes the release and the timeline
+                                   entry, then echoes the request back — the
+                                   flag and the history come from that answer,
+                                   so they survive a reload and belong to this
+                                   request alone. */
+                                <button
+                                  onClick={async () => {
+                                    setPoStepBusy('release');
+                                    await recordPurchaseOrderStep(currentRequest.id, 'release');
+                                    setPoStepBusy('');
                                   }}
-                                  className="mt-2 px-3 py-1.5 bg-accent-budget hover:opacity-90 text-[10px] font-bold text-surface rounded shadow-sm transition-all"
+                                  disabled={poStepBusy === 'release'}
+                                  className="mt-2 px-3 py-1.5 bg-accent-budget hover:opacity-90 disabled:opacity-50 text-[10px] font-bold text-surface rounded shadow-sm transition-all"
                                 >
-                                  Approve &amp; Release PO
+                                  {poStepBusy === 'release' ? 'Releasing…' : 'Approve & Release PO'}
                                 </button>
                               ) : (
-                                <p className="text-[10px] text-accent-savings font-semibold mt-1">✓ Approved and released to vendor</p>
+                                /* Name the action, not just the rule. "Sign in
+                                   as Manager" read as sign out and back in,
+                                   even for an account that already holds the
+                                   manager group and only has to move the
+                                   sidebar role switch — which left the demo
+                                   stalled here with nothing to click. */
+                                <p className="text-[10px] text-textSecondary/60 font-semibold mt-1 italic">
+                                  {availableRoles.includes('Manager')
+                                    ? 'Locked: only the Purchase Head releases a PO. Switch the sidebar role to Manager (Approver), then open Track Request to come back here.'
+                                    : 'Locked: only the Purchase Head releases a PO. Sign out and sign back in as manager@smartspend.demo.'}
+                                </p>
                               )}
                             </div>
                           </div>
@@ -4794,18 +5904,25 @@ export default function App() {
                               <p className="font-bold text-textPrimary">3. Vendor Acknowledgment</p>
                               <p className="text-[11px] text-textSecondary leading-relaxed">Simulate receipt confirmation, delivery date commit, and agreement signature from the vendor portal.</p>
                               {poApprovedByHead && !poAcknowledgedByVendor && (
-                                <button 
-                                  onClick={() => {
-                                    setPoAcknowledgedByVendor(true);
-                                    setRequests(prev => prev.map(r => r.id === selectedRequestId ? {
-                                      ...r,
-                                      history: [...r.history, { title: "Vendor Acknowledged PO", date: "Now", desc: "Vendor confirmed delivery commit date & pricing." }]
-                                    } : r));
-                                  }}
-                                  className="mt-2 px-3 py-1.5 bg-accent-savings hover:opacity-90 text-[10px] font-bold text-surface rounded shadow-sm transition-all"
-                                >
-                                  Simulate Vendor Acknowledgment
-                                </button>
+                                canRecordVendorReply ? (
+                                  <button
+                                    onClick={async () => {
+                                      setPoStepBusy('acknowledge');
+                                      await recordPurchaseOrderStep(currentRequest.id, 'acknowledge');
+                                      setPoStepBusy('');
+                                    }}
+                                    disabled={poStepBusy === 'acknowledge'}
+                                    className="mt-2 px-3 py-1.5 bg-accent-savings hover:opacity-90 disabled:opacity-50 text-[10px] font-bold text-surface rounded shadow-sm transition-all"
+                                  >
+                                    {poStepBusy === 'acknowledge' ? 'Recording…' : 'Simulate Vendor Acknowledgment'}
+                                  </button>
+                                ) : (
+                                  <p className="text-[10px] text-textSecondary/60 font-semibold mt-1 italic">
+                                    {availableRoles.includes('SCM Buyer')
+                                      ? 'Waiting on the vendor to confirm. Switch the sidebar role to SCM Buyer (Sourcing) or Vendor (External Portal), then open Track Request to come back here.'
+                                      : 'Waiting on the vendor to confirm. Sign out and sign back in as buyer@smartspend.demo or vendor@smartspend.demo.'}
+                                  </p>
+                                )
                               )}
                               {poAcknowledgedByVendor && (
                                 <p className="text-[10px] text-accent-savings font-semibold mt-1">✓ Vendor Acknowledged (PO Confirmed)</p>
@@ -4824,7 +5941,12 @@ export default function App() {
                       <span className="text-xs text-textSecondary">
                         {!poApprovedByHead && "Awaiting Purchase Head approval..."}
                         {poApprovedByHead && !poAcknowledgedByVendor && "Awaiting Vendor acknowledgment..."}
-                        {poApprovedByHead && poAcknowledgedByVendor && "Workflow steps complete."}
+                        {/* Name who has it next: the buyer or the vendor is the
+                            one standing here when the acknowledgment lands, and
+                            receiving is not theirs to run. */}
+                        {poApprovedByHead && poAcknowledgedByVendor && (canRunFulfilment
+                          ? "Workflow steps complete — receiving is yours to run."
+                          : "Workflow steps complete — receiving is the purchase manager's.")}
                       </span>
                       <button 
                         onClick={() => {
@@ -4976,19 +6098,24 @@ export default function App() {
                         </div>
                       ) : (
                         <div className="pt-2 flex justify-end space-x-3">
-                          <button 
-                            onClick={() => {
-                              if (!qualityPassed) {
-                                alert("Please perform quality inspection before generating GRN.");
-                                return;
-                              }
-                              setGrnGenerated(true);
-                            }}
-                            className="px-5 py-2.5 bg-accent-savings hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
-                          >
-                            <span>Validate &amp; Generate GRN</span>
-                            <Check className="h-4 w-4" />
-                          </button>
+                          {canRunFulfilment ? (
+                            <button 
+                              onClick={() => {
+                                if (!qualityPassed) {
+                                  alert("Please perform quality inspection before generating GRN.");
+                                  return;
+                                }
+                                setGrnGenerated(true);
+                              }}
+                              className="px-5 py-2.5 bg-accent-savings hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
+                            >
+                              <span>Validate &amp; Generate GRN</span>
+                              <Check className="h-4 w-4" />
+                            </button>
+                          ) : (
+                            <StepLock what="only the purchase manager records goods receipt"
+                                      canSwitch={availableRoles.includes('Manager')} />
+                          )}
                         </div>
                       )}
                     </div>
@@ -5183,13 +6310,18 @@ export default function App() {
                       </div>
                     ) : (
                       <div className="flex justify-end pt-2">
-                        <button 
-                          onClick={() => setBillPosted(true)}
-                          className="px-5 py-2.5 bg-accent-savings hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
-                        >
-                          <span>Post Vendor Bill to Ledger</span>
-                          <ArrowRight className="h-4 w-4" />
-                        </button>
+                        {canRunFulfilment ? (
+                          <button 
+                            onClick={() => setBillPosted(true)}
+                            className="px-5 py-2.5 bg-accent-savings hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
+                          >
+                            <span>Post Vendor Bill to Ledger</span>
+                            <ArrowRight className="h-4 w-4" />
+                          </button>
+                        ) : (
+                          <StepLock what="only the purchase manager posts the vendor bill"
+                                    canSwitch={availableRoles.includes('Manager')} />
+                        )}
                       </div>
                     )}
                   </div>
@@ -5290,13 +6422,18 @@ export default function App() {
                         </div>
                       ) : (
                         <div className="flex justify-end pt-2">
-                          <button 
-                            onClick={() => setPaymentComplete(true)}
-                            className="px-5 py-2.5 bg-accent-savings hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
-                          >
-                            <span>Authorize &amp; Pay Invoice</span>
-                            <ArrowRight className="h-4 w-4" />
-                          </button>
+                          {canRunFulfilment ? (
+                            <button 
+                              onClick={() => setPaymentComplete(true)}
+                              className="px-5 py-2.5 bg-accent-savings hover:opacity-90 text-xs font-bold rounded-lg text-surface transition-all flex items-center space-x-1 shadow-sm"
+                            >
+                              <span>Authorize &amp; Pay Invoice</span>
+                              <ArrowRight className="h-4 w-4" />
+                            </button>
+                          ) : (
+                            <StepLock what="only the purchase manager authorises payment"
+                                      canSwitch={availableRoles.includes('Manager')} />
+                          )}
                         </div>
                       )}
                     </div>
@@ -5657,6 +6794,625 @@ export default function App() {
                     )}
                   </div>
                   </>
+                  )}
+                </div>
+              )}
+
+              {/* --- SCENE 16: MASTER DATA CONSOLE --- */}
+              {activeScene === 16 && (
+                <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
+                  <SceneHeader
+                    icon={Boxes}
+                    title="Master Data"
+                    subtitle="The reference records every request, contract and purchase order is built on."
+                    stats={[
+                      { label: 'Products', value: String(MASTER_PRODUCTS.length) },
+                      { label: 'Categories', value: String(categoryRows.length) },
+                      { label: 'Vendors', value: String(vendorRows.length) },
+                      { label: 'Branches', value: String(branchRows.length) },
+                    ]}
+                  />
+
+                  {/* Master switcher */}
+                  <div className="p-2 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                    <div className="flex items-center gap-1.5 overflow-x-auto">
+                      {([
+                        { key: 'products', label: 'Products', icon: Package, count: MASTER_PRODUCTS.length },
+                        { key: 'categories', label: 'Expense Categories', icon: Layers, count: categoryRows.length },
+                        { key: 'workflow', label: 'Workflow', icon: Activity, count: configuredWorkflows.length || MASTER_WORKFLOW.length },
+                        { key: 'company', label: 'Company', icon: Landmark, count: 1 },
+                        { key: 'branches', label: 'Branches', icon: Building2, count: branchRows.length },
+                        { key: 'vendors', label: 'Vendors', icon: Handshake, count: vendorRows.length },
+                      ] as const).map(t => {
+                        const on = mastersTab === t.key;
+                        return (
+                          <button
+                            key={t.key}
+                            onClick={() => { setMastersTab(t.key); setMasterSearch(''); }}
+                            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
+                              on ? 'bg-brand text-onbrand border-transparent shadow-sm'
+                                 : 'bg-secondary text-textSecondary border-borderTheme hover:text-textPrimary'}`}
+                          >
+                            <t.icon className="h-3.5 w-3.5" />
+                            <span>{t.label}</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${on ? 'bg-white/20' : 'bg-raised text-textFaint'}`}>{t.count}</span>
+                            {t.key === 'vendors' && pendingDrafts.length > 0 && (
+                              <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-gold/20 text-gold border border-gold/30 animate-pulse">
+                                {pendingDrafts.length} AI
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Search — hidden on the single-record company master */}
+                  {mastersTab !== 'company' && (
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="relative w-72">
+                        <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-textFaint" />
+                        <input
+                          type="text"
+                          value={masterSearch}
+                          onChange={(e) => setMasterSearch(e.target.value)}
+                          placeholder="Search this master…"
+                          className="w-full bg-surface border border-borderTheme rounded-xl pl-9 pr-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-brand"
+                        />
+                      </div>
+                      <span className="text-[11px] text-textFaint">
+                        {masterData ? 'Live from Odoo' : 'Offline fallback list — Odoo not reachable'}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* ---------- PRODUCTS ---------- */}
+                  {mastersTab === 'products' && (
+                    <div className="rounded-2xl bg-surface border border-borderTheme shadow-sm overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse min-w-[720px]">
+                          <thead>
+                            <tr className="bg-secondary">
+                              {['Code', 'Product', 'Category', 'UoM', 'Contract rate', 'Default vendor', 'Status'].map(h => (
+                                <th key={h} className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-textFaint">{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {MASTER_PRODUCTS
+                              .filter(p => `${p.code} ${p.name} ${p.category} ${p.vendor}`.toLowerCase().includes(masterSearch.toLowerCase()))
+                              .map(p => (
+                                <tr key={p.code} className="border-t border-borderTheme hover:bg-secondary/60 transition-colors">
+                                  <td className="px-4 py-3 text-[11px] font-mono text-textFaint">{p.code}</td>
+                                  <td className="px-4 py-3 text-xs font-bold text-textPrimary">{p.name}</td>
+                                  <td className="px-4 py-3 text-xs text-textSecondary">{p.category}</td>
+                                  <td className="px-4 py-3 text-xs text-textSecondary">{p.uom}</td>
+                                  <td className="px-4 py-3 text-xs font-bold text-textPrimary tabular-nums">₹{p.contract.toLocaleString('en-IN')}</td>
+                                  <td className="px-4 py-3 text-xs text-textSecondary">{p.vendor}</td>
+                                  <td className="px-4 py-3">
+                                    {p.onContract ? (
+                                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-pos/10 text-pos border border-pos/25">
+                                        <ShieldCheck className="h-3 w-3" /> On contract
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-gold/10 text-gold border border-gold/25">
+                                        <Search className="h-3 w-3" /> Needs sourcing
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ---------- EXPENSE CATEGORIES ---------- */}
+                  {mastersTab === 'categories' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {categoryRows
+                        .filter(c => `${c.name} ${c.expenseType} ${c.glCode}`.toLowerCase().includes(masterSearch.toLowerCase()))
+                        .map(c => {
+                          const capex = /cap/i.test(c.expenseType);
+                          const tone = capex ? '99 86 168' : '12 150 137';
+                          return (
+                            <div key={c.name} className="req-tile p-5 pl-6" style={{ '--tint': tone } as React.CSSProperties}>
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <h4 className="font-outfit font-extrabold text-base text-textPrimary">{c.name}</h4>
+                                  <p className="text-[11px] text-textFaint mt-0.5 font-mono">{c.glCode}</p>
+                                </div>
+                                <span className="text-[10px] font-bold uppercase px-2 py-1 rounded-lg shrink-0"
+                                      style={{ background: `rgb(${tone} / 0.12)`, color: `rgb(${tone})` }}>
+                                  {capex ? 'CapEx' : 'OpEx'}
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-borderTheme">
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-wider text-textFaint font-bold">Auto-approve up to</p>
+                                  <p className="text-sm font-extrabold text-textPrimary tabular-nums mt-0.5">
+                                    {c.limit ? `₹${c.limit.toLocaleString('en-IN')}` : '—'}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-wider text-textFaint font-bold">Owning department</p>
+                                  <p className="text-xs font-semibold text-textSecondary mt-1">{c.owner}</p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+
+                  {/* ---------- WORKFLOW ---------- */}
+                  {mastersTab === 'workflow' && (
+                    <div className="space-y-4">
+                      <div className="p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm flex flex-wrap items-center gap-x-6 gap-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="grid h-8 w-8 place-items-center rounded-xl bg-brand/10 text-brand"><Activity className="h-4 w-4" /></span>
+                          <div>
+                            <p className="text-sm font-bold text-textPrimary">Approval Workflows</p>
+                            <p className="text-[11px] text-textFaint">
+                              {configuredWorkflows.length} rule{configuredWorkflows.length === 1 ? '' : 's'} ·
+                              who signs depends on department, expense type and value
+                            </p>
+                          </div>
+                        </div>
+                        <span className="ml-auto text-[11px] text-textFaint">
+                          {masterData?.workflows ? 'Configured in Odoo · Configuration ▸ Approval Workflows' : 'Reference process — Odoo not reachable'}
+                        </span>
+                      </div>
+
+                      {configuredWorkflows.length === 0 ? (
+                        /* No matrix reachable: fall back to describing the standard
+                           process rather than showing an empty screen. */
+                        <div className="rounded-2xl bg-surface border border-borderTheme shadow-sm p-6">
+                          <p className="text-xs font-bold text-textFaint uppercase tracking-wider mb-4">Standard process</p>
+                          <div className="relative">
+                            <div className="absolute left-[15px] top-2 bottom-2 w-[2px] bg-borderTheme" />
+                            <div className="space-y-1">
+                              {MASTER_WORKFLOW.map(s => (
+                                <div key={s.seq} className="relative flex items-start gap-4 py-3">
+                                  <span className={`relative z-10 grid h-8 w-8 place-items-center rounded-full text-[11px] font-extrabold shrink-0 border-2 ${
+                                    s.auto ? 'bg-pos/10 text-pos border-pos/40' : 'bg-surface text-textSecondary border-borderTheme'}`}>
+                                    {s.auto ? <Zap className="h-3.5 w-3.5" /> : s.seq}
+                                  </span>
+                                  <div className="flex-grow min-w-0 pt-0.5">
+                                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                                      <h4 className="text-sm font-bold text-textPrimary">{s.stage}</h4>
+                                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-secondary text-textSecondary border border-borderTheme">{s.role}</span>
+                                    </div>
+                                    <p className="text-xs text-textSecondary mt-1">{s.rule}</p>
+                                  </div>
+                                  <span className="text-[11px] font-bold text-textFaint tabular-nums shrink-0 pt-1">{s.sla}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {configuredWorkflows
+                            .filter(w => `${w.name} ${w.department} ${w.category} ${w.expenseType} ${w.branch} ${w.approvers.map(a => a.designation).join(' ')}`
+                              .toLowerCase().includes(masterSearch.toLowerCase()))
+                            .map(w => {
+                              const capex = /capital|capex/i.test(w.expenseType);
+                              const tone = capex ? '99 86 168' : '12 150 137';
+                              return (
+                                <div key={w.id} className="rounded-2xl bg-surface border border-borderTheme shadow-sm overflow-hidden">
+                                  <div className="px-5 py-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-borderTheme">
+                                    <span className="font-mono text-[11px] font-bold text-textFaint">{w.name}</span>
+                                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded"
+                                          style={{ background: `rgb(${tone} / 0.12)`, color: `rgb(${tone})` }}>
+                                      {w.expenseType}
+                                    </span>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-secondary text-textSecondary border border-borderTheme">
+                                      {w.workflowType}
+                                    </span>
+                                    <span className="ml-auto text-xs font-bold text-textPrimary tabular-nums">
+                                      ₹{w.amountFrom.toLocaleString('en-IN')} – ₹{w.amountTo.toLocaleString('en-IN')}
+                                    </span>
+                                  </div>
+
+                                  <div className="px-5 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-secondary/40 border-b border-borderTheme">
+                                    {[
+                                      { l: 'Department', v: w.department },
+                                      { l: 'Branch', v: w.branch },
+                                      { l: 'Expense category', v: w.category },
+                                      { l: 'Document', v: w.document },
+                                    ].map(f => (
+                                      <div key={f.l} className="min-w-0">
+                                        <p className="text-[9px] font-bold uppercase tracking-wider text-textFaint">{f.l}</p>
+                                        <p className="text-[11px] font-semibold text-textPrimary truncate">{f.v}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+
+                                  <div className="px-5 py-4">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-textFaint mb-3">
+                                      Signs in this order — all {w.approvers.length} required
+                                    </p>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      {w.approvers.map((a, i) => (
+                                        <React.Fragment key={`${w.id}-${a.order}`}>
+                                          {i > 0 && <ArrowRight className="h-3.5 w-3.5 text-textFaint shrink-0" />}
+                                          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-brand/5 border border-brand/20">
+                                            <span className="grid h-5 w-5 place-items-center rounded-full bg-brand text-onbrand text-[10px] font-extrabold">
+                                              {a.order}
+                                            </span>
+                                            <span className="text-xs font-bold text-textPrimary">{a.designation}</span>
+                                          </span>
+                                        </React.Fragment>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ---------- COMPANY ---------- */}
+                  {mastersTab === 'company' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                      <div className="lg:col-span-2 p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                        <div className="flex items-center gap-4 pb-5 border-b border-borderTheme">
+                          <span className="grid h-14 w-14 place-items-center rounded-2xl bg-brand/10 text-brand border border-borderTheme">
+                            <Landmark className="h-7 w-7" />
+                          </span>
+                          <div>
+                            <h3 className="font-outfit font-extrabold text-xl text-textPrimary">
+                              {currentUser?.company || 'SmartSpend Demo Company Pvt Ltd'}
+                            </h3>
+                            <p className="text-xs text-textSecondary mt-0.5">Operating company · all branches roll up here</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 pt-5">
+                          {[
+                            { label: 'Base currency', value: 'INR — Indian Rupee' },
+                            { label: 'Financial year', value: '1 April – 31 March' },
+                            { label: 'Registered branches', value: `${branchRows.length} locations` },
+                            { label: 'Departments', value: `${departmentRows.length} cost centres` },
+                            { label: 'GSTIN', value: 'Sample value — set in Odoo' },
+                            { label: 'CIN', value: 'Sample value — set in Odoo' },
+                          ].map(f => (
+                            <div key={f.label}>
+                              <p className="text-[10px] uppercase tracking-wider text-textFaint font-bold">{f.label}</p>
+                              <p className="text-sm font-semibold text-textPrimary mt-1">{f.value}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="p-6 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                        <h4 className="text-sm font-bold text-textPrimary flex items-center gap-2">
+                          <Users className="h-4 w-4 text-brand" /> Departments
+                        </h4>
+                        <p className="text-[11px] text-textFaint mt-0.5">Each one carries its own budget and approver.</p>
+                        <div className="mt-4 space-y-2">
+                          {departmentRows.map(d => (
+                            <div key={d.name} className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-secondary border border-borderTheme">
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold text-textPrimary truncate">{d.name}</p>
+                                <p className="text-[10px] text-textFaint font-mono">{d.code}</p>
+                              </div>
+                              <span className="text-[10px] text-textSecondary shrink-0 truncate max-w-[45%] text-right">{d.approver}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ---------- BRANCHES ---------- */}
+                  {mastersTab === 'branches' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {branchRows
+                        .filter(b => `${b.name} ${b.code} ${b.city}`.toLowerCase().includes(masterSearch.toLowerCase()))
+                        .map((b, i) => (
+                          <div key={b.name} className="p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm glow-card">
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand/10 text-brand">
+                                <Building2 className="h-5 w-5" />
+                              </span>
+                              {i === 0 && (
+                                <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30">
+                                  Head office
+                                </span>
+                              )}
+                            </div>
+                            <h4 className="font-outfit font-extrabold text-base text-textPrimary mt-3">{b.name}</h4>
+                            <p className="text-xs text-textSecondary mt-0.5">{b.city}</p>
+                            <div className="flex items-center justify-between mt-4 pt-3 border-t border-borderTheme">
+                              <span className="text-[11px] font-mono text-textFaint">{b.code}</span>
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-pos">
+                                <CheckCircle2 className="h-3 w-3" /> Active
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+
+                  {/* ---------- VENDORS (master + AI discovery drafts) ---------- */}
+                  {mastersTab === 'vendors' && (
+                    <div className="space-y-4">
+                      {/* Approved master vs AI discovery queue */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          onClick={() => setVendorView('master')}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                            vendorView === 'master' ? 'bg-brand text-onbrand border-transparent shadow-sm'
+                                                    : 'bg-surface text-textSecondary border-borderTheme hover:text-textPrimary'}`}
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5" /> Approved master
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${vendorView === 'master' ? 'bg-white/20' : 'bg-raised text-textFaint'}`}>{vendorRows.length}</span>
+                        </button>
+                        <button
+                          onClick={() => setVendorView('ai')}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                            vendorView === 'ai' ? 'bg-brand text-onbrand border-transparent shadow-sm'
+                                                : 'bg-surface text-textSecondary border-borderTheme hover:text-textPrimary'}`}
+                        >
+                          <Sparkles className="h-3.5 w-3.5" /> AI discovered — drafts
+                          {pendingDrafts.length > 0 && (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                              vendorView === 'ai' ? 'bg-white/20' : 'bg-gold/20 text-gold border border-gold/30'}`}>
+                              {pendingDrafts.length} waiting
+                            </span>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Promotion toast */}
+                      {draftToast && (
+                        <div className="p-3.5 rounded-xl bg-pos/10 border border-pos/30 flex items-center gap-2.5 text-pos text-xs font-bold animate-fadeIn">
+                          <CheckCircle2 className="h-4 w-4 shrink-0" /> {draftToast}
+                        </div>
+                      )}
+
+                      {/* --- approved vendor master --- */}
+                      {vendorView === 'master' && (
+                        <div className="rounded-2xl bg-surface border border-borderTheme shadow-sm overflow-hidden">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse min-w-[760px]">
+                              <thead>
+                                <tr className="bg-secondary">
+                                  {['Code', 'Vendor', 'Category', 'Rating', 'Payment terms', 'Since', 'Origin', 'Status'].map(h => (
+                                    <th key={h} className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-textFaint">{h}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {vendorRows
+                                  .filter(v => `${v.name} ${v.category} ${v.code}`.toLowerCase().includes(masterSearch.toLowerCase()))
+                                  .map(v => (
+                                    <tr key={v.code + v.name} className={`border-t border-borderTheme hover:bg-secondary/60 transition-colors ${
+                                      v.origin === 'AI Discovered' ? 'bg-pos/5' : ''}`}>
+                                      <td className="px-4 py-3 text-[11px] font-mono text-textFaint">{v.code}</td>
+                                      <td className="px-4 py-3 text-xs font-bold text-textPrimary">{v.name}</td>
+                                      <td className="px-4 py-3 text-xs text-textSecondary">{v.category}</td>
+                                      <td className="px-4 py-3">
+                                        <span className="inline-flex items-center gap-1 text-xs font-bold text-textPrimary tabular-nums">
+                                          <Star className="h-3 w-3 text-gold fill-gold" /> {v.rating.toFixed(1)}
+                                        </span>
+                                      </td>
+                                      <td className="px-4 py-3 text-xs text-textSecondary">{v.terms}</td>
+                                      <td className="px-4 py-3 text-xs text-textSecondary tabular-nums">{v.since}</td>
+                                      <td className="px-4 py-3">
+                                        {v.origin === 'AI Discovered' ? (
+                                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand/10 text-brand border border-brand/25">
+                                            <Sparkles className="h-3 w-3" /> AI discovered
+                                          </span>
+                                        ) : (
+                                          <span className="text-[10px] font-bold text-textFaint uppercase tracking-wider">Onboarded</span>
+                                        )}
+                                      </td>
+                                      <td className="px-4 py-3">
+                                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                          v.status === 'Active' ? 'bg-pos/10 text-pos border-pos/25' : 'bg-gold/10 text-gold border-gold/25'}`}>
+                                          {v.status}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* --- AI discovery: drafted vendors awaiting sign-off --- */}
+                      {vendorView === 'ai' && (
+                        <div className="space-y-4">
+                          {/* what the agent did */}
+                          <div className="relative overflow-hidden p-5 rounded-2xl bg-surface border border-borderTheme shadow-sm">
+                            <div className="relative flex flex-wrap items-center gap-x-6 gap-y-3">
+                              <div className="flex items-center gap-3">
+                                <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand/10 text-brand">
+                                  <ScanLine className="h-5 w-5" />
+                                </span>
+                                <div>
+                                  <p className="text-sm font-bold text-textPrimary">Sourcing agent · vendor discovery</p>
+                                  <p className="text-[11px] text-textFaint">
+                                    Scanned MCA registry, GST portal and 4 B2B directories · {AI_DRAFT_VENDORS.length} suppliers drafted
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4 ml-auto">
+                                {[
+                                  { v: String(pendingDrafts.length), l: 'Awaiting review' },
+                                  { v: String(Object.values(draftDecisions).filter(d => d === 'approved').length), l: 'Approved' },
+                                  { v: String(Object.values(draftDecisions).filter(d => d === 'rejected').length), l: 'Rejected' },
+                                ].map(s => (
+                                  <div key={s.l} className="text-center">
+                                    <p className="text-lg font-extrabold text-textPrimary font-outfit tabular-nums leading-none">{s.v}</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-wider text-textFaint mt-1">{s.l}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          {pendingDrafts.length === 0 ? (
+                            <div className="p-10 text-center rounded-2xl bg-surface border border-borderTheme">
+                              <CheckCircle2 className="h-8 w-8 mx-auto text-pos mb-2" />
+                              <p className="text-sm font-bold text-textPrimary">Discovery queue is clear</p>
+                              <p className="text-xs text-textFaint mt-1">Every drafted vendor has been reviewed. Approved ones are in the master.</p>
+                            </div>
+                          ) : pendingDrafts.map(d => {
+                            const open = openDraft === d.id;
+                            const filled = d.fields.length;
+                            const total = filled + d.missing.length;
+                            const pct = Math.round((filled / total) * 100);
+                            return (
+                              <div key={d.id} className="rounded-2xl bg-surface border border-borderTheme shadow-sm overflow-hidden animate-fadeIn">
+                                {/* header row */}
+                                <div className="p-5 flex flex-wrap items-center gap-4">
+                                  {/* confidence ring */}
+                                  <div className="relative h-16 w-16 shrink-0">
+                                    <svg viewBox="0 0 44 44" className="h-16 w-16 -rotate-90">
+                                      <circle cx="22" cy="22" r="18" fill="none" strokeWidth="4"
+                                              className="stroke-borderTheme" />
+                                      <circle cx="22" cy="22" r="18" fill="none" strokeWidth="4" strokeLinecap="round"
+                                              className="stroke-brand"
+                                              strokeDasharray={`${(d.aiScore / 100) * 113.1} 113.1`} />
+                                    </svg>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
+                                      <span className="text-sm font-extrabold text-textPrimary tabular-nums">{d.aiScore}</span>
+                                      <span className="text-[8px] font-bold uppercase tracking-wider text-textFaint mt-1">match</span>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex-grow min-w-[220px]">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <h4 className="font-outfit font-extrabold text-lg text-textPrimary">{d.name}</h4>
+                                      <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30">
+                                        <FileText className="h-3 w-3" /> Draft · not yet a vendor
+                                      </span>
+                                      <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-brand/10 text-brand border border-brand/25">
+                                        <Sparkles className="h-3 w-3" /> AI generated
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-textSecondary mt-1">
+                                      {d.category} · {d.city} · <span className="font-mono text-textFaint">{d.id}</span>
+                                    </p>
+                                    <p className="text-[11px] text-textFaint mt-1">
+                                      Found while sourcing <strong className="text-textSecondary">{d.foundFor}</strong> · {d.foundAt}
+                                    </p>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 ml-auto">
+                                    <button
+                                      onClick={() => rejectDraftVendor(d)}
+                                      className="px-3.5 py-2 rounded-xl text-xs font-bold bg-secondary text-textSecondary border border-borderTheme hover:text-neg hover:border-neg/40 transition-all"
+                                    >
+                                      Reject
+                                    </button>
+                                    <button
+                                      onClick={() => approveDraftVendor(d)}
+                                      className="px-4 py-2 rounded-xl text-xs font-bold bg-pos text-onbrand hover:opacity-90 transition-all flex items-center gap-1.5"
+                                    >
+                                      <CheckCircle2 className="h-3.5 w-3.5" /> Approve into master
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* enrichment meter + signals */}
+                                <div className="px-5 pb-4 space-y-3">
+                                  <div>
+                                    <div className="flex items-baseline justify-between text-[11px] mb-1.5">
+                                      <span className="font-bold text-textSecondary">
+                                        AI filled {filled} of {total} onboarding fields
+                                      </span>
+                                      <span className="font-bold text-textPrimary tabular-nums">{pct}%</span>
+                                    </div>
+                                    <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                                      <div className="h-full rounded-full bg-brand transition-all duration-700" style={{ width: `${pct}%` }} />
+                                    </div>
+                                  </div>
+
+                                  <div className="flex flex-wrap gap-2">
+                                    {d.signals.map(s => (
+                                      <span key={s.label}
+                                        className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${
+                                          s.tone === 'good' ? 'bg-pos/10 text-pos border-pos/25'
+                                          : s.tone === 'warn' ? 'bg-gold/10 text-gold border-gold/25'
+                                          : 'bg-neg/10 text-neg border-neg/25'}`}>
+                                        {s.tone === 'good' ? <Check className="h-3 w-3" />
+                                          : s.tone === 'warn' ? <AlertTriangle className="h-3 w-3" />
+                                          : <ShieldAlert className="h-3 w-3" />}
+                                        {s.label}
+                                      </span>
+                                    ))}
+                                  </div>
+
+                                  {d.missing.length > 0 && (
+                                    <p className="text-[11px] text-textFaint">
+                                      Still needs a person: <strong className="text-gold">{d.missing.join(' · ')}</strong>
+                                    </p>
+                                  )}
+
+                                  <button
+                                    onClick={() => setOpenDraft(open ? null : d.id)}
+                                    className="text-[11px] font-bold text-brand hover:underline flex items-center gap-1"
+                                  >
+                                    {open ? 'Hide' : 'Show'} what the AI filled and where it came from
+                                    <ChevronRight className={`h-3 w-3 transition-transform ${open ? 'rotate-90' : ''}`} />
+                                  </button>
+                                </div>
+
+                                {/* field-by-field provenance */}
+                                {open && (
+                                  <div className="border-t border-borderTheme bg-secondary/40 px-5 py-4 animate-fadeIn">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3">
+                                      {d.fields.map(f => (
+                                        <div key={f.label} className="flex items-start gap-3">
+                                          <div className="flex-grow min-w-0">
+                                            <div className="flex items-baseline justify-between gap-2">
+                                              <p className="text-[10px] uppercase tracking-wider text-textFaint font-bold">{f.label}</p>
+                                              <span className="text-[10px] font-bold text-textSecondary tabular-nums shrink-0">{f.confidence}%</span>
+                                            </div>
+                                            <p className="text-xs font-semibold text-textPrimary mt-0.5 break-words">{f.value}</p>
+                                            <div className="flex items-center gap-2 mt-1.5">
+                                              <div className="h-1 flex-grow rounded-full bg-raised overflow-hidden">
+                                                <div className={`h-full rounded-full ${f.confidence >= 90 ? 'bg-pos' : f.confidence >= 75 ? 'bg-brand' : 'bg-gold'}`}
+                                                     style={{ width: `${f.confidence}%` }} />
+                                              </div>
+                                              <span className="text-[9px] font-bold uppercase tracking-wider text-textFaint shrink-0">{f.source}</span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                      {d.missing.map(m => (
+                                        <div key={m} className="flex items-start gap-3 opacity-70">
+                                          <div className="flex-grow min-w-0">
+                                            <div className="flex items-baseline justify-between gap-2">
+                                              <p className="text-[10px] uppercase tracking-wider text-textFaint font-bold">{m}</p>
+                                              <span className="text-[10px] font-bold text-gold shrink-0">Missing</span>
+                                            </div>
+                                            <p className="text-xs font-semibold text-gold mt-0.5">Collect from the vendor before first payment</p>
+                                            <div className="h-1 rounded-full bg-raised mt-2.5" />
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                    <p className="text-[10px] text-textFaint mt-4 pt-3 border-t border-borderTheme">
+                                      Nothing here is written to Odoo until you approve it. Approving creates the partner
+                                      record and carries this provenance onto it.
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
