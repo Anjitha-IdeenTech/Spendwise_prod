@@ -33,7 +33,8 @@ const SCENES = [
   { id: 13, name: "Scene 13: Vendor Bill 3-Way Matching" },
   { id: 14, name: "Scene 14: Payment Processing & Reconciliation" },
   { id: 15, name: "Scene 15: Spend Intelligence Analytics" },
-  { id: 16, name: "Scene 16: Master Data Console" }
+  { id: 16, name: "Scene 16: Master Data Console" },
+  { id: 17, name: "Scene 17: Questions Raised" }
 ];
 
 /** The signed-in Odoo user, as returned by /api/smartspend/login. */
@@ -2390,7 +2391,7 @@ export default function App() {
   // Role-keyed so Employee, SCM Buyer, Manager and CEO each persist their own order.
   const DEFAULT_NAV_ORDER: Record<string, string[]> = {
     Employee: ['chat', 'list', 'tracking', 'clarify'],
-    Manager: ['queue', 'tracking', 'masters'],
+    Manager: ['queue', 'clarify', 'tracking', 'masters'],
     // 'tracking' is here because raising the PO moves the request to "PO
     // Confirmed", which drops it straight out of the To Source queue — and the
     // buyer had no other route to the tracking screen, so the vendor
@@ -2436,7 +2437,9 @@ export default function App() {
       if (key === 'masters') { setActiveScene(16); }
       else { setActiveScene(2); setEmployeeTab(key as 'chat' | 'list' | 'tracking' | 'clarify'); }
     }
-    else if (role === 'Manager') { setActiveScene(key === 'masters' ? 16 : key === 'tracking' ? 11 : 10); }
+    else if (role === 'Manager') {
+      setActiveScene(key === 'masters' ? 16 : key === 'tracking' ? 11 : key === 'clarify' ? 17 : 10);
+    }
     else if (role === 'SCM Buyer') {
       if (key === 'masters') { setActiveScene(16); }
       else if (key === 'tracking') {
@@ -2457,7 +2460,9 @@ export default function App() {
   };
   const navActive = (role: string, key: string): boolean => {
     if (role === 'Employee') return key === 'masters' ? activeScene === 16 : activeScene === 2 && employeeTab === key;
-    if (role === 'Manager') return key === 'masters' ? activeScene === 16 : key === 'tracking' ? activeScene === 11 : activeScene === 10;
+    if (role === 'Manager') return key === 'masters' ? activeScene === 16
+      : key === 'tracking' ? activeScene === 11
+        : key === 'clarify' ? activeScene === 17 : activeScene === 10;
     if (role === 'SCM Buyer') {
       if (key === 'masters') return activeScene === 16;
       if (key === 'tracking') return activeScene === 11;
@@ -2476,6 +2481,7 @@ export default function App() {
       'Employee/clarify': { icon: <AlertTriangle className="h-4 w-4" />, label: 'Questions', badge: pill(requests.filter(r => r.status === 'Needs Clarification').length, 'bg-gold/20 text-gold border border-gold/30', true) },
       'Employee/masters': { icon: <Boxes className="h-4 w-4" />, label: 'Master Data' },
       'Manager/queue': { icon: <CheckCircle2 className="h-4 w-4" />, label: 'To Approve', badge: pill(requests.filter(r => MANAGER_QUEUE_STATUSES.includes(r.status)).length, 'bg-gold/20 text-gold border border-gold/30') },
+      'Manager/clarify': { icon: <AlertTriangle className="h-4 w-4" />, label: 'Questions', badge: pill(requests.filter(r => r.status === 'Needs Clarification').length, 'bg-gold/20 text-gold border border-gold/30', true) },
       'Manager/tracking': { icon: <History className="h-4 w-4" />, label: 'Track Request' },
       'Manager/masters': { icon: <Boxes className="h-4 w-4" />, label: 'Master Data', badge: pill(pendingDrafts.length, 'bg-brand/20 text-brand border border-brand/30', true) },
       'SCM Buyer/requests': { icon: <Briefcase className="h-4 w-4" />, label: 'To Source', badge: pill(requests.filter(r => BUYER_QUEUE_STATUSES.includes(r.status)).length, 'bg-brand/20 text-brand border border-brand/30') },
@@ -6815,6 +6821,83 @@ export default function App() {
                   )}
                 </div>
               )}
+
+              {/* --- SCENE 17: QUESTIONS RAISED (MANAGER) --- */}
+              {activeScene === 17 && (() => {
+                const asked = newestFirst(requests.filter(r => r.status === 'Needs Clarification'));
+                return (
+                <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
+                  <SceneHeader
+                    icon={AlertTriangle}
+                    title="Questions Raised"
+                    subtitle="Requests you have asked about, and what the requester has said back."
+                    stats={[{ label: 'Awaiting a reply', value: String(asked.length) }]}
+                  />
+
+                  {asked.length === 0 ? (
+                    <div className="p-12 text-center bg-surface border border-borderTheme rounded-2xl shadow-sm">
+                      <CheckCircle2 className="h-8 w-8 mx-auto text-pos mb-2" />
+                      <p className="text-sm font-semibold text-textPrimary">Nothing is waiting on an answer</p>
+                      <p className="text-xs text-textFaint mt-1">
+                        Ask for clarification from the approval queue and the request will appear here.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {asked.map(req => (
+                        <div key={req.id} id={`req-${req.id}`} className="p-6 rounded-2xl bg-surface border border-gold/30 shadow-sm space-y-4">
+                          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-borderTheme pb-3">
+                            <div className="min-w-0">
+                              <span className="text-xs text-gold font-bold block">{req.id}</span>
+                              <h4 className="font-outfit font-extrabold text-lg text-primary truncate">
+                                {req.productQty}x {reqSummary(req)}
+                              </h4>
+                              <p className="text-[11px] text-textSecondary mt-0.5">
+                                {req.department} · {req.location} · ₹{req.totalCost.toLocaleString('en-IN')}
+                              </p>
+                            </div>
+                            <span className="px-2 py-0.5 bg-gold/10 text-gold border border-gold/25 rounded-md text-[10px] font-bold shrink-0">
+                              AWAITING REPLY
+                            </span>
+                          </div>
+
+                          {/* The whole exchange, so the answer is read next to
+                              the question it answers. */}
+                          <div className="space-y-2">
+                            {req.clarificationComments.length === 0 ? (
+                              <p className="text-xs text-textFaint italic">No question recorded on this request yet.</p>
+                            ) : req.clarificationComments.map((c, i) => (
+                              <div key={i} className={`p-3 rounded-xl border ${
+                                c.role === 'manager'
+                                  ? 'bg-secondary border-borderTheme'
+                                  : 'bg-brand/5 border-brand/20 ml-6'}`}>
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-[10px] text-textFaint font-bold uppercase tracking-wider">
+                                    {c.role === 'manager' ? 'You asked' : 'Requester replied'}
+                                  </span>
+                                  <span className="text-[10px] text-textFaint">{c.date}</span>
+                                </div>
+                                <p className="text-xs text-textSecondary mt-1 font-medium">{c.text}</p>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="flex justify-end pt-1">
+                            <button
+                              onClick={() => { setSelectedRequestId(req.id); setActiveScene(10); }}
+                              className="px-4 py-2 bg-brand hover:brightness-110 text-xs font-bold rounded-lg text-onbrand transition-all flex items-center gap-1.5"
+                            >
+                              <span>Review &amp; decide</span>
+                              <ArrowRight className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                );
+              })()}
 
               {/* --- SCENE 16: MASTER DATA CONSOLE --- */}
               {activeScene === 16 && (
