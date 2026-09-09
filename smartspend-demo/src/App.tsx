@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useId } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useId } from 'react';
 import {
   Sparkles, Mic, FileText, Keyboard, LayoutDashboard, Send,
   TrendingUp, DollarSign, ShieldAlert, Award, FileSpreadsheet,
@@ -1694,7 +1694,7 @@ export default function App() {
   const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
   const [activeScene, setActiveScene] = useState<number>(() => {
     const sc = Number(params?.get('scene'));
-    return sc >= 1 && sc <= 16 ? sc : 1;
+    return sc >= 1 && sc <= 17 ? sc : 1;
   });
   // --- Dark theme disabled — light (Aurora) theme only for now. ---
   // To re-enable: restore the stateful darkMode block (see git history) and
@@ -2024,6 +2024,12 @@ export default function App() {
         setAuthToken(OFFLINE_TOKEN);
         setCurrentUser(demoUser);
         setAuthError("");
+        // Remembered the same way a real sign-in is, or a reload would find no
+        // session and send the visitor back to the gate.
+        try {
+          localStorage.setItem("smartspend-token", OFFLINE_TOKEN);
+          localStorage.setItem("smartspend-user", JSON.stringify(demoUser));
+        } catch { /* ignore */ }
         if (demoUser.defaultRole) handleSsoLogin(demoUser.defaultRole);
         return true;
       }
@@ -2873,6 +2879,22 @@ export default function App() {
       applyNav(role, (navOrder[role] || DEFAULT_NAV_ORDER[role])?.[0]);
     }
   };
+
+  // A reload landed on the sign-in screen even with a session in hand:
+  // activeScene starts at 1, and the gate renders scene 1 whether or not there
+  // is a token. Nothing had actually signed the visitor out. Put them back on
+  // their account's portal — the same landing sign-in itself picks — so a
+  // refresh keeps them where they were.
+  const sessionRestored = useRef(false);
+  // Before paint, not after: a useEffect here still let the sign-in screen
+  // render for a frame, which is the flicker that read as being signed out.
+  useLayoutEffect(() => {
+    if (sessionRestored.current || !authToken || !currentUser) return;
+    sessionRestored.current = true;
+    // An explicit ?scene= is a deep link and outranks the default landing.
+    if (params?.get('scene')) return;
+    handleSsoLogin(currentUser.defaultRole || 'Employee');
+  }, [authToken, currentUser]);
 
   const handleChatSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
