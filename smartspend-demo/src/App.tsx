@@ -8,7 +8,7 @@ import {
   Calendar, Layers, Clock, Users, ArrowUpRight, ArrowDownRight, Menu,
   Paperclip, MessageSquare, History, Search, Eye, Filter,
   Truck, Package, Receipt, CreditCard, Moon, Sun, Bell,
-  PanelLeftClose, PanelLeftOpen,
+  PanelLeftClose,
   Building2, Timer, Zap, Star, Activity, Boxes, Handshake, ScanLine
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -2522,6 +2522,35 @@ export default function App() {
       </button>
     );
   };
+  /**
+   * One nav item as an icon alone, for the folded rail.
+   *
+   * Folding used to hide the navigation entirely, leaving a bare strip with a
+   * re-open arrow — so the only way to reach another screen was to unfold
+   * first. The icons stay now, and a count becomes a dot, which is enough to
+   * say something is waiting without room for the number.
+   */
+  const renderRailItem = (role: string, key: string) => {
+    const meta = navMeta(role, key);
+    const active = navActive(role, key);
+    return (
+      <button
+        key={key}
+        onClick={() => applyNav(role, key)}
+        title={meta.label}
+        aria-label={meta.label}
+        className={`relative grid h-10 w-10 place-items-center rounded-xl transition-all ${
+          active ? 'bg-brand text-onbrand' : 'text-textSecondary hover:bg-brand/10 hover:text-brand'}`}
+      >
+        {meta.icon}
+        {meta.badge && (
+          <span className={`absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full ${
+            active ? 'bg-onbrand' : 'bg-gold'}`} />
+        )}
+      </button>
+    );
+  };
+
   const [chatInputText, setChatInputText] = useState<string>("");
   const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
   const [showFileAttachedAlert, setShowFileAttachedAlert] = useState<boolean>(false);
@@ -3531,37 +3560,41 @@ export default function App() {
       {!signedOut && activeScene > 1 && (
         <div className="flex-grow flex overflow-hidden h-screen relative z-10">
 
-          {/* Collapsed rail — keeps the re-open toggle reachable now the header is hidden */}
+          {/* Folded rail — the mark and the tabs, so the product is still named
+              and every screen is still one click away. Unfolding is the same
+              control that folded it, in the header. */}
           {!sidebarOpen && (
-            <div className="w-12 flex-shrink-0 flex flex-col items-center pt-5 border-r bg-surface border-borderTheme">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="p-2 rounded-lg text-textFaint hover:text-brand hover:bg-secondary transition-all"
-                title="Expand sidebar"
-              >
-                <PanelLeftOpen className="h-4 w-4" />
-              </button>
-            </div>
+            <aside className="w-16 flex-shrink-0 flex flex-col items-center gap-1.5 py-4 border-r bg-surface border-borderTheme">
+              <div className="h-9 w-9 rounded-lg bg-brand flex items-center justify-center mb-2" title="SmartSpend">
+                <Sparkles className="h-5 w-5 text-onbrand" />
+              </div>
+              {userRole !== "Vendor" && navOrder[userRole]?.map(key => renderRailItem(userRole, key))}
+              {userRole === "Vendor" && (
+                <button
+                  onClick={() => { setActiveScene(6); setScmTab('bidding'); }}
+                  title="Active RFQs to Quote"
+                  aria-label="Active RFQs to Quote"
+                  className="grid h-10 w-10 place-items-center rounded-xl text-pos bg-secondary border border-line2/60"
+                >
+                  <FileSpreadsheet className="h-5 w-5" />
+                </button>
+              )}
+            </aside>
           )}
 
           {/* LEFT SIDEBAR */}
           {sidebarOpen && (
             <aside className={`w-64 flex-shrink-0 flex flex-col justify-between border-r bg-surface border-borderTheme`}>
               <div>
-                <div className="p-6 flex items-center justify-between border-b border-borderTheme/40">
+                {/* The fold control lives in the header alone. Two of them, one
+                    here and one there, did the same thing from two places. */}
+                <div className="p-6 flex items-center border-b border-borderTheme/40">
                   <div className="flex items-center space-x-2">
                     <div className="h-8 w-8 rounded-lg bg-brand flex items-center justify-center">
                       <Sparkles className="h-4.5 w-4.5 text-onbrand" />
                     </div>
                     <span className="holo-text font-outfit font-bold text-lg tracking-tight">SmartSpend</span>
                   </div>
-                  <button
-                    onClick={() => setSidebarOpen(false)}
-                    className="p-1.5 rounded-lg text-textFaint hover:text-brand hover:bg-secondary transition-all"
-                    title="Collapse sidebar"
-                  >
-                    <PanelLeftClose className="h-4 w-4" />
-                  </button>
                 </div>
                 
                 {/* Navigation Items (Role-Adaptive) */}
@@ -3874,7 +3907,7 @@ export default function App() {
                         </span>
                         <div className="min-w-0">
                           <h3 id="submitted-title" className="font-outfit text-xl font-extrabold text-textPrimary leading-tight">
-                            Request sent for approval
+                            {offlineDemo ? 'Request raised — in this browser only' : 'Request sent for approval'}
                           </h3>
                           <p className="text-xs text-textSecondary mt-1">
                             <span className="font-mono font-bold text-textPrimary">{submittedInfo.id}</span>
@@ -3885,6 +3918,22 @@ export default function App() {
                         </div>
                       </div>
 
+                      {/* Nothing was sent anywhere, so do not say it was. This
+                          dialog claiming "your manager has been notified" while
+                          the request existed only in the browser is exactly how
+                          a lost record looks like a saved one. */}
+                      {offlineDemo ? (
+                        <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-gold/10 border border-gold/30 px-3.5 py-3">
+                          <AlertTriangle className="h-4 w-4 text-gold shrink-0 mt-0.5" />
+                          <p className="text-xs text-textSecondary">
+                            <strong className="text-textPrimary">No Odoo is connected</strong>, so this
+                            request was not saved and nobody has been notified. It lives in this
+                            browser until you reload. Point the portal at a running Odoo — the
+                            backend URL is on the sign-in screen — and raise it again to record it
+                            for real.
+                          </p>
+                        </div>
+                      ) : (
                       <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-brand/5 border border-brand/20 px-3.5 py-3">
                         <Bell className="h-4 w-4 text-brand shrink-0 mt-0.5" />
                         <p className="text-xs text-textSecondary">
@@ -3908,6 +3957,7 @@ export default function App() {
                           )}
                         </p>
                       </div>
+                      )}
                     </div>
 
                     <div className="px-6 py-5">
