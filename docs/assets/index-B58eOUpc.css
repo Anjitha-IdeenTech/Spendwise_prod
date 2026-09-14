@@ -1036,6 +1036,10 @@ video {
   width: 6rem;
 }
 
+.w-28{
+  width: 7rem;
+}
+
 .w-3{
   width: 0.75rem;
 }
@@ -1054,6 +1058,10 @@ video {
 
 .w-4{
   width: 1rem;
+}
+
+.w-44{
+  width: 11rem;
 }
 
 .w-5{
