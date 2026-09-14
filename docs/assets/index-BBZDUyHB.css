@@ -1145,8 +1145,16 @@ video {
   min-width: 460px;
 }
 
+.min-w-\[520px\]{
+  min-width: 520px;
+}
+
 .min-w-\[620px\]{
   min-width: 620px;
+}
+
+.min-w-\[640px\]{
+  min-width: 640px;
 }
 
 .min-w-\[720px\]{
@@ -2055,6 +2063,10 @@ video {
 
 .stroke-brand{
   stroke: rgb(var(--accent-budget) / 1);
+}
+
+.p-0\.5{
+  padding: 0.125rem;
 }
 
 .p-1{
