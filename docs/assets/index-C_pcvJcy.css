@@ -698,11 +698,6 @@ video {
   grid-column: span 8 / span 8;
 }
 
-.mx-4{
-  margin-left: 1rem;
-  margin-right: 1rem;
-}
-
 .mx-auto{
   margin-left: auto;
   margin-right: auto;
@@ -1196,10 +1191,6 @@ video {
 
 .flex-1{
   flex: 1 1 0%;
-}
-
-.flex-shrink{
-  flex-shrink: 1;
 }
 
 .flex-shrink-0{
