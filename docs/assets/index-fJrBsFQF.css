@@ -1925,6 +1925,10 @@ video {
   background-color: rgb(var(--accent-approvals) / 0.25);
 }
 
+.bg-gold\/5{
+  background-color: rgb(var(--accent-approvals) / 0.05);
+}
+
 .bg-neg{
   --tw-bg-opacity: 1;
   background-color: rgb(var(--accent-expenses) / var(--tw-bg-opacity, 1));
@@ -3366,6 +3370,10 @@ tbody tr:hover { background-color: rgb(var(--accent-budget) / 0.07); }
 .hover\:border-brand:hover{
   --tw-border-opacity: 1;
   border-color: rgb(var(--accent-budget) / var(--tw-border-opacity, 1));
+}
+
+.hover\:border-brand\/40:hover{
+  border-color: rgb(var(--accent-budget) / 0.4);
 }
 
 .hover\:border-line2:hover{
