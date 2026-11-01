@@ -111,17 +111,43 @@ export function resolveDemoUser(login: string, password: string): DemoUser | nul
   return user;
 }
 
+declare global {
+  interface Window { SMARTSPEND_API?: string }
+}
+
+/**
+ * What the server the page came from says its backend is.
+ *
+ * A deployed demo serves the portal and Odoo under one hostname, so there is
+ * no query string for anyone to copy and no `127.0.0.1` to get wrong: the page
+ * loads `config.js`, which the deployment writes, and that names the backend —
+ * for the single-hostname deployment, the page's own origin. A static host with
+ * no Odoo behind it (GitHub Pages) ships the placeholder `config.js`, which
+ * names nothing, so the portal falls back as before and runs the offline
+ * sample.
+ */
+export function deploymentApiUrl(): string | null {
+  try {
+    return typeof window === 'undefined' ? null : window.SMARTSPEND_API || null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Which backend to talk to.
  *
- * `?api=` wins so one hosted build can be pointed at a tunnelled Odoo without
- * rebuilding — that is how a live demo is driven from the same link. Otherwise
- * whatever was stored last, then the default. A blank or non-http value is
- * ignored rather than obeyed, so a mistyped parameter falls back instead of
- * breaking every call.
+ * `?api=` still wins, so one build can be pointed at a tunnelled Odoo without
+ * rebuilding — that is how a live demo is driven from the same link. Then what
+ * the deployment named, which has to beat a stored value: a visitor who once
+ * opened the portal with `?api=` must not keep calling that backend from a
+ * deployment that has its own. Then whatever was stored last, then the default.
+ * A blank or non-http value is ignored rather than obeyed, so a mistyped
+ * parameter falls back instead of breaking every call.
  */
 export function resolveApiUrl(
   search: string, stored: string | null, fallback: string = DEFAULT_API_URL,
+  configured: string | null = null,
 ): string {
   let fromQuery: string | null = null;
   try {
@@ -129,7 +155,7 @@ export function resolveApiUrl(
   } catch {
     fromQuery = null;
   }
-  for (const candidate of [fromQuery, stored]) {
+  for (const candidate of [fromQuery, configured, stored]) {
     const value = (candidate || '').trim().replace(/\/+$/, '');
     if (/^https?:\/\/.+/i.test(value)) return value;
   }

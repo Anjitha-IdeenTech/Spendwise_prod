@@ -14,10 +14,13 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  DEFAULT_API_URL, OFFLINE_TOKEN, resolveApiUrl, resolveDemoUser,
+  DEFAULT_API_URL, OFFLINE_TOKEN, deploymentApiUrl, resolveApiUrl, resolveDemoUser,
 } from './demoMode';
 import { AuctionDesk, VendorAuctions } from './auction';
+import { PrintButton, PrintRow } from './documents';
 import type { AuctionableRequest } from './auction';
+import { RequestChat } from './requestChat';
+import type { ChatDraft, ChatLine, ChatPreview } from './requestChat';
 
 // Define the Scene IDs and names
 const SCENES = [
@@ -2013,10 +2016,13 @@ export default function App() {
   ]);
 
   // ?api=https://… wins over the stored value, so one hosted build can be
-  // pointed at a tunnelled Odoo for a live demo without being rebuilt.
+  // pointed at a tunnelled Odoo for a live demo without being rebuilt. Next is
+  // what the deployment itself named in config.js — a deployed demo serves the
+  // portal and Odoo under one hostname, so the link to share is the plain URL.
   const [odooApiUrl, setOdooApiUrl] = useState<string>(() => {
     try {
-      return resolveApiUrl(window.location.search, localStorage.getItem("erpApiUrl"));
+      return resolveApiUrl(window.location.search, localStorage.getItem("erpApiUrl"),
+                           DEFAULT_API_URL, deploymentApiUrl());
     } catch {
       return DEFAULT_API_URL;
     }
@@ -2725,6 +2731,7 @@ export default function App() {
   };
 
   const [chatInputText, setChatInputText] = useState<string>("");
+  const chatInputTextState = chatInputText;
   // Files the requester picked. Held with their content because the request
   // does not exist yet when they are chosen — they are uploaded once it does.
   const [attachedFiles, setAttachedFiles] = useState<{ name: string; data: string }[]>([]);
@@ -2757,6 +2764,7 @@ export default function App() {
   const [extraItems, setExtraItems] = useState<LineItem[]>([]);
   // Products staged directly in the Scene 2 chat composer, before the AI extraction step.
   const [chatItems, setChatItems] = useState<LineItem[]>([]);
+  const chatItemsState = chatItems;
 
   // Poke / reminders (#10)
   const [pokes, setPokes] = useState<Array<{ to: string; from: string; message: string; reqId: string }>>([
@@ -3291,8 +3299,20 @@ export default function App() {
     handleSsoLogin(role);
   }, [authToken, currentUser]);
 
-  const handleChatSubmit = async (e?: React.FormEvent) => {
+  /**
+   * Parse what was asked for into a draft request and open the review form.
+   *
+   * ``draft`` comes from the New Request chat: the lines it settled with the
+   * requester, and the branch, department and date it asked for. Without one,
+   * this reads the composer as it always has (the voice screen still does).
+   */
+  const handleChatSubmit = async (
+    e?: React.FormEvent,
+    draft?: { text?: string; items?: LineItem[]; branch?: string; department?: string; neededBy?: string },
+  ) => {
     if (e) e.preventDefault();
+    const chatInputText = draft?.text ?? chatInputTextState;
+    const chatItems = draft?.items ?? chatItemsState;
     if (!chatInputText.trim() && chatItems.length === 0) return;
 
     setIsParsing(true);
@@ -3342,11 +3362,36 @@ export default function App() {
       parseSpeechText(chatInputText, chatItems);
       setCurrentOdooRequestName("New");
     }
+    // What the requester told the chat outranks the parser's defaults.
+    if (draft?.branch) setEditLocation(draft.branch);
+    if (draft?.department) setEditDepartment(draft.department);
+    if (draft?.neededBy) setEditDeliveryDate(draft.neededBy);
 
     setIsParsing(false);
     setChatInputText("");
     setChatItems([]);
     setActiveScene(4); // Go to extraction form
+  };
+
+  /** What one chat message would become, read by the server's parser without saving it. */
+  const previewChatMessage = async (text: string, items: ChatLine[]): Promise<ChatPreview | null> => {
+    if (!authToken || offlineDemo) return null;
+    try {
+      const res = await apiFetch('/api/smartspend/parse-preview', {
+        method: 'POST', body: JSON.stringify({ text, items }),
+      });
+      return res.ok ? await res.json() : null;
+    } catch {
+      return null;
+    }
+  };
+  /** The chat is done: its lines and answers become the draft request, as the old box did. */
+  const submitChatDraft = (draft: ChatDraft | null, rawText?: string) => {
+    if (!draft) { void handleChatSubmit(undefined, { text: rawText ?? '', items: [] }); return; }
+    void handleChatSubmit(undefined, {
+      text: '', items: draft.lines,
+      branch: draft.branch, department: draft.department, neededBy: draft.neededBy,
+    });
   };
 
   /** Open the file picker. The attachment used to be a name with no file. */
@@ -4441,171 +4486,32 @@ export default function App() {
                         <p className="text-base text-textSecondary">Ask for any item or service in plain words — we handle the rest.</p>
                       </div>
 
-                      {/* File Attached Success Banner */}
-                      {attachedFiles.length > 0 && (
-                        <div className="p-3 bg-brand/10 border border-brand/25 rounded-xl space-y-2 animate-fadeIn">
-                          <span className="flex items-center gap-2 text-xs font-bold text-brand">
-                            <Paperclip className="h-4 w-4" />
-                            {attachedFiles.length} file{attachedFiles.length === 1 ? '' : 's'} attached
-                            <span className="font-medium text-textFaint">· uploaded when the request is raised</span>
-                          </span>
-                          <div className="flex flex-wrap gap-2">
-                            {attachedFiles.map(f => (
-                              <span key={f.name} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-surface border border-borderTheme text-[11px] text-textSecondary">
-                                {f.name}
-                                <button
-                                  onClick={() => setAttachedFiles(prev => prev.filter(x => x.name !== f.name))}
-                                  title={`Remove ${f.name}`}
-                                  className="text-textFaint hover:text-neg"
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Multi-product composer + AI sub-category suggestions, stacked above the bar */}
-                      <div className="max-w-3xl mx-auto w-full space-y-3">
-                        {chatItems.length > 0 && (
-                          <div className="p-3 rounded-2xl bg-surface border border-borderTheme shadow-sm space-y-2 animate-fadeIn">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-textFaint">Products in this request ({chatItems.length})</span>
-                              <button type="button" onClick={() => setChatItems([])} className="text-[10px] font-semibold text-textSecondary hover:text-neg">Clear all</button>
-                            </div>
-                            {chatItems.map((it, idx) => (
-                              <div key={idx} className="grid grid-cols-12 gap-2 items-center">
-                                <input
-                                  type="text"
-                                  value={it.productName}
-                                  onChange={(e) => setChatItems(prev => prev.map((x, i) => i === idx ? { ...x, productName: e.target.value } : x))}
-                                  placeholder="Product description"
-                                  className="col-span-8 bg-secondary border border-line2 rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-brand"
-                                />
-                                <div className="col-span-3 flex items-center gap-1.5">
-                                  <input
-                                    type="number"
-                                    min={1}
-                                    value={it.productQty}
-                                    onChange={(e) => setChatItems(prev => prev.map((x, i) => i === idx ? { ...x, productQty: Number(e.target.value) } : x))}
-                                    className="w-full bg-secondary border border-line2 rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-brand"
-                                  />
-                                  <span className="text-[10px] text-textFaint">qty</span>
-                                </div>
-                                <button type="button" onClick={() => setChatItems(prev => prev.filter((_, i) => i !== idx))} className="col-span-1 flex justify-center text-textFaint hover:text-neg" title="Remove product">
-                                  <X className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
-                            ))}
-                            <div className="flex items-center justify-between pt-1">
-                              <button type="button" onClick={() => setChatItems(prev => [...prev, { productName: '', productQty: 1, targetPrice: 0 }])}
-                                className="text-[11px] font-semibold text-brand hover:underline flex items-center gap-1"><span className="text-sm leading-none">+</span> Add another product</button>
-                              <span className="text-[10px] text-textFaint">{linesQty(chatItems)} units staged</span>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Sub-product categories the AI infers from what's being typed */}
-                        {(() => {
-                          const cat = subCatalogFor(chatInputText);
-                          if (!cat) return null;
-                          const staged = new Set(chatItems.map(i => i.productName));
-                          return (
-                            <div className="px-1 space-y-2 animate-fadeIn">
-                              <span className="text-[11px] text-textSecondary flex items-center gap-1.5">
-                                <Sparkles className="h-3.5 w-3.5 text-brand" />
-                                Detected <strong className="text-textPrimary">{cat.category}</strong> — commonly requested together:
-                              </span>
-                              <div className="flex flex-wrap gap-2">
-                                {cat.items.map(name => (
-                                  <button
-                                    key={name}
-                                    type="button"
-                                    disabled={staged.has(name)}
-                                    onClick={() => setChatItems(prev => [...prev, { productName: name, productQty: 1, targetPrice: 0 }])}
-                                    className={`px-3 py-1.5 rounded-full border text-[11px] font-semibold transition-all ${staged.has(name)
-                                      ? 'bg-brand/10 border-brand/30 text-brand cursor-default'
-                                      : 'bg-surface border-borderTheme text-textSecondary hover:border-brand hover:text-brand'}`}
-                                  >
-                                    {staged.has(name) ? '✓ ' : '+ '}{name}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        })()}
-
-                        {/* Unified Input Bar (Matching user's attachment screenshot exactly) */}
-                        <form onSubmit={handleChatSubmit} className="relative flex items-center bg-surface border border-borderTheme/70 rounded-full px-5 py-3.5 focus-within:border-brand/60 shadow-xl transition-all w-full">
-                          {/* Attach button — opens the picker below */}
-                          <input
-                            ref={fileInputRef}
-                            type="file"
-                            multiple
-                            className="hidden"
-                            onChange={e => handleFilesPicked(e.target.files)}
-                          />
-                          <button 
-                            type="button"
-                            onClick={handleAttachmentAdd}
-                            className="p-1.5 rounded-full hover:bg-secondary text-textSecondary hover:text-textPrimary transition-all mr-3"
-                            title="Add attachment"
-                          >
-                            <Paperclip className="h-5 w-5" />
-                          </button>
-
-                          {/* Text input area */}
-                          <input 
-                            type="text"
-                            value={chatInputText}
-                            onChange={(e) => setChatInputText(e.target.value)}
-                            placeholder="Mention the product, branch, quantity and expected delivery date…"
-                            className="flex-grow bg-transparent text-sm text-primary placeholder-textFaint focus:outline-none pr-28"
-                          />
-
-                          {/* Integration Logos & Voice Action Group */}
-                          <div className="absolute right-3 flex items-center space-x-2">
-                            <span className="text-textFaint font-bold text-lg">|</span>
-
-                            {/* Voice Mic Icon */}
-                            <button
-                              type="button"
-                              onClick={() => setActiveScene(3)}
-                              className="p-1.5 rounded-full hover:bg-secondary text-textSecondary hover:text-primary transition-all"
-                              title="Voice Procurement"
-                            >
-                              <Mic className="h-4.5 w-4.5" />
-                            </button>
-
-                            {/* Send Button */}
-                            <button 
-                              type="submit"
-                              className="p-2 rounded-full bg-brand hover:bg-brand text-onbrand transition-all"
-                            >
-                              <Send className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-
-                      {/* Suggested Prompts */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6 max-w-3xl mx-auto">
-                        <div 
-                          onClick={() => setChatInputText("I need 20 Dell Latitude laptops for the Bangalore office")}
-                          className="cursor-pointer p-4 rounded-xl bg-surface/60 border border-borderTheme hover:border-line2 transition-all text-left text-xs space-y-1"
-                        >
-                          <span className="font-semibold text-textPrimary block">💻 Request IT Hardware</span>
-                          <span className="text-textSecondary">"I need 20 Dell Latitude laptops for the Bangalore office..."</span>
-                        </div>
-                        <div 
-                          onClick={() => setChatInputText("Requesting 10 ergonomic conference chairs for the Mumbai office")}
-                          className="cursor-pointer p-4 rounded-xl bg-surface/60 border border-borderTheme hover:border-line2 transition-all text-left text-xs space-y-1"
-                        >
-                          <span className="font-semibold text-textPrimary block">🪑 Request Office Furniture</span>
-                          <span className="text-textSecondary">"Requesting 10 ergonomic conference chairs for Mumbai..."</span>
-                        </div>
-                      </div>
+                      {/* The request is raised in a conversation: the assistant drafts it
+                          as the requester talks, and asks for whatever it still needs. It
+                          carries over what the single input bar offered — attachments,
+                          voice, the commonly-requested-together suggestions, several
+                          products at once, and the two example requests. */}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={e => handleFilesPicked(e.target.files)}
+                      />
+                      <RequestChat
+                        userName={currentUser?.name || ''}
+                        branches={branchOptions}
+                        departments={departmentOptions}
+                        preview={previewChatMessage}
+                        onSubmit={submitChatDraft}
+                        busy={isParsing}
+                        offline={offlineDemo}
+                        attachments={attachedFiles}
+                        onAttach={handleAttachmentAdd}
+                        onRemoveAttachment={name => setAttachedFiles(prev => prev.filter(x => x.name !== name))}
+                        onVoice={() => setActiveScene(3)}
+                        suggestFor={subCatalogFor}
+                      />
 
                       {/* My Requests — status dots + search + redesigned cards (#2) */}
                       {(() => {
@@ -4708,9 +4614,14 @@ export default function App() {
                           <span className="text-xs text-brand font-bold block">{currentRequest.id} Tracking</span>
                           <h3 className="font-outfit font-extrabold text-xl text-primary">{currentRequest.productQty}x {reqSummary(currentRequest)}</h3>
                         </div>
-                        <span className="px-3 py-1 bg-secondary rounded-full border border-borderTheme text-xs font-bold text-textSecondary">
-                          Status: {currentRequest.status}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          {odooConnected && !offlineDemo && (
+                            <PrintRow api={auctionApi} id={currentRequest.id} />
+                          )}
+                          <span className="px-3 py-1 bg-secondary rounded-full border border-borderTheme text-xs font-bold text-textSecondary">
+                            Status: {currentRequest.status}
+                          </span>
+                        </div>
                       </div>
 
                       {/* Timeline Nodes */}
@@ -5243,6 +5154,11 @@ export default function App() {
                     subtitle="We look for existing supplier contracts and agreed rates."
                     right={
                       <div className="flex items-center gap-2">
+                        {/* The agreement itself, printable, when this request is on one. */}
+                        {odooConnected && !offlineDemo && currentRequest.contract && (
+                          <PrintButton api={auctionApi} kind="contract" id={currentRequest.contract}
+                                       label="Print contract" variant="soft" className="mr-1" />
+                        )}
                         <span className="text-[10px] font-bold uppercase tracking-wider text-textFaint">Contract exists?</span>
                         <button
                           onClick={() => setHasContract(true)}
@@ -6311,6 +6227,9 @@ export default function App() {
                     icon={History}
                     title="Track Your Request"
                     subtitle="A simple, order-tracking style view of where your request is."
+                    right={odooConnected && !offlineDemo
+                      ? <PrintRow api={auctionApi} id={currentRequest.id} />
+                      : undefined}
                   />
                   
                   <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-8 shadow-sm">
@@ -6611,6 +6530,10 @@ export default function App() {
                     icon={Truck}
                     title="Receive Items"
                     subtitle="Check the delivered items and record what arrived."
+                    right={odooConnected && !offlineDemo
+                      ? <PrintButton api={auctionApi} kind="grn" id={currentRequest.id}
+                                     label="Print goods receipt" variant="soft" />
+                      : undefined}
                   />
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -6793,6 +6716,16 @@ export default function App() {
                     icon={ShieldCheck}
                     title="Invoice Check"
                     subtitle="We match the order, the delivery and the invoice automatically."
+                    right={odooConnected && !offlineDemo
+                      ? <div className="flex items-center gap-1.5">
+                          <PrintButton api={auctionApi} kind="po" id={currentRequest.id}
+                                       label="Order" variant="ghost" />
+                          <PrintButton api={auctionApi} kind="grn" id={currentRequest.id}
+                                       label="Receipt" variant="ghost" />
+                          <PrintButton api={auctionApi} kind="invoice" id={currentRequest.id}
+                                       label="Invoice" variant="soft" />
+                        </div>
+                      : undefined}
                   />
 
                   <div className="p-6 rounded-2xl bg-surface border border-borderTheme space-y-6 shadow-sm">
@@ -7044,6 +6977,10 @@ export default function App() {
                     icon={CreditCard}
                     title="Make Payment"
                     subtitle="Approve the payment and reconcile the bank records automatically."
+                    right={odooConnected && !offlineDemo
+                      ? <PrintButton api={auctionApi} kind="invoice" id={currentRequest.id}
+                                     label="Print invoice" variant="soft" />
+                      : undefined}
                   />
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

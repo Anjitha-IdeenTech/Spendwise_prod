@@ -32,13 +32,15 @@ export interface AuctionParticipant {
 }
 export interface AuctionBid {
   id: number; vendorId: number; vendor: string; total: number; at: string; rankAfter: number;
-  onBehalf: boolean; placedBy: string; extendedBy: number; secondsLeft: number;
+  onBehalf: boolean; placedBy: string; extendedBy: number; secondsLeft: number; round?: number;
 }
 export interface Auction {
   id: string; requestId?: string; title: string; itemCount: number; location: string; neededBy: string;
   state: 'draft' | 'scheduled' | 'live' | 'closed' | 'awarded' | 'cancelled'; stateLabel: string;
   startAt: string; endAt: string; originalEndAt: string; closedAt: string; serverNow: string;
   durationMinutes: number; extensionWindow: number; extensionMinutes: number; extensionCount: number;
+  /** Bidding rounds held: Bid Again opens another, from the opening price. */
+  round?: number;
   /** How bidding opened: 'ready' (every vendor ready), 'buyer' (opened early) or 'schedule'. */
   openedBy?: string;
   minDecrement: number; visibility: 'rank' | 'leader'; rebidMinutes: number; terms: string;
@@ -54,7 +56,7 @@ export interface Auction {
     participantId: number; vendor: string; state: string; stateLabel: string; total: number;
     rank: number; bidCount: number; lastBidAt: string; prices: Record<string, number>;
   };
-  myBids?: { total: number; at: string; rankAfter: number; extendedBy: number }[];
+  myBids?: { total: number; at: string; rankAfter: number; extendedBy: number; round?: number }[];
   outcome?: string;
 }
 
@@ -467,7 +469,8 @@ function ActivityFeed({ auction, now }: { auction: Auction; now: number }) {
         key: `b${b.id}`, at: ts(b.at), icon: tookLead ? Crown : TrendingDown,
         tone: tookLead ? 'text-amber-300' : 'text-violet-300',
         text: <><b className="text-white">{b.vendor}</b> bid <b className="text-white tabular-nums">{inr(b.total)}</b>{tookLead ? <span className="text-amber-300"> · took L1</span> : <span className="text-white/60"> · L{b.rankAfter}</span>}</>,
-        sub: `${prev ? `▼ ${drop.toFixed(1)}% on their last` : `▼ ${drop.toFixed(1)}% on opening`}${b.onBehalf ? ` · surrogate bid keyed in by ${b.placedBy}` : ''}`,
+        sub: `${prev ? `▼ ${drop.toFixed(1)}% on their last` : `▼ ${drop.toFixed(1)}% on opening`}`
+          + `${(b.round ?? 1) > 1 ? ` · round ${b.round}` : ''}${b.onBehalf ? ` · surrogate bid keyed in by ${b.placedBy}` : ''}`,
       });
       if (b.extendedBy) {
         out.push({
@@ -617,7 +620,13 @@ function LaunchPanel({ api, requests, initialRequestId, onClose, onLaunched }: {
   const req = eligible.find(r => r.id === requestId) ?? null;
   const [vendors, setVendors] = useState<VendorOption[]>([]);
   const [picked, setPicked] = useState<number[]>([]);
-  const [startIn, setStartIn] = useState<number>(2);
+  // The next quarter hour, as a value a datetime-local input takes.
+  const localStamp = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  const [opensAt, setOpensAt] = useState<string>(() => {
+    const d = new Date(Date.now() + 15 * 60000);
+    d.setMinutes(Math.ceil(d.getMinutes() / 5) * 5, 0, 0);
+    return localStamp(d);
+  });
   const [duration, setDuration] = useState<number>(5);
   const [windowMin, setWindowMin] = useState<number>(1);
   const [extendBy, setExtendBy] = useState<number>(2);
@@ -655,8 +664,9 @@ function LaunchPanel({ api, requests, initialRequestId, onClose, onLaunched }: {
     setDecrement(step >= 100 ? Math.round(step / 100) * 100 : Math.round(step));
   }, [requestId, vendors.length]);
 
-  const opensAt = new Date(Date.now() + startIn * 60000);
-  const closesAt = new Date(opensAt.getTime() + duration * 60000);
+  const opensDate = new Date(opensAt);
+  const opensValid = !Number.isNaN(opensDate.getTime()) && opensDate.getTime() > Date.now() + 45000;
+  const closesAtDate = new Date(opensDate.getTime() + duration * 60000);
   const lines = req?.lineItems?.length ? req.lineItems
     : req ? [{ productName: req.productName, productQty: req.productQty, targetPrice: req.productQty ? req.totalCost / req.productQty : req.totalCost }] : [];
 
@@ -666,7 +676,7 @@ function LaunchPanel({ api, requests, initialRequestId, onClose, onLaunched }: {
     const res = await call<{ auction: Auction; request: AuctionableRequest }>(api, '/api/smartspend/auctions/launch', {
       method: 'POST',
       body: JSON.stringify({
-        requestId: req.id, vendorIds: picked, startInMinutes: startIn, durationMinutes: duration,
+        requestId: req.id, vendorIds: picked, startAt: opensDate.toISOString(), durationMinutes: duration,
         extensionWindow: windowMin, extensionMinutes: extendBy, minDecrement: decrement,
         visibility, rebidMinutes: rebid, terms,
       }),
@@ -788,9 +798,17 @@ function LaunchPanel({ api, requests, initialRequestId, onClose, onLaunched }: {
 
               <section className="grid sm:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-textFaint">Bidding opens in</label>
-                  <Segmented value={startIn} options={[1, 2, 5, 10, 30]} onChange={setStartIn} fmt={v => `${v} min`} />
-                  <p className="text-[11px] text-textFaint">Opens by itself the moment every vendor has answered and two have accepted — at the latest after this.</p>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-textFaint">Bidding opens on</label>
+                  <input type="datetime-local" value={opensAt} min={localStamp(new Date(Date.now() + 60000))}
+                         onChange={e => setOpensAt(e.target.value)}
+                         aria-label="Date and time bidding opens"
+                         className={`w-full rounded-xl border bg-secondary px-3 py-2.5 text-sm font-semibold text-textPrimary focus:outline-none focus:ring-2 focus:ring-brand/25 ${
+                           opensValid ? 'border-borderTheme' : 'border-neg/50'}`} />
+                  <p className={`text-[11px] ${opensValid ? 'text-textFaint' : 'text-neg font-semibold'}`}>
+                    {opensValid
+                      ? 'Bidding opens at this date and time — or earlier, the moment every invited vendor has answered and two have accepted.'
+                      : 'Pick a date and time at least a minute from now.'}
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-textFaint">Runs for</label>
@@ -862,13 +880,13 @@ function LaunchPanel({ api, requests, initialRequestId, onClose, onLaunched }: {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-borderTheme">
                 <p className="text-[11px] text-textSecondary">
                   Invitations go to <b>{picked.length}</b> vendor{picked.length === 1 ? '' : 's'} now. Bidding opens as soon as
-                  every vendor is ready — at the latest <b>{opensAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</b>{' '}
-                  (then closing <b>{closesAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</b>) — and runs {duration} min
+                  every vendor is ready — at the latest <b>{opensValid ? opensDate.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}</b>{' '}
+                  (then closing <b>{opensValid ? closesAtDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—'}</b>) — and runs {duration} min
                   {windowMin > 0 ? ', plus any time extensions' : ''}.
                 </p>
                 <div className="flex gap-2">
                   <button onClick={onClose} className="px-4 py-2.5 rounded-xl border border-borderTheme text-xs font-bold text-textSecondary hover:bg-secondary">Cancel</button>
-                  <button onClick={launch} disabled={busy || picked.length < 2 || !req}
+                  <button onClick={launch} disabled={busy || picked.length < 2 || !req || !opensValid}
                           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-onbrand text-xs font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110">
                     <Send className="h-4 w-4" /> {busy ? 'Sending…' : 'Send invitations'}
                   </button>
@@ -1029,6 +1047,9 @@ function AuctionRoom({ api, reference, onBack, onRequestUpdated, onRaisePurchase
         <span className="font-mono text-xs font-bold text-textPrimary">{auction.id}</span>
         <span className="text-[11px] text-textFaint">for {auction.requestId}</span>
         <StatePill state={auction.state} big />
+        {(auction.round ?? 1) > 1 && (
+          <span className="rounded-full border border-brand/30 bg-brand/10 px-2.5 py-0.5 text-[11px] font-bold text-brand">Round {auction.round}</span>
+        )}
         <div className="ml-auto flex flex-wrap gap-2">
           {auction.state === 'scheduled' && (
             <button onClick={() => act('start', 'Open bidding now? Vendors who have not accepted are dropped.')} disabled={!!busy || accepted < 2}
@@ -1044,7 +1065,7 @@ function AuctionRoom({ api, reference, onBack, onRequestUpdated, onRaisePurchase
                 <Trophy className="h-4 w-4" /> {busy === 'award' ? 'Awarding…' : 'Award to L1'}
               </button>
               {rebidLeft > 0 && (
-                <button onClick={() => act('bid_again', `Reopen bidding for another ${auction.rebidMinutes}-minute round?`)} disabled={!!busy}
+                <button onClick={() => act('bid_again', `Reopen bidding for another ${auction.rebidMinutes}-minute round? Vendors start from the opening price of ${inr(auction.ceiling)} again — every bid so far stays in the log.`)} disabled={!!busy}
                         className="inline-flex items-center gap-1.5 rounded-xl border border-borderTheme bg-surface px-3 py-2 text-xs font-bold text-textPrimary hover:bg-secondary">
                   <RotateCcw className="h-4 w-4" /> Bid again <span className="text-textFaint font-semibold">({clock(rebidLeft)} left)</span>
                 </button>
@@ -1195,6 +1216,7 @@ function AuctionRoom({ api, reference, onBack, onRequestUpdated, onRaisePurchase
             <li className="flex gap-2"><TrendingDown className="h-4 w-4 text-textFaint shrink-0" />{auction.minDecrement ? <>Each rebid ≥ {inr(auction.minDecrement)} below the vendor's last</> : 'Each rebid must simply be lower'}</li>
             <li className="flex gap-2">{auction.visibility === 'rank' ? <EyeOff className="h-4 w-4 text-textFaint shrink-0" /> : <Eye className="h-4 w-4 text-textFaint shrink-0" />}{auction.visibility === 'rank' ? 'Sealed: vendors see their rank only' : 'Vendors see the leading price, never the name'}</li>
             <li className="flex gap-2"><Lock className="h-4 w-4 text-textFaint shrink-0" />Every bid is logged and cannot be edited</li>
+            <li className="flex gap-2"><RotateCcw className="h-4 w-4 text-textFaint shrink-0" />Bid Again opens a fresh round from the opening price; earlier rounds stay in the log</li>
           </ul>
           <div className="rounded-xl border border-borderTheme overflow-hidden">
             <table className="w-full text-[11px]">
@@ -1450,6 +1472,9 @@ function VendorConsole({ api, reference, onBack }: { api: ApiFn; reference: stri
       setBurst(`TIME EXTENDED · +${a.extensionMinutes}:00`); setTimeout(() => setBurst(null), 2800);
     }
     prevExt.current = a.extensionCount;
+    if (prevState.current === 'closed' && a.state === 'live') {
+      say(`Round ${a.round ?? 2} is open — bidding starts from the opening price of ${inr(a.ceiling)} again.`, 'info');
+    }
     if (prevState.current === 'scheduled' && a.state === 'live' && a.me?.state === 'live') {
       say(a.openedBy === 'ready' ? 'Every vendor is ready — bidding is open. Place your bid!' : 'Bidding is open — place your bid!', 'good');
     }
@@ -1550,6 +1575,9 @@ function VendorConsole({ api, reference, onBack }: { api: ApiFn; reference: stri
         <span className="text-textFaint">/</span>
         <span className="font-mono text-xs font-bold text-textPrimary">{auction.id}</span>
         <StatePill state={auction.state} big />
+        {(auction.round ?? 1) > 1 && (
+          <span className="rounded-full border border-brand/30 bg-brand/10 px-2.5 py-0.5 text-[11px] font-bold text-brand">Round {auction.round}</span>
+        )}
         <span className="ml-auto text-[11px] text-textSecondary">Buyer: {auction.buyer} · deliver to {auction.location}{auction.neededBy ? ` by ${auction.neededBy}` : ''}</span>
       </div>
       <ErrorNote text={error} onClose={() => setError('')} />
@@ -1727,7 +1755,7 @@ function VendorConsole({ api, reference, onBack }: { api: ApiFn; reference: stri
                     <RankBadge rank={b.rankAfter} size="sm" />
                     <div className="flex-1">
                       <div className="font-bold tabular-nums">{inr(b.total)}</div>
-                      <div className="text-[10px] text-white/45">{ago(ts(b.at), now)}{b.extendedBy ? ` · extended the close +${b.extendedBy}m` : ''}</div>
+                      <div className="text-[10px] text-white/45">{ago(ts(b.at), now)}{(b.round ?? 1) > 1 ? ` · round ${b.round}` : ''}{b.extendedBy ? ` · extended the close +${b.extendedBy}m` : ''}</div>
                     </div>
                   </li>
                 ))}
