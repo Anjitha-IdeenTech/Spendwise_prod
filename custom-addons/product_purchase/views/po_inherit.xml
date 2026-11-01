@@ -80,5 +80,16 @@
                 </xpath>
             </field>
         </record>
+        <record id="action_generated_purchase_orders" model="ir.actions.act_window">
+            <field name="name">Generated Purchase Orders</field>
+            <field name="res_model">purchase.order</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('pr_id', '!=', False)]</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No generated purchase orders found!
+                </p>
+            </field>
+        </record>
     </data>
 </odoo>

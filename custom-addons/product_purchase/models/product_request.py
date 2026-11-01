@@ -243,6 +243,21 @@ class ProductRequest(models.Model):
                                  string='Product Request Line',
                                  tracking=True)
 
+    contract_ids = fields.One2many('tenders', 'product_requested_id', string='Contracts')
+    contract_count = fields.Integer(string='Contract Count', compute='_compute_contract_count')
+    po_ids = fields.One2many('purchase.order', 'pr_id', string='Purchase Orders')
+    po_count = fields.Integer(string='PO Count', compute='_compute_po_count')
+
+    @api.depends('contract_ids')
+    def _compute_contract_count(self):
+        for record in self:
+            record.contract_count = len(record.contract_ids)
+
+    @api.depends('po_ids')
+    def _compute_po_count(self):
+        for record in self:
+            record.po_count = len(record.po_ids)
+
     status = fields.Selection(
         selection=[('draft', 'DRAFT'),('initiate','INITIATED'),('revert','REVERTED BACK'),('on_check','ON CHECK'),('requested', 'REQUESTED'), ('wait', 'CONTRACT REQUESTED')
             , ('lease', 'LEASED'), ('accepted', 'APPROVED'), ('declined', 'REJECTED'),('rfi','REQUEST FOR INFORMATION')],
@@ -931,27 +946,26 @@ class ProductRequest(models.Model):
             rec.exp_category_domain = json.dumps(category_domain)
 
     def action_view_contracts(self):
-        print("gggggggg")
+        self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
             'name': 'Contract Requests',
             'view_mode': 'tree,form',
             'res_model': 'tenders',
-            'domain': [('product_requested_id', '=', self.id),
-                      ],
+            'domain': [('product_requested_id', '=', self.id)],
+            'context': {'default_product_requested_id': self.id},
             'target': 'current'
         }
 
-
     def action_view_po(self):
-        print("cccccccc")
+        self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
-            'name': 'PO',
+            'name': 'Generated Purchase Orders',
             'view_mode': 'tree,form',
             'res_model': 'purchase.order',
-            'domain': [('pr_id','=', self.id),
-                       ],
+            'domain': [('pr_id', '=', self.id)],
+            'context': {'default_pr_id': self.id},
             'target': 'current'
         }
 

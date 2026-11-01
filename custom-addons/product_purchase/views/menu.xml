@@ -6,6 +6,8 @@
         <menuitem id="menu_pr" name="Purchase Request" web_icon="product_purchase,static/icons/shopping.png"/>
         <menuitem id="sub_menu_pr_man" name="Purchase Requests" parent="menu_pr" action="action_product_requests"
                   sequence="10" groups="group_buyers,group_approvers,group_pr_initiator,group_purchase_head"/>
+        <menuitem id="sub_menu_generated_po" name="Generated Purchase Orders" parent="menu_pr" action="action_generated_purchase_orders"
+                  sequence="20" groups="group_buyers,group_approvers,group_pr_initiator,group_purchase_head"/>
 
         <!--     ##############   -->
 
